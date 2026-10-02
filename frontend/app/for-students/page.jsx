@@ -46,11 +46,11 @@ export default function ForStudentsPage() {
         <div className="absolute top-0 right-1/4 w-80 h-80 bg-tea-green/10 rounded-full blur-3xl pointer-events-none"></div>
         <div className="max-w-4xl mx-auto relative z-10">
           <div className="inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-tea-green text-xs font-semibold uppercase tracking-wider mb-6">
-            For Young People Aged 16–25
+            For Young People Aged 16 to 25
           </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 font-serif">You Have the Information. What You Need Is Perspective.</h1>
           <p className="text-xl md:text-2xl mb-10 text-gray-200 font-light max-w-3xl mx-auto">
-            Career confusion, confidence issues, 'what next' anxiety — you're not alone. Let's figure it out together.
+            Career confusion, confidence issues, 'what next' anxiety: you are not alone. Let's figure it out together.
           </p>
           <Link href="/book" className="inline-block bg-golden-pollen text-charcoal-blue font-bold py-3.5 px-8 rounded-full text-lg shadow-lg hover:bg-secondary-hover transition-all">
             Start a Conversation
@@ -62,9 +62,6 @@ export default function ForStudentsPage() {
       <section className="py-20 bg-slate-50 px-6 md:px-12 border-b border-gray-100">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <div className="inline-block px-3 py-1 rounded-full bg-golden-pollen/20 text-[#734A00] text-xs font-bold uppercase tracking-wider mb-2">
-              Common Questions
-            </div>
             <h2 className="text-3xl md:text-4xl font-bold font-serif text-charcoal-blue">Sound Familiar?</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

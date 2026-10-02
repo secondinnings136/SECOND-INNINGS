@@ -79,7 +79,7 @@ export default function Book() {
                <CheckCircle2 className="w-10 h-10 text-charcoal-blue" />
              </div>
              <h2 className="text-2xl md:text-3xl font-bold text-charcoal-blue font-serif mb-4">{status.message}</h2>
-             <p className="text-gray-600 mb-8 max-w-lg mx-auto">What to expect: A focused 30-minute conversation. We listen first. No selling, no prescription — just clarity.</p>
+             <p className="text-gray-600 mb-8 max-w-lg mx-auto">What to expect: A focused 30-minute conversation. We listen first. No selling, no prescription: just clarity.</p>
              <a 
                href="https://wa.me/919314072153?text=Hi%20Deepak%20Sir,%20I%20just%20booked%20a%20conversation%20on%20Second%20Innings." 
                target="_blank" 

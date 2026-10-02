@@ -85,7 +85,7 @@ export default function AboutPage() {
               <div className="absolute w-4 h-4 bg-tea-green rounded-full -left-[9px] top-1.5 ring-4 ring-slate-50"></div>
               <span className="text-xs font-bold text-golden-pollen uppercase tracking-wider bg-charcoal-blue px-2.5 py-0.5 rounded-full inline-block mb-1">2000s–2010</span>
               <h4 className="text-lg font-bold text-charcoal-blue mb-1">Corporate Leadership</h4>
-              <p className="text-gray-600 text-sm leading-relaxed">Held senior roles at Khandelwal Labs, Glenmark, and Hoechst — driving sales strategy, marketing initiatives, and cross-functional teams with consistent Star Performer recognition.</p>
+              <p className="text-gray-600 text-sm leading-relaxed">Held senior roles at Khandelwal Labs, Glenmark, and Hoechst, driving sales strategy, marketing initiatives, and cross-functional teams with consistent Star Performer recognition.</p>
             </div>
 
             <div className="relative pl-8 md:pl-12">
@@ -138,7 +138,7 @@ export default function AboutPage() {
               The core belief is simple: empowerment over instruction.
             </p>
             <p className="text-lg text-gray-200 leading-relaxed font-light">
-              Young people rarely suffer from lack of information — they are surrounded by data. What they truly need is clarity, perspective, confidence, exposure, and the structured support to act on their own decisions.
+              Young people rarely suffer from lack of information: they are surrounded by data. What they truly need is clarity, perspective, confidence, exposure, and the structured support to act on their own decisions.
             </p>
           </div>
           <div>

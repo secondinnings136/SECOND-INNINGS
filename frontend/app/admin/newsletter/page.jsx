@@ -137,7 +137,7 @@ export default function NewsletterPage() {
                       <Mail size={16} className="text-gray-400" />
                       {sub.email}
                     </td>
-                    <td className="py-3.5 px-4 text-gray-600">{sub.name || '—'}</td>
+                    <td className="py-3.5 px-4 text-gray-600">{sub.name || '-'}</td>
                     <td className="py-3.5 px-4">
                       {sub.isActive ? (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#BDD9BF]/40 text-[#2E4052] border border-[#BDD9BF]">

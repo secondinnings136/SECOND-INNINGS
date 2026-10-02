@@ -42,7 +42,7 @@ export default function ForInstitutionsPage() {
             A Student Development Layer That Complements What You Already Do
           </h1>
           <p className="text-xl md:text-2xl mb-10 text-gray-200 font-light max-w-3xl mx-auto">
-            Second Innings works alongside your academic, counselling and administrative systems — not instead of them.
+            Second Innings works alongside your academic, counselling and administrative systems, not instead of them.
           </p>
           <Link href="/contact" className="inline-block bg-golden-pollen text-charcoal-blue font-bold py-3.5 px-8 rounded-full text-lg shadow-lg hover:bg-secondary-hover transition-all">
             Talk to Us About Your Institution

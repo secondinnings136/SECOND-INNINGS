@@ -30,7 +30,7 @@ export default function Home() {
             initial="hidden" animate="visible" variants={fadeIn}
             className="text-4xl md:text-6xl font-bold mb-6 leading-tight font-serif text-white tracking-tight"
           >
-            Navigating What Comes Next — With Clarity, Not Confusion.
+            Navigating What Comes Next. With Clarity, Not Confusion.
           </motion.h1>
 
           <motion.p 
@@ -64,9 +64,6 @@ export default function Home() {
       <section className="py-20 bg-slate-50 text-center border-b border-gray-100">
         <div className="container mx-auto px-4 max-w-3xl">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn}>
-            <div className="inline-block px-3 py-1 rounded-full bg-tea-green/30 text-charcoal-blue text-xs font-bold uppercase tracking-wider mb-4">
-              The Reality
-            </div>
             <h2 className="text-3xl md:text-4xl font-bold mb-6 font-serif text-charcoal-blue">Information Is Everywhere. Perspective Is Not.</h2>
             <p className="text-lg text-gray-600 leading-relaxed">
               We live in a world overflowing with data, opinions, and advice. Yet, when faced with critical choices about education, careers, and life paths, young people often feel overwhelmed. The gap isn't a lack of information; it's a lack of context, self-understanding, and unbiased perspective to make sense of that information.
@@ -275,7 +272,7 @@ export default function Home() {
               </div>
               <h2 className="text-3xl font-bold mb-4 font-serif text-charcoal-blue">Deepak Sogani</h2>
               <p className="text-gray-600 mb-6 text-lg leading-relaxed">
-                35+ years across corporate leadership, entrepreneurship, and higher education — including 5 years leading Student Affairs at JK Lakshmipat University. Now dedicating this experience to mentoring young minds and empowering parents.
+                35+ years across corporate leadership, entrepreneurship, and higher education, including 5 years leading Student Affairs at JK Lakshmipat University. Now dedicating this experience to mentoring young minds and empowering parents.
               </p>
               <blockquote className="border-l-4 border-golden-pollen bg-slate-50 pl-4 py-3 italic text-charcoal-blue mb-8 font-serif text-lg rounded-r-xl">
                 "The best years of my life are not behind me. They are the years in which I can help others discover theirs."
@@ -292,9 +289,6 @@ export default function Home() {
       <section className="py-20 bg-white text-center">
         <div className="container mx-auto px-4 max-w-3xl">
            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn}>
-            <div className="inline-block px-3 py-1 rounded-full bg-midnight-violet/10 text-midnight-violet text-xs font-bold uppercase tracking-wider mb-3">
-              For Schools & Colleges
-            </div>
             <h2 className="text-3xl font-bold mb-6 font-serif text-charcoal-blue">Complementing Academic Excellence With Life Readiness</h2>
             <p className="text-lg text-gray-600 mb-8 leading-relaxed">
               We partner with institutions through a tested 90-day pilot model. We listen first, understand what already exists, identify 2–3 genuine priorities, and demonstrate observable student movement before recommending any larger integration.
@@ -315,7 +309,7 @@ export default function Home() {
             </div>
             <h2 className="text-3xl font-bold mb-4 font-serif text-charcoal-blue">Curated Opportunities That Support Mentoring</h2>
             <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-              Internships, fellowships, scholarships, and courses — curated for student relevance, verified, and mapped to practical next steps.
+              Internships, fellowships, scholarships, and courses: curated for student relevance, verified, and mapped to practical next steps.
             </p>
              <Link href="/opportunities" className="inline-flex items-center text-charcoal-blue font-bold hover:text-midnight-violet transition-colors text-lg group">
               Explore Knowledge Bank <ArrowRight className="ml-2 w-5 h-5 text-golden-pollen group-hover:translate-x-1 transition-transform" />
@@ -331,7 +325,7 @@ export default function Home() {
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn}>
             <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif">Ready to Start?</h2>
             <p className="text-xl text-gray-200 mb-10 font-light">
-              A conversation is the first step. No commitment, no pressure — just perspective.
+              A conversation is the first step. No commitment, no pressure: just perspective.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link 

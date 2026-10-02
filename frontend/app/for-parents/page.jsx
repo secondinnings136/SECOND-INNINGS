@@ -35,7 +35,7 @@ export default function ForParentsPage() {
           </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 font-serif">You Want the Best for Your Child. So Do We.</h1>
           <p className="text-xl md:text-2xl mb-10 text-gray-200 font-light max-w-3xl mx-auto">
-            The world your child is entering looks very different from the one you grew up in. We help bridge that gap — together.
+            The world your child is entering looks very different from the one you grew up in. We help bridge that gap together.
           </p>
           <Link href="/book" className="inline-block bg-golden-pollen text-charcoal-blue font-bold py-3.5 px-8 rounded-full text-lg shadow-lg hover:bg-secondary-hover transition-all">
             Start a Conversation About Your Child
@@ -193,7 +193,7 @@ export default function ForParentsPage() {
       <section className="py-20 bg-slate-50 text-center px-6 border-t border-gray-100">
         <div className="max-w-2xl mx-auto">
           <h3 className="text-2xl md:text-3xl font-bold font-serif text-charcoal-blue mb-4">Start With an Open Conversation</h3>
-          <p className="text-gray-600 mb-8">No pressure or pre-packaged formulas — just thoughtful, practical perspective.</p>
+          <p className="text-gray-600 mb-8">No pressure or pre-packaged formulas: just thoughtful, practical perspective.</p>
           <Link href="/book" className="inline-block bg-golden-pollen text-charcoal-blue font-bold py-4 px-10 rounded-full text-lg shadow-lg hover:bg-secondary-hover transition-all">
             Start a Conversation About Your Child
           </Link>
