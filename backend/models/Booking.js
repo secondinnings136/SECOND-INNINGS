@@ -5,9 +5,14 @@ const bookingSchema = new mongoose.Schema({
   email: { type: String, trim: true, lowercase: true },
   phone: { type: String, required: true },
   whatsapp: { type: String },
-  userType: { type: String, enum: ['student', 'parent', 'institution'], required: true },
-  ageGroup: { type: String, enum: ['16-18', '19-21', '22-25', 'parent', 'other'] },
-  concern: { type: String, maxlength: 500 },
+  userType: { type: String, enum: ['student', 'parent', 'institution', 'other'], default: 'student' },
+  age: { type: String },
+  ageGroup: { type: String },
+  currentStage: { type: String }, // School / College / University / Current Stage
+  city: { type: String },
+  topic: { type: String }, // What would you like to talk about?
+  usefulGoal: { type: String }, // What would make this conversation useful for you?
+  concern: { type: String }, // backward compatibility
   preferredDate: { type: Date },
   preferredTime: { type: String },
   status: { type: String, enum: ['pending', 'confirmed', 'completed', 'cancelled'], default: 'pending' },
@@ -16,7 +21,8 @@ const bookingSchema = new mongoose.Schema({
   actionAgreed: { type: String },
   actionStatus: { type: String, enum: ['pending', 'in-progress', 'completed', 'not-started'], default: 'not-started' },
   feedback: { type: String },
-  source: { type: String }
+  source: { type: String }, // How did you hear about Second Innings?
+  referredBy: { type: String } // Were you referred by someone?
 }, { timestamps: true });
 
 module.exports = mongoose.model('Booking', bookingSchema);

@@ -1,43 +1,180 @@
 'use client'
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Compass, Users, Building, ShieldCheck, Search, Lightbulb, Map, ArrowRight, ArrowUpRight, GraduationCap, CheckCircle2, MessageCircle } from 'lucide-react';
+import { 
+  ArrowRight, 
+  CheckCircle2, 
+  XCircle, 
+  MessageSquare, 
+  Sparkles, 
+  HelpCircle, 
+  Compass, 
+  Lightbulb, 
+  Target, 
+  Repeat,
+  HeartHandshake,
+  ShieldCheck,
+  Quote
+} from 'lucide-react';
 
 const fadeIn = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }
 };
+
+const WHO_IS_IT_FOR = [
+  {
+    title: 'Trying to understand yourself better',
+    desc: 'Your marks, degree or résumé tell only part of your story.',
+    icon: Compass,
+  },
+  {
+    title: 'Wondering what comes next',
+    desc: 'You have options but aren\'t sure how to think about them.',
+    icon: HelpCircle,
+  },
+  {
+    title: 'Exploring education or career possibilities',
+    desc: 'Not simply "Which course should I choose?" but also "Why does this choice make sense for me?"',
+    icon: Lightbulb,
+  },
+  {
+    title: 'Looking beyond conventional options',
+    desc: 'You want to discover opportunities, experiences or paths you may not have encountered before.',
+    icon: Sparkles,
+  },
+  {
+    title: 'Preparing for a transition',
+    desc: 'School to university. University life. Internships. Projects. First career decisions. Life after graduation.',
+    icon: Target,
+  },
+  {
+    title: 'Dealing with a setback or change of plan',
+    desc: 'Something hasn\'t worked as expected, and you\'re trying to understand what comes next.',
+    icon: Repeat,
+  },
+  {
+    title: 'Carrying a question you haven\'t been able to discuss openly',
+    desc: 'Sometimes the starting point isn\'t a career decision at all. It is simply something you need to talk through.',
+    icon: MessageSquare,
+  },
+];
+
+const METHODOLOGY_STEPS = [
+  {
+    step: '01',
+    name: 'TALK',
+    subtitle: 'What\'s on your mind?',
+    description: 'You don\'t need to arrive with a perfectly framed question. Sometimes even "I am confused" is enough to begin.',
+  },
+  {
+    step: '02',
+    name: 'UNDERSTAND',
+    subtitle: 'We look beyond the immediate question.',
+    description: 'What matters to you? What are you experiencing? What are your concerns? What might be influencing your thinking? Understanding comes before advice.',
+  },
+  {
+    step: '03',
+    name: 'EXPLORE',
+    subtitle: 'There may be possibilities you haven\'t considered yet.',
+    description: 'Together, we explore different perspectives, alternatives, opportunities and questions worth thinking about.',
+  },
+  {
+    step: '04',
+    name: 'CHOOSE YOUR NEXT STEP',
+    subtitle: 'The objective isn\'t for someone else to make the decision for you.',
+    description: 'It is to help you move towards a next step that makes sense to you and that you are willing to own.',
+  },
+  {
+    step: '05',
+    name: 'FOLLOW THROUGH',
+    subtitle: 'Where appropriate, we reconnect.',
+    description: 'What did you try? What happened? What did you discover? What should happen next? Because a meaningful conversation becomes more valuable when it leads to action.',
+  },
+];
+
+const STUDENT_VOICES = [
+  {
+    category: 'LIFE PREPARATION',
+    quote: 'You never just prepared students for university, you prepared us for life. You taught us to take ownership, stay disciplined, think independently, stand by our decisions, and never compromise on our values.',
+    name: 'Priya Kaushik',
+    role: 'Project Manager | Business Analyst',
+  },
+  {
+    category: 'LEADERSHIP',
+    quote: 'You were the person who saw potential in me before I did... The confidence to take on opportunities, make difficult decisions, and lead people is something I owe to you.',
+    name: 'Bismanpreet Singh',
+    role: 'Startup Ecosystem Professional | Former Student Council President',
+  },
+  {
+    category: 'PERSPECTIVE',
+    quote: 'Whenever I found myself unsure of the next step, your perspective helped me see possibilities I couldn\'t see on my own... every student deserves to have a mentor like you.',
+    name: 'Himangi Chaturvedi',
+    role: 'Associate Project Manager',
+  },
+  {
+    category: 'DECISION-MAKING',
+    quote: 'What I value most is that you never simply gave answers - you helped me learn how to find them myself.',
+    name: 'Omprakash Kumawat',
+    role: 'Software Engineer',
+  },
+  {
+    category: 'REAL-WORLD READINESS',
+    quote: 'The professional world has made us realize exactly why you pushed us so hard. You didn\'t just teach us, you built our character and prepared us for reality.',
+    name: 'Jia Soni',
+    role: 'HR Manager | Coaching & Mentoring',
+  },
+  {
+    category: 'CONFIDENCE',
+    quote: 'You\'ve been more than a mentor - you\'ve been a catalyst... Every conversation with you left me feeling clearer, stronger, and more capable.',
+    name: 'Diya Garg',
+    role: 'Data Science Student',
+  },
+];
+
+const WHAT_IT_IS_AND_ISNT = [
+  { is: 'A space to talk.', isNot: 'A coaching institute.' },
+  { is: 'An opportunity to think.', isNot: 'A motivational programme.' },
+  { is: 'A place to explore possibilities.', isNot: 'A conventional career-selection service.' },
+  { is: 'A source of new perspectives.', isNot: 'A substitute for professional mental-health support.' },
+  { is: 'A conversation that can lead to action.', isNot: 'A place where somebody else decides your future for you.' },
+  { is: 'A journey towards greater ownership of one\'s choices.', isNot: 'A system that tells you what you should become.' },
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col w-full">
-      {/* S1: Hero Section */}
-      <section className="relative bg-gradient-to-br from-charcoal-blue via-[#263747] to-midnight-violet text-white py-24 md:py-32 overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent bg-[length:24px_24px]"></div>
-        
-        {/* Decorative subtle ambient glows using brand colors */}
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-tea-green/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-golden-pollen/15 rounded-full blur-3xl pointer-events-none"></div>
+    <div className="flex flex-col w-full text-gray-800">
+      {/* 1. HERO SECTION */}
+      <section className="relative bg-gradient-to-br from-charcoal-blue via-[#263747] to-midnight-violet text-white py-24 sm:py-32 px-6 overflow-hidden">
+        {/* Subtle ambient lighting */}
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-tea-green/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-golden-pollen/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="container mx-auto px-4 relative z-10 text-center max-w-4xl">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/15 text-tea-green text-xs md:text-sm font-medium tracking-wide mb-6">
-            <span className="w-2 h-2 rounded-full bg-golden-pollen animate-pulse"></span>
-            A Human-Led Mentoring & Perspective Platform
-          </div>
+        <div className="container mx-auto px-4 max-w-4xl text-center relative z-10">
+          <p className="text-xs uppercase tracking-widest text-tea-green font-semibold mb-4">
+            SECOND INNINGS
+          </p>
+          <motion.h2 
+            initial="hidden" animate="visible" variants={fadeIn}
+            className="text-sm sm:text-base uppercase tracking-[0.25em] text-golden-pollen font-semibold mb-6"
+          >
+            Young Minds. New Perspectives. Wider Possibilities.
+          </motion.h2>
 
           <motion.h1 
             initial="hidden" animate="visible" variants={fadeIn}
-            className="text-4xl md:text-6xl font-bold mb-6 leading-tight font-serif text-white tracking-tight"
+            className="text-4xl sm:text-6xl font-bold mb-6 font-serif tracking-tight leading-tight text-white"
           >
-            Navigating What Comes Next. With Clarity, Not Confusion.
+            Sometimes, you don't need another answer. You need the right conversation.
           </motion.h1>
 
           <motion.p 
             initial="hidden" animate="visible" variants={fadeIn}
-            className="text-lg md:text-xl text-gray-200 mb-10 max-w-3xl mx-auto font-light leading-relaxed"
+            className="text-lg sm:text-xl text-gray-200 mb-10 max-w-2xl mx-auto font-light leading-relaxed"
           >
-            Second Innings is a mentoring platform for young people aged 16–25. We help you think clearly, see possibilities, and take your next step with confidence.
+            Second Innings is a space for young people to talk openly, understand themselves better, explore possibilities and find their own way forward.
           </motion.p>
 
           <motion.div 
@@ -46,305 +183,404 @@ export default function Home() {
           >
             <Link 
               href="/book" 
-              className="w-full sm:w-auto bg-golden-pollen text-charcoal-blue px-8 py-3.5 rounded-full font-bold hover:bg-[#ffbe3b] active:scale-[0.98] shadow-lg hover:shadow-xl transition-all text-lg duration-200 text-center"
+              className="w-full sm:w-auto bg-golden-pollen text-charcoal-blue px-8 py-3.5 rounded-full font-bold hover:bg-secondary-hover shadow-lg hover:shadow-xl transition-all text-base sm:text-lg text-center"
             >
               Start a Conversation
             </Link>
-            <Link 
-              href="/how-it-works" 
-              className="w-full sm:w-auto bg-white/10 border-2 border-white/30 text-white px-8 py-3.5 rounded-full font-semibold hover:bg-white/20 active:scale-[0.98] transition-all text-lg backdrop-blur-sm duration-200 text-center"
+            <a 
+              href="#about-second-innings" 
+              className="w-full sm:w-auto bg-white/10 border border-white/20 text-white px-8 py-3.5 rounded-full font-medium hover:bg-white/20 transition-all text-base sm:text-lg backdrop-blur-sm text-center"
             >
-              See How It Works
-            </Link>
+              Explore Second Innings
+            </a>
           </motion.div>
         </div>
       </section>
 
-      {/* S2: The Problem */}
-      <section className="py-20 bg-slate-50 text-center border-b border-gray-100">
+      {/* 2. THE HOOK: INFORMATION EVERYWHERE VS CLARITY */}
+      <section className="py-20 sm:py-28 bg-white border-b border-gray-100">
         <div className="container mx-auto px-4 max-w-3xl">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn}>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 font-serif text-charcoal-blue">Information Is Everywhere. Perspective Is Not.</h2>
-            <p className="text-lg text-gray-600 leading-relaxed">
-              We live in a world overflowing with data, opinions, and advice. Yet, when faced with critical choices about education, careers, and life paths, young people often feel overwhelmed. The gap isn't a lack of information; it's a lack of context, self-understanding, and unbiased perspective to make sense of that information.
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn} className="space-y-6 text-gray-700">
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-charcoal-blue leading-snug">
+              Not every question has an obvious answer.
+            </h2>
+            <p className="text-lg leading-relaxed">
+              You have information everywhere. Courses to choose from. Careers to consider. Opportunities to explore. Opinions to listen to. Expectations to meet. And countless stories telling you what success should look like.
             </p>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* S3: The Gap (3 Columns) */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn} className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-serif text-charcoal-blue">The Space Between Education and Life</h2>
-            <p className="text-gray-500 max-w-2xl mx-auto">Academic ability alone does not automatically create life readiness.</p>
-          </motion.div>
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn} className="bg-slate-50 border border-slate-100 p-8 rounded-2xl hover:border-tea-green/60 hover:shadow-md transition-all">
-              <div className="w-14 h-14 rounded-xl bg-tea-green/30 text-charcoal-blue flex items-center justify-center mb-6">
-                <Compass className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-charcoal-blue">Students are informed</h3>
-              <p className="text-gray-600 leading-relaxed">But information does not automatically become perspective, judgement or ownership. Many struggle to filter noise from reality.</p>
-            </motion.div>
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn} className="bg-slate-50 border border-slate-100 p-8 rounded-2xl hover:border-golden-pollen/60 hover:shadow-md transition-all">
-              <div className="w-14 h-14 rounded-xl bg-golden-pollen/25 text-charcoal-blue flex items-center justify-center mb-6">
-                <Users className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-charcoal-blue">Parents are invested</h3>
-              <p className="text-gray-600 leading-relaxed">Adolescence, new-age careers, and university transitions create unfamiliar questions. Parents care deeply but need modern perspective.</p>
-            </motion.div>
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn} className="bg-slate-50 border border-slate-100 p-8 rounded-2xl hover:border-midnight-violet/40 hover:shadow-md transition-all">
-              <div className="w-14 h-14 rounded-xl bg-midnight-violet/10 text-midnight-violet flex items-center justify-center mb-6">
-                <Building className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-charcoal-blue">Institutions are evolving</h3>
-              <p className="text-gray-600 leading-relaxed">Academic structures excel at curriculum delivery, but an additional human-led mentoring layer prepares students for the world beyond marks.</p>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* S4: The Approach */}
-      <section className="py-20 bg-slate-50 text-center border-t border-b border-gray-100">
-        <div className="container mx-auto px-4 max-w-3xl">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn}>
-            <div className="inline-block px-3 py-1 rounded-full bg-golden-pollen/20 text-[#734A00] text-xs font-bold uppercase tracking-wider mb-4">
-              Our Core Philosophy
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 font-serif text-charcoal-blue">What Second Innings Does Differently</h2>
-            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-              We do not tell you what career to choose. We do not prescribe ready-made answers. Instead, we listen first, help you understand the story behind your questions, explore realistic possibilities, compare trade-offs, and encourage you to take ownership of your decisions.
+            <p className="text-lg font-medium text-charcoal-blue">
+              But more information doesn't always bring more clarity.
             </p>
-            <Link href="/how-it-works" className="inline-flex items-center text-charcoal-blue font-bold hover:text-midnight-violet transition-colors text-lg group">
-              See How It Works <ArrowRight className="ml-2 w-5 h-5 text-golden-pollen group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* S5: 7-Step Methodology */}
-      <section className="py-24 bg-white">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn} className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-3 font-serif text-charcoal-blue">The 7-Step Mentoring Methodology</h2>
-            <p className="text-gray-500 max-w-2xl mx-auto">A structured human process designed to turn confusion into clarity and clarity into action.</p>
-          </motion.div>
-          
-          <div className="hidden lg:flex justify-between items-start relative mb-16">
-            <div className="absolute top-8 left-6 right-6 h-1 bg-slate-200 -z-0"></div>
-            {[
-              { num: '1', title: 'LISTEN', desc: 'Create safety. Hear the story without rushing to solutions.' },
-              { num: '2', title: 'UNDERSTAND', desc: 'Clarify context, strengths, constraints and assumptions.' },
-              { num: '3', title: 'EXPLORE', desc: 'Open realistic possibilities and questions worth investigating.' },
-              { num: '4', title: 'PERSPECTIVE', desc: 'Help compare fit, trade-offs, consequences and evidence.' },
-              { num: '5', title: 'CONNECT', desc: 'Bridge to relevant people, experiences and resources.' },
-              { num: '6', title: 'ACT', desc: 'Agree on practical, time-bound next steps.' },
-              { num: '7', title: 'REVIEW', desc: 'Follow up on what happened and what changes next.' }
-            ].map((step, idx) => (
-              <div key={idx} className="flex flex-col items-center flex-1 px-2 group relative z-10">
-                <div className="w-16 h-16 rounded-full bg-white border-4 border-slate-200 flex items-center justify-center text-lg font-bold text-charcoal-blue group-hover:border-golden-pollen group-hover:bg-golden-pollen/10 transition-all mb-4 shadow-sm">
-                  {step.num}
-                </div>
-                <h4 className="font-bold text-charcoal-blue mb-1 text-xs tracking-wider uppercase">{step.title}</h4>
-                <p className="text-xs text-gray-500 text-center leading-tight">{step.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="lg:hidden space-y-4 mb-16">
-             {[
-              { num: '1', title: 'LISTEN', desc: 'Create safety. Hear the story without rushing to solutions.' },
-              { num: '2', title: 'UNDERSTAND', desc: 'Clarify context, strengths, constraints and assumptions.' },
-              { num: '3', title: 'EXPLORE', desc: 'Open realistic possibilities and questions worth investigating.' },
-              { num: '4', title: 'PERSPECTIVE', desc: 'Help compare fit, trade-offs, consequences and evidence.' },
-              { num: '5', title: 'CONNECT', desc: 'Bridge to relevant people, experiences and resources.' },
-              { num: '6', title: 'ACT', desc: 'Agree on practical, time-bound next steps.' },
-              { num: '7', title: 'REVIEW', desc: 'Follow up on what happened and what changes next.' }
-            ].map((step, idx) => (
-              <div key={idx} className="flex items-start gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
-                <div className="w-10 h-10 flex-shrink-0 rounded-full bg-golden-pollen/30 border border-golden-pollen flex items-center justify-center font-bold text-charcoal-blue text-sm">
-                  {step.num}
-                </div>
-                <div>
-                   <h4 className="font-bold text-charcoal-blue text-sm uppercase tracking-wide">{step.title}</h4>
-                   <p className="text-sm text-gray-600 mt-0.5">{step.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn} className="bg-gradient-to-r from-charcoal-blue/5 via-tea-green/20 to-golden-pollen/15 border border-tea-green/40 p-6 md:p-8 rounded-2xl text-center shadow-sm">
-             <p className="text-lg md:text-xl font-medium text-charcoal-blue">
-               Every meaningful conversation should lead to one practical action. We call this the <strong className="text-charcoal-blue font-bold underline decoration-golden-pollen decoration-4 underline-offset-4">7-Day Next Step</strong>.
-             </p>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* S6: Who It's For (3 Audience Cards) */}
-      <section className="py-20 bg-slate-50">
-        <div className="container mx-auto px-4 max-w-6xl">
-           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn} className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-serif text-charcoal-blue">Who Is Second Innings For?</h2>
-            <p className="text-gray-500">Tailored perspectives designed for each key stage of growth.</p>
-          </motion.div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn} className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-full hover:border-tea-green transition-all">
-              <div className="w-12 h-12 rounded-xl bg-tea-green/30 text-charcoal-blue flex items-center justify-center mb-5">
-                <GraduationCap className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-charcoal-blue">Students (16–25)</h3>
-              <p className="text-gray-600 mb-6 flex-grow leading-relaxed">Navigating career uncertainty, building confidence, making decisions, seeking exposure, and managing transition from classroom to adult life.</p>
-              <Link href="/for-students" className="text-charcoal-blue font-semibold hover:text-midnight-violet inline-flex items-center mt-auto group">
-                For Students <ArrowUpRight className="ml-1 w-4 h-4 text-golden-pollen group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </Link>
-            </motion.div>
             
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn} className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-full hover:border-golden-pollen transition-all">
-              <div className="w-12 h-12 rounded-xl bg-golden-pollen/25 text-charcoal-blue flex items-center justify-center mb-5">
-                <Users className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-charcoal-blue">Parents</h3>
-              <p className="text-gray-600 mb-6 flex-grow leading-relaxed">Supporting without controlling, understanding new-age careers, improving communication, and balancing expectations with responsibility.</p>
-              <Link href="/for-parents" className="text-charcoal-blue font-semibold hover:text-midnight-violet inline-flex items-center mt-auto group">
-                For Parents <ArrowUpRight className="ml-1 w-4 h-4 text-golden-pollen group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </Link>
-            </motion.div>
+            <div className="p-8 rounded-2xl bg-slate-50 border border-slate-100 space-y-3 my-6">
+              <p className="text-xs uppercase tracking-wider font-semibold text-gray-400 mb-2">Sometimes, the questions are more personal:</p>
+              <ul className="space-y-2 text-base sm:text-lg text-charcoal-blue font-serif italic">
+                <li className="flex items-center gap-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-golden-pollen flex-shrink-0" />
+                  What do I really want?
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-golden-pollen flex-shrink-0" />
+                  What am I actually good at?
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-golden-pollen flex-shrink-0" />
+                  Am I choosing for myself, or following what others expect?
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-golden-pollen flex-shrink-0" />
+                  What possibilities am I not even aware of?
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-golden-pollen flex-shrink-0" />
+                  And what should I do next?
+                </li>
+              </ul>
+            </div>
 
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn} className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-full hover:border-midnight-violet transition-all">
-              <div className="w-12 h-12 rounded-xl bg-midnight-violet/10 text-midnight-violet flex items-center justify-center mb-5">
-                <Building className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-charcoal-blue">Institutions</h3>
-              <p className="text-gray-600 mb-6 flex-grow leading-relaxed">Adding a structured student-development layer, individual & small-group mentoring, campus leadership, and school-to-life transition.</p>
-              <Link href="/for-institutions" className="text-charcoal-blue font-semibold hover:text-midnight-violet inline-flex items-center mt-auto group">
-                For Institutions <ArrowUpRight className="ml-1 w-4 h-4 text-golden-pollen group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </Link>
-            </motion.div>
+            <p className="text-lg leading-relaxed">
+              You don't need to have all the answers. Sometimes, you need a space where you can talk openly, think differently and explore without being judged or told what you should become.
+            </p>
+            <p className="text-lg font-serif font-bold text-charcoal-blue">
+              That's where Second Innings begins. A conversation can bring a new perspective. A new perspective can open wider possibilities.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 3. ABOUT SECOND INNINGS */}
+      <section id="about-second-innings" className="py-20 sm:py-28 bg-slate-50">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="space-y-8">
+            <div>
+              <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">About Second Innings</p>
+              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-charcoal-blue mb-4">
+                A Space for Perspective, Possibilities and Action
+              </h2>
+            </div>
+
+            <div className="prose prose-lg text-gray-700 space-y-5 leading-relaxed">
+              <p>
+                Second Innings is an initiative created to support young people as they navigate the choices, transitions and possibilities that shape their lives beyond the classroom.
+              </p>
+              <p>
+                It is built on the belief that preparing for life requires more than academic achievement or access to information. Young people also benefit from opportunities to understand themselves, broaden their exposure, consider different perspectives and develop the confidence to make choices they can own.
+              </p>
+              <p>
+                Second Innings brings these elements together through individual conversations, meaningful exposure, exploration of opportunities and thoughtful follow-through.
+              </p>
+              <p>
+                It is deliberately different from a conventional counselling, coaching or motivational model. There are no ready-made prescriptions and no attempt to define success for the young person.
+              </p>
+              <p>
+                Instead, the approach is to listen before responding, understand before suggesting, explore before narrowing choices, and encourage action rather than dependence.
+              </p>
+            </div>
+
+            {/* Purpose Callout */}
+            <div className="p-6 sm:p-8 rounded-2xl bg-white border border-gray-200 shadow-sm">
+              <p className="text-xs uppercase tracking-wider text-golden-pollen font-bold mb-2">The Purpose Is Simple</p>
+              <p className="text-xl sm:text-2xl font-serif font-bold text-charcoal-blue">
+                To help young people see more, think more clearly and move forward with greater ownership of their choices.
+              </p>
+            </div>
+
+            {/* Why Second Innings */}
+            <div className="pt-6 border-t border-gray-200 space-y-4">
+              <h3 className="text-2xl font-serif font-bold text-charcoal-blue">
+                Why "Second Innings"?
+              </h3>
+              <p className="text-gray-700 leading-relaxed">
+                After more than three decades across the corporate world, entrepreneurship and higher education, Deepak Sogani chose to dedicate the next phase of his professional life to working with young people.
+              </p>
+              <p className="text-gray-700 leading-relaxed">
+                His experience of working closely with university students reinforced something he had come to value deeply: some of the most meaningful contributions happen through conversations that help a young person gain perspective, discover an opportunity, reconsider a choice or take a meaningful next step.
+              </p>
+              <p className="p-4 rounded-xl bg-tea-green/20 text-charcoal-blue font-medium italic border border-tea-green/40">
+                The first innings was about building his own journey. The Second Innings is about using that experience to contribute to the journeys of young people.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* S7: Student Outcomes */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn} className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-serif text-charcoal-blue">What Students Walk Away With</h2>
-            <p className="text-gray-500">Measurable shifts in personal and professional readiness.</p>
-          </motion.div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-            {[
-              { icon: Search, title: 'Clarity', desc: 'Clearer understanding of the next step', badge: 'bg-tea-green/30' },
-              { icon: ShieldCheck, title: 'Confidence', desc: 'Greater willingness to participate and approach opportunities', badge: 'bg-golden-pollen/25' },
-              { icon: Map, title: 'Exposure', desc: 'Interaction with people and pathways previously unknown', badge: 'bg-midnight-violet/10' },
-              { icon: ArrowRight, title: 'Action', desc: 'Completion of agreed exploration or development actions', badge: 'bg-tea-green/30' },
-              { icon: Lightbulb, title: 'Ownership', desc: 'Increasingly evidence-based decisions made by the student', badge: 'bg-golden-pollen/25' }
-            ].map((outcome, idx) => (
-              <motion.div key={idx} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn} className="text-center p-4">
-                <div className={`w-16 h-16 mx-auto ${outcome.badge} rounded-2xl flex items-center justify-center mb-4 text-charcoal-blue shadow-sm`}>
-                  <outcome.icon className="w-8 h-8" />
+      {/* 4. WHO IT IS FOR (7 SITUATIONS) */}
+      <section className="py-20 sm:py-28 bg-white">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="text-center mb-14">
+            <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">Who It Is For</p>
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-charcoal-blue mb-4">
+              You don't need to have everything figured out.
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Second Innings is primarily for young people navigating important questions, choices and transitions in their lives.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {WHO_IS_IT_FOR.map((item, idx) => {
+              const Icon = item.icon;
+              return (
+                <div 
+                  key={idx}
+                  className="p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-golden-pollen/50 hover:shadow-sm transition-all flex items-start gap-4"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-tea-green/30 text-charcoal-blue flex items-center justify-center flex-shrink-0 mt-1">
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-charcoal-blue mb-1.5">{item.title}</h3>
+                    <p className="text-gray-600 text-sm leading-relaxed">{item.desc}</p>
+                  </div>
                 </div>
-                <h4 className="font-bold text-charcoal-blue mb-1 text-base">{outcome.title}</h4>
-                <p className="text-xs text-gray-500 leading-relaxed">{outcome.desc}</p>
-              </motion.div>
+              );
+            })}
+          </div>
+
+          <div className="text-center mt-12">
+            <p className="text-charcoal-blue font-serif italic text-lg mb-4">
+              You don't need to arrive with an answer. You can begin with the question.
+            </p>
+            <Link
+              href="/book"
+              className="inline-flex items-center bg-golden-pollen text-charcoal-blue px-8 py-3.5 rounded-full font-bold hover:bg-secondary-hover shadow-md transition-all text-sm uppercase tracking-wider"
+            >
+              Start a Conversation <ArrowRight size={16} className="ml-2" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. HOW IT WORKS (5 STEPS) */}
+      <section className="py-20 sm:py-28 bg-slate-50">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="text-center mb-16">
+            <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">How It Works</p>
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-charcoal-blue mb-4">
+              One Conversation Can Be a Beginning
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Second Innings does not begin with a presentation, a questionnaire full of scores or a predetermined solution. It begins with you.
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            {METHODOLOGY_STEPS.map((s) => (
+              <div 
+                key={s.step}
+                className="p-6 sm:p-8 rounded-2xl bg-white border border-gray-100 shadow-sm flex flex-col sm:flex-row items-start gap-6"
+              >
+                <div className="text-3xl sm:text-4xl font-serif font-extrabold text-golden-pollen sm:w-16 flex-shrink-0">
+                  {s.step}
+                </div>
+                <div className="space-y-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <h3 className="text-xl font-bold text-charcoal-blue uppercase tracking-wider">{s.name}</h3>
+                    <span className="text-sm font-serif italic text-gray-500">{s.subtitle}</span>
+                  </div>
+                  <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
+                    {s.description}
+                  </p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* S8: About Deepak Teaser */}
-      <section className="py-20 bg-slate-50">
-        <div className="container mx-auto px-4 max-w-5xl">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn} className="flex flex-col md:flex-row items-center gap-12 bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
-            <div className="w-44 h-44 md:w-56 md:h-56 flex-shrink-0 relative rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-slate-100">
-              <img 
-                src="/deepaksogani.jpeg" 
-                alt="Deepak Sogani - Founder, Second Innings" 
-                className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500" 
-              />
-            </div>
-            <div>
-              <div className="inline-block px-3 py-1 rounded-full bg-tea-green/35 text-charcoal-blue text-xs font-bold uppercase tracking-wider mb-3">
-                Experience Behind the Mentor
+      {/* 6. MEET DEEPAK */}
+      <section className="py-20 sm:py-28 bg-white border-b border-gray-100">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-center">
+            <div className="md:col-span-5 flex justify-center">
+              <div className="relative w-64 h-80 rounded-3xl overflow-hidden shadow-xl border-4 border-white">
+                <Image
+                  src="/deepaksogani.jpeg"
+                  alt="Deepak Sogani, Founder of Second Innings"
+                  fill
+                  className="object-cover"
+                />
               </div>
-              <h2 className="text-3xl font-bold mb-4 font-serif text-charcoal-blue">Deepak Sogani</h2>
-              <p className="text-gray-600 mb-6 text-lg leading-relaxed">
-                35+ years across corporate leadership, entrepreneurship, and higher education, including 5 years leading Student Affairs at JK Lakshmipat University. Now dedicating this experience to mentoring young minds and empowering parents.
+            </div>
+
+            <div className="md:col-span-7 space-y-4">
+              <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">About Deepak</p>
+              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-charcoal-blue">
+                Meet Deepak Sogani
+              </h2>
+              <p className="text-xs uppercase tracking-wider text-golden-pollen font-bold">
+                Founder, Second Innings
               </p>
-              <blockquote className="border-l-4 border-golden-pollen bg-slate-50 pl-4 py-3 italic text-charcoal-blue mb-8 font-serif text-lg rounded-r-xl">
-                "The best years of my life are not behind me. They are the years in which I can help others discover theirs."
+              
+              <div className="prose text-gray-600 space-y-3 leading-relaxed text-sm sm:text-base">
+                <p>
+                  Deepak Sogani brings over 35 years of experience across the corporate world, entrepreneurship and higher education, giving him the opportunity to work with people across different ages, backgrounds and stages of life.
+                </p>
+                <p>
+                  His experience in higher education brought him particularly close to young people: not only through formal responsibilities, but through countless conversations about their aspirations, choices, opportunities, challenges and life beyond the classroom.
+                </p>
+                <p>
+                  Over time, he discovered that what he valued most was not telling young people what to do, but helping them think, bringing a different perspective to the conversation and opening their minds to possibilities they may not have considered.
+                </p>
+              </div>
+
+              <blockquote className="p-4 rounded-xl bg-slate-50 border-l-4 border-golden-pollen italic text-charcoal-blue font-serif text-base mt-4">
+                "I am not here to decide a young person's future. I want to help them understand themselves, see possibilities and make choices they can own."
+                <footer className="text-xs font-sans not-italic text-gray-500 mt-2 font-semibold">
+                  Deepak Sogani
+                </footer>
               </blockquote>
-              <Link href="/about" className="inline-flex items-center bg-charcoal-blue text-white px-6 py-2.5 rounded-full hover:bg-primary-hover transition-colors font-medium shadow-sm">
-                Read Deepak's Full Story <ArrowRight className="ml-2 w-4 h-4 text-golden-pollen" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 7. IN THEIR WORDS: STUDENT VOICES */}
+      <section className="py-20 sm:py-28 bg-slate-50">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="text-center mb-14">
+            <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">In Their Words</p>
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-charcoal-blue mb-4">
+              Student Voices
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto text-sm sm:text-base">
+              Long before Second Innings took shape, young people were already describing the value they found in their interactions with Deepak. These reflections, shared voluntarily by students and alumni on LinkedIn, offer a glimpse of the approach that now informs Second Innings.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {STUDENT_VOICES.map((t, idx) => (
+              <div 
+                key={idx}
+                className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-all"
+              >
+                <div className="space-y-3">
+                  <div className="inline-block px-2.5 py-1 rounded bg-tea-green/25 text-[11px] font-bold text-charcoal-blue uppercase tracking-wider">
+                    {t.category}
+                  </div>
+                  <p className="text-gray-700 italic text-sm leading-relaxed">
+                    "{t.quote}"
+                  </p>
+                </div>
+                <div className="pt-4 mt-4 border-t border-gray-100">
+                  <p className="font-bold text-charcoal-blue text-sm">{t.name}</p>
+                  <p className="text-xs text-gray-500">{t.role}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-center text-xs text-gray-500 mt-8 font-light">
+            These voices come from different experiences, but a common thread runs through them: perspective, confidence, ownership and readiness for life beyond the classroom.
+          </p>
+        </div>
+      </section>
+
+      {/* 8. WHAT SECOND INNINGS IS — AND ISN'T */}
+      <section className="py-20 sm:py-28 bg-white border-b border-gray-100">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="text-center mb-14">
+            <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">Clarity & Expectations</p>
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-charcoal-blue mb-4">
+              What Second Innings Is - And Isn't
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <div className="space-y-3">
+              <h3 className="text-sm uppercase tracking-wider font-bold text-emerald-800 bg-emerald-50 px-4 py-2 rounded-xl text-center">
+                Second Innings IS
+              </h3>
+              {WHAT_IT_IS_AND_ISNT.map((item, idx) => (
+                <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3 text-sm text-gray-800">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                  <span>{item.is}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="text-sm uppercase tracking-wider font-bold text-rose-800 bg-rose-50 px-4 py-2 rounded-xl text-center">
+                Second Innings IS NOT
+              </h3>
+              {WHAT_IT_IS_AND_ISNT.map((item, idx) => (
+                <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3 text-sm text-gray-700">
+                  <XCircle className="w-5 h-5 text-rose-500 flex-shrink-0" />
+                  <span>{item.isNot}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 9. FOR PARENTS */}
+      <section className="py-20 sm:py-28 bg-slate-50">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="p-8 sm:p-12 rounded-3xl bg-white border border-gray-200 shadow-sm space-y-6">
+            <div className="flex items-center gap-2 text-golden-pollen font-bold text-xs uppercase tracking-wider">
+              <HeartHandshake size={18} />
+              <span>For Parents</span>
+            </div>
+
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-charcoal-blue leading-snug">
+              Every parent wants their child to make thoughtful choices and build a meaningful future.
+            </h2>
+
+            <div className="space-y-4 text-gray-700 leading-relaxed text-sm sm:text-base">
+              <p>
+                But as young people grow, they also need opportunities to question, explore and gradually take ownership of their decisions.
+              </p>
+              <p>
+                Second Innings seeks to complement, not replace, the role of parents, teachers, educational institutions or qualified professionals.
+              </p>
+              <p>
+                The objective is not to decide a young person's future for them. It is to provide an additional space for thoughtful conversation, broader perspective and exploration: helping young people become more confident in making choices they understand and own.
+              </p>
+              <p className="text-xs text-gray-500 pt-2">
+                Where appropriate, parents may also become part of the broader conversation while respecting the young person's privacy and independence.
+              </p>
+            </div>
+
+            <div className="pt-2">
+              <Link
+                href="/for-parents"
+                className="inline-flex items-center text-primary font-bold hover:text-secondary transition-colors text-sm"
+              >
+                Know More For Parents <ArrowRight size={14} className="ml-1" />
               </Link>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* S9: Institutional Value */}
-      <section className="py-20 bg-white text-center">
-        <div className="container mx-auto px-4 max-w-3xl">
-           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn}>
-            <h2 className="text-3xl font-bold mb-6 font-serif text-charcoal-blue">Complementing Academic Excellence With Life Readiness</h2>
-            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-              We partner with institutions through a tested 90-day pilot model. We listen first, understand what already exists, identify 2–3 genuine priorities, and demonstrate observable student movement before recommending any larger integration.
-            </p>
-            <Link href="/for-institutions" className="inline-flex items-center border-2 border-charcoal-blue text-charcoal-blue px-8 py-3 rounded-full font-semibold hover:bg-charcoal-blue hover:text-white transition-colors text-lg">
-              Explore Institutional Framework
+      {/* 10. FINAL INVITATION / START A CONVERSATION */}
+      <section className="py-20 sm:py-28 bg-gradient-to-br from-charcoal-blue via-[#263747] to-midnight-violet text-white text-center px-6">
+        <div className="container mx-auto max-w-3xl space-y-6">
+          <p className="text-xs uppercase tracking-widest text-tea-green font-semibold">
+            Your First Step
+          </p>
+          <h2 className="text-3xl sm:text-5xl font-serif font-bold tracking-tight">
+            Your first step doesn't have to be a big one.
+          </h2>
+          <p className="text-lg sm:text-xl text-gray-200 font-light max-w-xl mx-auto">
+            Sometimes, it can simply be a conversation. No commitment, no pressure, just perspective.
+          </p>
+
+          <div className="pt-4">
+            <Link
+              href="/book"
+              className="inline-flex items-center bg-golden-pollen text-charcoal-blue font-bold px-10 py-4 rounded-full hover:bg-secondary-hover shadow-xl hover:shadow-2xl transition-all text-base sm:text-lg uppercase tracking-wider"
+            >
+              Start a Conversation <ArrowRight size={18} className="ml-2" />
             </Link>
-          </motion.div>
-        </div>
-      </section>
+          </div>
 
-      {/* S10: Opportunities Teaser */}
-      <section className="py-20 bg-slate-50 text-center border-t border-b border-gray-100">
-        <div className="container mx-auto px-4 max-w-3xl">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn}>
-            <div className="inline-block px-3 py-1 rounded-full bg-golden-pollen/20 text-[#734A00] text-xs font-bold uppercase tracking-wider mb-3">
-              Opportunity Knowledge Bank
-            </div>
-            <h2 className="text-3xl font-bold mb-4 font-serif text-charcoal-blue">Curated Opportunities That Support Mentoring</h2>
-            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-              Internships, fellowships, scholarships, and courses: curated for student relevance, verified, and mapped to practical next steps.
-            </p>
-             <Link href="/opportunities" className="inline-flex items-center text-charcoal-blue font-bold hover:text-midnight-violet transition-colors text-lg group">
-              Explore Knowledge Bank <ArrowRight className="ml-2 w-5 h-5 text-golden-pollen group-hover:translate-x-1 transition-transform" />
+          <div className="pt-8 flex items-center justify-center gap-2 text-xs text-gray-300">
+            <ShieldCheck size={16} className="text-tea-green" />
+            <Link href="/privacy-boundaries" className="hover:underline">
+              Read our Privacy, Safety & Professional Boundaries
             </Link>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* S11: Final CTA Section */}
-      <section className="py-24 bg-gradient-to-br from-midnight-violet via-[#301c28] to-charcoal-blue text-white text-center relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-golden-pollen/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="container mx-auto px-4 max-w-3xl relative z-10">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn}>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif">Ready to Start?</h2>
-            <p className="text-xl text-gray-200 mb-10 font-light">
-              A conversation is the first step. No commitment, no pressure: just perspective.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link 
-                href="/book" 
-                className="w-full sm:w-auto bg-golden-pollen text-charcoal-blue px-8 py-3.5 rounded-full font-bold hover:bg-secondary-hover transition-all text-lg shadow-xl hover:shadow-2xl"
-              >
-                Start a Conversation
-              </Link>
-              <a 
-                href="https://wa.me/919314072153" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="w-full sm:w-auto bg-white/10 border-2 border-white/40 text-white px-8 py-3.5 rounded-full font-semibold hover:bg-white/20 transition-all text-lg flex items-center justify-center gap-2 backdrop-blur-sm"
-              >
-                <MessageCircle size={20} className="text-tea-green" />
-                Chat on WhatsApp
-              </a>
-            </div>
-          </motion.div>
+          </div>
         </div>
       </section>
     </div>

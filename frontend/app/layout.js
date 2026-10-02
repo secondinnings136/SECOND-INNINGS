@@ -15,11 +15,11 @@ const playfair = Playfair_Display({
 });
 
 export const metadata = {
-  title: 'Second Innings | Mentoring Young Minds',
-  description: 'Second Innings is a mentoring platform for young people aged 16–25. We help you think clearly, see possibilities, and take your next step with confidence.',
+  title: 'Second Innings | Young Minds. New Perspectives. Wider Possibilities.',
+  description: 'Second Innings is a space for young people to talk openly, understand themselves better, explore possibilities and find their own way forward.',
   openGraph: {
-    title: 'Second Innings | Mentoring Young Minds',
-    description: 'A mentoring platform for young people aged 16-25.',
+    title: 'Second Innings | Young Minds. New Perspectives. Wider Possibilities.',
+    description: 'Second Innings is a space for young people to talk openly, understand themselves better, explore possibilities and find their own way forward.',
     url: 'https://secondinnings.com',
     siteName: 'Second Innings',
     locale: 'en_IN',

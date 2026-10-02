@@ -38,7 +38,7 @@ export default function Footer() {
           <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-serif font-bold text-white tracking-tight mb-1">SECOND INNINGS</h2>
-              <p className="text-secondary text-sm font-medium tracking-widest">MENTORING YOUNG MINDS</p>
+              <p className="text-secondary text-sm font-medium tracking-wide">Young Minds. New Perspectives. Wider Possibilities.</p>
             </div>
             
             <form onSubmit={handleSubscribe} className="space-y-3 pt-2">
@@ -76,6 +76,8 @@ export default function Footer() {
               <li><Link href="/" className="text-gray-300 hover:text-white transition-colors">Home</Link></li>
               <li><Link href="/how-it-works" className="text-gray-300 hover:text-white transition-colors">How It Works</Link></li>
               <li><Link href="/about" className="text-gray-300 hover:text-white transition-colors">About Deepak</Link></li>
+              <li><Link href="/for-parents" className="text-gray-300 hover:text-white transition-colors">For Parents</Link></li>
+              <li><Link href="/privacy-boundaries" className="text-gray-300 hover:text-white transition-colors">Privacy & Boundaries</Link></li>
               <li><Link href="/opportunities" className="text-gray-300 hover:text-white transition-colors">Opportunities</Link></li>
               <li><Link href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</Link></li>
             </ul>

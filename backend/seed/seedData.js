@@ -109,37 +109,55 @@ const opportunities = [
   }
 ];
 
+// Testimonials from LinkedIn reflections in Second_Innings_Website_Copy_for_Aman.docx
 const testimonials = [
   {
-    name: "Rahul S.",
-    role: "Student, IIT Delhi",
-    quote: "Second Innings helped me discover my true passion and guided me through the difficult choices of my career.",
+    name: "Priya Kaushik",
+    role: "Project Manager | Business Analyst",
+    quote: "You never just prepared students for university, you prepared us for life. You taught us to take ownership, stay disciplined, think independently, stand by our decisions, and never compromise on our values.",
     isApproved: true,
     isFeatured: true,
     order: 1
   },
   {
-    name: "Priya M.",
-    role: "Parent",
-    quote: "The mentorship provided by Deepak Sir was invaluable for my daughter's overall development and confidence.",
+    name: "Bismanpreet Singh",
+    role: "Startup Ecosystem Professional | Former Student Council President",
+    quote: "You were the person who saw potential in me before I did. The confidence to take on opportunities, make difficult decisions, and lead people is something I owe to you.",
     isApproved: true,
     isFeatured: true,
     order: 2
   },
   {
-    name: "Anil K.",
-    role: "Young Professional",
-    quote: "I found the right fellowship through Second Innings, which completely changed my career trajectory.",
+    name: "Himangi Chaturvedi",
+    role: "Associate Project Manager",
+    quote: "Whenever I found myself unsure of the next step, your perspective helped me see possibilities I couldn't see on my own. Every student deserves to have a mentor like you.",
     isApproved: true,
     isFeatured: true,
     order: 3
   },
   {
-    name: "Sunita R.",
-    role: "School Principal",
-    quote: "The institutional programs run by Second Innings have greatly benefited our senior students.",
+    name: "Omprakash Kumawat",
+    role: "Software Engineer",
+    quote: "What I value most is that you never simply gave answers - you helped me learn how to find them myself.",
     isApproved: true,
+    isFeatured: true,
     order: 4
+  },
+  {
+    name: "Jia Soni",
+    role: "HR Manager | Coaching & Mentoring",
+    quote: "The professional world has made us realize exactly why you pushed us so hard. You didn't just teach us, you built our character and prepared us for reality.",
+    isApproved: true,
+    isFeatured: true,
+    order: 5
+  },
+  {
+    name: "Diya Garg",
+    role: "Data Science Student",
+    quote: "You've been more than a mentor - you've been a catalyst. Every conversation with you left me feeling clearer, stronger, and more capable.",
+    isApproved: true,
+    isFeatured: true,
+    order: 6
   }
 ];
 
@@ -186,7 +204,7 @@ const seedData = async () => {
     await Testimonial.insertMany(testimonials);
     await Resource.insertMany(resources);
 
-    console.log('Data Imported!');
+    console.log('Data Imported Successfully with Authentic LinkedIn Testimonials!');
     process.exit();
   } catch (error) {
     console.error(`Error with data import: ${error}`);

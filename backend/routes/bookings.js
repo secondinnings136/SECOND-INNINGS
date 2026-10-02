@@ -2,14 +2,18 @@ const express = require('express');
 const router = express.Router();
 const Booking = require('../models/Booking');
 
-// POST /api/bookings - Create booking
+// POST /api/bookings - Create booking / start conversation
 router.post('/', async (req, res, next) => {
   try {
-    const { name, phone, userType } = req.body;
-    if (!name || !phone || !userType) {
-      return res.status(400).json({ success: false, error: 'Name, phone, and userType are required.' });
+    const { name, phone } = req.body;
+    if (!name || !phone) {
+      return res.status(400).json({ success: false, error: 'Name and mobile number are required.' });
     }
-    const booking = await Booking.create(req.body);
+    const bookingData = {
+      ...req.body,
+      userType: req.body.userType || 'student',
+    };
+    const booking = await Booking.create(bookingData);
     res.status(201).json({ success: true, data: booking });
   } catch (error) {
     next(error);
@@ -47,10 +51,9 @@ router.get('/:id', async (req, res, next) => {
 // PATCH /api/bookings/:id - Update booking
 router.patch('/:id', async (req, res, next) => {
   try {
-    const { status, notes, followUpDate, actionAgreed, actionStatus, feedback } = req.body;
     const booking = await Booking.findByIdAndUpdate(
       req.params.id,
-      { status, notes, followUpDate, actionAgreed, actionStatus, feedback },
+      req.body,
       { new: true, runValidators: true }
     );
     if (!booking) {

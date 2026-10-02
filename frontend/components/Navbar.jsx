@@ -40,8 +40,8 @@ export default function Navbar() {
         <div className="flex items-center justify-between">
           <Link href="/" className="flex flex-col">
             <span className="text-2xl font-serif font-bold text-primary tracking-tight">SECOND INNINGS</span>
-            <span className="hidden md:block text-xs font-medium text-primary/70 tracking-widest mt-1">
-              MENTORING YOUNG MINDS
+            <span className="hidden md:block text-xs font-medium text-primary/70 tracking-wider mt-1">
+              Young Minds. New Perspectives. Wider Possibilities.
             </span>
           </Link>
 
