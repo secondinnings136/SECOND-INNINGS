@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --tea-green: #BDD9BF;
+  --charcoal-blue: #2E4052;
+  --golden-pollen: #FFC857;
+  --white: #FFFFFF;
+  --midnight-violet: #412234;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply text-charcoal-blue bg-white antialiased font-sans;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif text-charcoal-blue;
+  }
+}
+
+@layer components {
+  /* High-contrast brand buttons */
+  .btn-primary {
+    @apply bg-golden-pollen text-charcoal-blue font-semibold px-6 py-3 rounded-full shadow-md hover:bg-secondary-hover hover:shadow-lg transition-all duration-200 inline-flex items-center justify-center gap-2;
+  }
+  
+  .btn-outline {
+    @apply border-2 border-charcoal-blue text-charcoal-blue font-semibold px-6 py-3 rounded-full hover:bg-charcoal-blue hover:text-white transition-all duration-200 inline-flex items-center justify-center gap-2;
+  }
+
+  .btn-violet {
+    @apply bg-midnight-violet text-white font-semibold px-6 py-3 rounded-full shadow-md hover:bg-violet-hover hover:shadow-lg transition-all duration-200 inline-flex items-center justify-center gap-2;
+  }
+
+  /* Color-coded tags & badges */
+  .badge-tea {
+    @apply bg-tea-green/35 text-charcoal-blue border border-tea-green font-medium px-3 py-1 rounded-full text-xs;
+  }
+
+  .badge-golden {
+    @apply bg-golden-pollen/25 text-[#734A00] border border-golden-pollen/50 font-medium px-3 py-1 rounded-full text-xs;
+  }
+
+  .badge-violet {
+    @apply bg-midnight-violet/15 text-midnight-violet border border-midnight-violet/30 font-medium px-3 py-1 rounded-full text-xs;
+  }
+
+  .badge-blue {
+    @apply bg-charcoal-blue/10 text-charcoal-blue border border-charcoal-blue/20 font-medium px-3 py-1 rounded-full text-xs;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f7f9f8; 
+}
+::-webkit-scrollbar-thumb {
+  background: #BDD9BF; 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2E4052; 
+}
