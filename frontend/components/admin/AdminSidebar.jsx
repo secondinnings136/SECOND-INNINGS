@@ -14,7 +14,8 @@ import {
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  AlertCircle
 } from 'lucide-react';
 import { useState } from 'react';
 import { removeToken } from '../../lib/adminApi';
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
   { href: '/admin/bookings', label: 'Bookings', icon: Calendar },
   { href: '/admin/contacts', label: 'Contacts', icon: Mail },
   { href: '/admin/institutions', label: 'Institutions', icon: Building2 },
+  { href: '/admin/support', label: 'Support & Bugs', icon: AlertCircle },
   { href: '/admin/opportunities', label: 'Opportunities', icon: Briefcase },
   { href: '/admin/resources', label: 'Resources', icon: FileText },
   { href: '/admin/testimonials', label: 'Testimonials', icon: MessageSquareQuote },

@@ -11,6 +11,7 @@ const Opportunity = require('../models/Opportunity');
 const Resource = require('../models/Resource');
 const Testimonial = require('../models/Testimonial');
 const Newsletter = require('../models/Newsletter');
+const SupportTicket = require('../models/SupportTicket');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -86,7 +87,10 @@ router.get('/dashboard', protect, async (req, res) => {
       newsletterActive,
       recentBookings,
       recentContacts,
-      recentInstitutions
+      recentInstitutions,
+      supportTotal,
+      supportOpen,
+      recentSupport
     ] = await Promise.all([
       Booking.countDocuments(),
       Booking.countDocuments({ status: 'pending' }),
@@ -104,7 +108,10 @@ router.get('/dashboard', protect, async (req, res) => {
       Newsletter.countDocuments({ isActive: true }),
       Booking.find().sort({ createdAt: -1 }).limit(5),
       Contact.find().sort({ createdAt: -1 }).limit(5),
-      InstitutionalEnquiry.find().sort({ createdAt: -1 }).limit(5)
+      InstitutionalEnquiry.find().sort({ createdAt: -1 }).limit(5),
+      SupportTicket.countDocuments(),
+      SupportTicket.countDocuments({ status: 'open' }),
+      SupportTicket.find().sort({ createdAt: -1 }).limit(5)
     ]);
 
     res.json({
@@ -117,6 +124,8 @@ router.get('/dashboard', protect, async (req, res) => {
         newContacts: contactsNew,
         readContacts: contactsRead,
         repliedContacts: contactsReplied,
+        totalSupport: supportTotal,
+        openSupport: supportOpen,
         institutionalEnquiries: institutionsTotal,
         newInstitutions: institutionsNew,
         activeOpportunities: opportunitiesActive,
@@ -125,6 +134,7 @@ router.get('/dashboard', protect, async (req, res) => {
         newsletterSubscribers: newsletterActive,
         bookings: { total: bookingsTotal, pending: bookingsPending, confirmed: bookingsConfirmed, completed: bookingsCompleted },
         contacts: { total: contactsTotal, new: contactsNew, read: contactsRead, replied: contactsReplied },
+        support: { total: supportTotal, open: supportOpen },
         institutions: { total: institutionsTotal, new: institutionsNew },
         opportunities: { active: opportunitiesActive },
         resources: { published: resourcesPublished },
@@ -134,7 +144,8 @@ router.get('/dashboard', protect, async (req, res) => {
       recent: {
         bookings: recentBookings,
         contacts: recentContacts,
-        institutions: recentInstitutions
+        institutions: recentInstitutions,
+        support: recentSupport
       }
     });
   } catch (error) {

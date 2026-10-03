@@ -85,4 +85,16 @@ export const getNewsletters = async () => {
   return Array.isArray(res) ? res : (res.data || res.subscribers || []);
 };
 
+// Website Support & Issue Tickets
+export const getSupportTickets = async (params='') => {
+  const res = await adminFetch(`/support?${params}`);
+  return Array.isArray(res) ? res : (res.data || res.tickets || []);
+};
+export const getSupportTicket = async (id) => {
+  const res = await adminFetch(`/support/${id}`);
+  return res.data || res;
+};
+export const updateSupportTicket = (id, data) => adminFetch(`/support/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+export const deleteSupportTicket = (id) => adminFetch(`/support/${id}`, { method: 'DELETE' });
+
 

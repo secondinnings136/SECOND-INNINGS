@@ -48,6 +48,7 @@ app.use('/api/opportunities', require('./routes/opportunities'));
 app.use('/api/resources', require('./routes/resources'));
 app.use('/api/testimonials', require('./routes/testimonials'));
 app.use('/api/newsletter', require('./routes/newsletter'));
+app.use('/api/support', require('./routes/support'));
 app.use('/api/admin', require('./routes/admin'));
 
 // Error Handler Middleware

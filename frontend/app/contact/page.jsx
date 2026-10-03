@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import Button from '../../components/ui/Button';
 import Arrow from '../../components/ui/Arrow';
 import PageHero from '../../components/ui/PageHero';
@@ -96,9 +97,9 @@ export default function Contact() {
               <a href="mailto:deepak@second-innings.in" className="font-serif text-[1.25rem] text-ink hover:text-signal transition-colors block leading-snug">
                 deepak@second-innings.in
               </a>
-              <a href="mailto:connect@second-innings.in" className="text-xs text-muted mt-2 block hover:text-ink">
-                Support: connect@second-innings.in
-              </a>
+              <Link href="/support" className="text-xs text-coral mt-2 block hover:underline font-mono">
+                Website Issues &amp; Support →
+              </Link>
             </div>
           </div>
 

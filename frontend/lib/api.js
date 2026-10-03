@@ -75,3 +75,10 @@ export async function subscribeNewsletter(data) {
   });
 }
 
+export async function submitSupportTicket(data) {
+  return fetchAPI('/support', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+

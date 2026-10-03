@@ -24,9 +24,12 @@ const columns = [
     ],
   },
   {
-    title: 'Policies',
+    title: 'Policies & Support',
     links: [
       { name: 'Privacy Policy (DPDP)', href: '/privacy-policy' },
+      { name: 'Terms & Conditions', href: '/terms-and-conditions' },
+      { name: 'Refund Policy', href: '/refund-policy' },
+      { name: 'Website Support & Helpdesk', href: '/support' },
       { name: 'Mentoring Boundaries', href: '/privacy-boundaries' },
     ],
   },
@@ -75,12 +78,12 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="mailto:connect@second-innings.in" className="group flex flex-col">
-                  <span className="text-muted text-[0.8125rem]">General</span>
+                <Link href="/support" className="group flex flex-col">
+                  <span className="text-muted text-[0.8125rem]">Website Issues &amp; Support</span>
                   <span className="text-ink underline decoration-ink/20 underline-offset-4 group-hover:decoration-signal">
-                    connect@second-innings.in
+                    Helpdesk &amp; Bug Reporting →
                   </span>
-                </a>
+                </Link>
               </li>
               <li className="flex flex-wrap gap-x-6 gap-y-2 pt-1">
                 <a href="https://wa.me/917737220724" target="_blank" rel="noopener noreferrer" className="text-ink hover:text-signal transition-colors">

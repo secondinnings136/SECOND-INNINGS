@@ -196,7 +196,7 @@ export default function PrivacyPolicyPage() {
               <div className="text-xs sm:text-sm text-ink-2 font-mono space-y-1.5 pt-2">
                 <p><strong>Officer:</strong> Deepak Sogani</p>
                 <p><strong>Designation:</strong> Founder &amp; Data Fiduciary, Second Innings</p>
-                <p><strong>Email:</strong> <a href="mailto:deepak@second-innings.in" className="underline hover:text-signal">deepak@second-innings.in</a> (Support: <a href="mailto:connect@second-innings.in" className="underline hover:text-signal">connect@second-innings.in</a>)</p>
+                <p><strong>Email:</strong> <a href="mailto:deepak@second-innings.in" className="underline hover:text-signal">deepak@second-innings.in</a></p>
                 <p><strong>Location:</strong> Jaipur, Rajasthan, India</p>
               </div>
             </section>
