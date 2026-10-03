@@ -54,7 +54,7 @@ export default function Contact() {
 
     try {
       await submitInstitutionalEnquiry(instForm);
-      setStatus({ type: 'success', message: 'Institutional enquiry submitted successfully. Deepak Sir will reach out for a discovery conversation.' });
+      setStatus({ type: 'success', message: 'Institutional enquiry submitted successfully. Mr. Deepak Sogani will reach out for a discovery conversation.' });
       setInstForm({
         institutionName: '', institutionType: 'School', contactPerson: '',
         designation: '', email: '', phone: '', city: '', state: '',

@@ -208,7 +208,7 @@ export default function StudentHero() {
                   href="/book"
                   className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-ink hover:text-coral transition-colors shrink-0"
                 >
-                  Discuss this with Deepak Sir
+                  Discuss this with Mr. Deepak Sogani
                   <Arrow className="h-3 w-3" />
                 </Link>
               </div>

@@ -118,7 +118,7 @@ export default function HowItWorks() {
           <Reveal className="mt-16 rounded-[1.75rem] border border-line bg-paper p-8 md:p-12 text-center max-w-3xl mx-auto">
             <p className="meta text-signal mb-4">The benchmark for every conversation</p>
             <p className="font-serif italic text-[clamp(1.5rem,2.4vw,2.125rem)] text-ink leading-snug">
-              &ldquo;After speaking with Deepak Sir, I understand myself better and I know what I should do next.&rdquo;
+              &ldquo;After speaking with Mr. Deepak Sogani, I understand myself better and I know what I should do next.&rdquo;
             </p>
           </Reveal>
         </div>

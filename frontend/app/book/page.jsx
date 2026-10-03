@@ -179,7 +179,7 @@ export default function Book() {
                 </p>
                 <div className="pt-4">
                   <Button
-                    href="https://wa.me/917737220724?text=Hi%20Deepak%20Sir,%20I%20just%20submitted%20a%20conversation%20enquiry%20on%20Second%20Innings."
+                    href="https://wa.me/917737220724?text=Hi%20Mr.%20Deepak%20Sogani,%20I%20just%20submitted%20a%20conversation%20enquiry%20on%20Second%20Innings."
                     arrow="up-right"
                   >
                     Message on WhatsApp
