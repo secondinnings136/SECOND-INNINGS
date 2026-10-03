@@ -17,7 +17,8 @@ import {
   ArrowRight,
   PlusCircle,
   CheckCircle,
-  Sparkles
+  Sparkles,
+  ShieldCheck
 } from 'lucide-react';
 import { getDashboard, getAdminPaymentSettings } from '../../lib/adminApi';
 import StatsCard from '../../components/admin/StatsCard';
