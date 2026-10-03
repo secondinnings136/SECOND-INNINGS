@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EASE } from './ui/motion';
 import Arrow from './ui/Arrow';
+import Logo from './Logo';
 
 const navLinks = [
   { name: 'For Students', path: '/for-students' },
@@ -48,11 +49,8 @@ export default function Navbar() {
               : 'border-transparent bg-transparent'
           }`}
         >
-          <Link href="/" className="flex items-baseline gap-2 shrink-0" aria-label="Second Innings home">
-            <span className="font-serif text-[1.375rem] leading-none tracking-[-0.01em] text-ink">
-              Second Innings
-            </span>
-            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-signal translate-y-[-2px]" />
+          <Link href="/" className="shrink-0" aria-label="Second Innings home">
+            <Logo size="sm" showTagline={false} />
           </Link>
 
           <nav className="hidden xl:flex items-center gap-1" aria-label="Primary">

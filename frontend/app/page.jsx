@@ -7,6 +7,8 @@ import SectionHead from '../components/ui/SectionHead';
 import ScalePortrait from '../components/ui/ScalePortrait';
 import { Reveal, RevealGroup, RevealItem } from '../components/ui/Reveal';
 import StepStack from '../components/home/StepStack';
+import StudentOutcomesGrid from '../components/home/StudentOutcomesGrid';
+import StudentHero from '../components/home/StudentHero';
 
 const PERSONAL_QUESTIONS = [
   'What do I really want?',
@@ -55,49 +57,8 @@ const WHAT_IT_IS_AND_ISNT = [
 export default function Home() {
   return (
     <div className="w-full">
-      {/* 1. HERO: artistic asymmetry, inline portrait pill */}
-      <section className="page-x relative pt-36 md:pt-48 pb-20 md:pb-28">
-        <RevealGroup>
-          <RevealItem className="mb-10 flex flex-wrap items-center gap-x-6 gap-y-2">
-            <span className="meta text-ink">Young Minds. New Perspectives. Wider Possibilities.</span>
-            <span aria-hidden="true" className="hidden h-px w-8 bg-line sm:block" />
-            <span className="meta">Jaipur, India</span>
-            <span aria-hidden="true" className="hidden h-px w-8 bg-line sm:block" />
-            <span className="meta">Ages 16 to 25</span>
-          </RevealItem>
-
-          <RevealItem
-            as="h1"
-            className="max-w-[78rem] font-serif text-[clamp(2.75rem,6.2vw,6.25rem)] leading-[0.95] tracking-[-0.025em] text-ink"
-          >
-            Sometimes, you don&apos;t need another answer.{' '}
-            <span className="relative mx-1 inline-block h-[0.78em] w-[1.7em] translate-y-[0.08em] overflow-hidden rounded-full align-baseline bg-paper-3">
-              <Image
-                src="/deepaksogani.jpeg"
-                alt=""
-                fill
-                priority
-                sizes="200px"
-                className="object-cover object-[50%_25%] grayscale"
-              />
-              <span aria-hidden="true" className="halftone absolute inset-0 opacity-30" />
-            </span>{' '}
-            You need the <em className="italic text-signal">right conversation.</em>
-          </RevealItem>
-        </RevealGroup>
-
-        <div className="mt-14 grid grid-cols-1 gap-10 md:mt-20 md:grid-cols-12">
-          <Reveal className="md:col-span-5 md:col-start-7" delay={0.2}>
-            <p className="lede text-[1.1875rem]">
-              Second Innings is a space for young people to talk openly, understand themselves better, explore possibilities and find their own way forward.
-            </p>
-            <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-4">
-              <Button href="/book">Start a Conversation</Button>
-              <Button href="#about-second-innings" variant="link" arrow="down">Explore Second Innings</Button>
-            </div>
-          </Reveal>
-        </div>
-      </section>
+      {/* 1. HERO: Student-centric sunrise canvas with animated Ensō & interactive crossroads */}
+      <StudentHero />
 
       {/* 2. HOOK: scrubbed paragraph + personal questions */}
       <section className="border-t border-line">
@@ -215,26 +176,39 @@ export default function Home() {
           </div>
 
           <RevealGroup className="hairline-grid mt-16 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-            {WHO_IS_IT_FOR.map((item, i) => (
-              <RevealItem
-                key={item.title}
-                className="group flex min-h-[17rem] flex-col justify-between p-7 transition-colors duration-500 ease-editorial hover:bg-paper-2"
-              >
-                <span className="meta">{String(i + 1).padStart(2, '0')}</span>
-                <div>
-                  <h3 className="font-serif text-[1.625rem] leading-[1.05] tracking-[-0.01em] text-ink">{item.title}</h3>
-                  <p className="mt-3 text-[0.9375rem] leading-[1.55] text-muted">{item.desc}</p>
-                </div>
-              </RevealItem>
-            ))}
+            {WHO_IS_IT_FOR.map((item, i) => {
+              const accents = [
+                'hover:bg-sun-soft/50 group-hover:text-sun',
+                'hover:bg-coral-soft/50 group-hover:text-coral',
+                'hover:bg-sprout-soft/50 group-hover:text-sprout',
+                'hover:bg-sky-soft/50 group-hover:text-sky',
+                'hover:bg-sun-soft/50 group-hover:text-sun',
+                'hover:bg-coral-soft/50 group-hover:text-coral',
+                'hover:bg-sprout-soft/50 group-hover:text-sprout',
+              ];
+              const accent = accents[i % accents.length];
+              const [hoverBg, hoverText] = accent.split(' ');
+              return (
+                <RevealItem
+                  key={item.title}
+                  className={`group flex min-h-[17rem] flex-col justify-between p-7 transition-colors duration-500 ease-editorial ${hoverBg}`}
+                >
+                  <span className={`meta transition-colors duration-300 ${hoverText}`}>{String(i + 1).padStart(2, '0')}</span>
+                  <div>
+                    <h3 className="font-serif text-[1.625rem] leading-[1.05] tracking-[-0.01em] text-ink">{item.title}</h3>
+                    <p className="mt-3 text-[0.9375rem] leading-[1.55] text-muted">{item.desc}</p>
+                  </div>
+                </RevealItem>
+              );
+            })}
             <RevealItem className="!bg-ink">
               <Link href="/book" className="group flex h-full min-h-[17rem] flex-col justify-between p-7 text-paper">
-                <span className="meta text-paper/60">Begin here</span>
+                <span className="meta text-sun">Begin here</span>
                 <div>
                   <p className="font-serif italic text-[1.625rem] leading-[1.1]">
                     You don&apos;t need to arrive with an answer. You can begin with the question.
                   </p>
-                  <span className="mt-6 inline-flex items-center gap-2 text-[0.9375rem] font-medium">
+                  <span className="mt-6 inline-flex items-center gap-2 text-[0.9375rem] font-medium text-paper group-hover:text-sun transition-colors">
                     Start a Conversation
                     <Arrow className="h-3.5 w-3.5 transition-transform duration-500 ease-editorial group-hover:translate-x-1" />
                   </span>
@@ -262,6 +236,27 @@ export default function Home() {
           <Reveal className="mt-10">
             <Button href="/how-it-works" variant="link">See the full approach</Button>
           </Reveal>
+        </div>
+      </section>
+
+      {/* 5.5: 5 STUDENT OUTCOMES TRANSFORMATION GRID */}
+      <section className="border-t border-line bg-paper">
+        <div className="page-x py-24 md:py-36">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:items-end mb-14">
+            <SectionHead
+              className="md:col-span-8"
+              meta="Observable growth & transformation"
+              title="What students walk away with"
+              lede="Five pillars of real movement, ownership, and clarity that develop through sustained, thoughtful conversations."
+            />
+            <Reveal className="md:col-span-4 flex md:justify-end">
+              <Button href="/for-students" variant="link" arrow="up-right">
+                Explore student pathways
+              </Button>
+            </Reveal>
+          </div>
+
+          <StudentOutcomesGrid />
         </div>
       </section>
 
@@ -332,7 +327,7 @@ export default function Home() {
                     <div className="mt-3 flex items-center justify-between text-[0.75rem] text-muted">
                       <span>Former Student</span>
                       <a
-                        href="https://www.linkedin.com/in/deepaksogani"
+                        href="https://www.linkedin.com/in/deepak-sogani/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="hover:text-ink transition-colors"
@@ -350,7 +345,7 @@ export default function Home() {
             <p className="max-w-[60ch] text-[0.9375rem] text-muted">
               These voices come from different experiences, but a common thread runs through them: perspective, confidence, ownership and readiness for life beyond the classroom.
             </p>
-            <Button href="https://www.linkedin.com/in/deepaksogani" variant="link" arrow="up-right">
+            <Button href="https://www.linkedin.com/in/deepak-sogani/" variant="link" arrow="up-right">
               More reflections on LinkedIn
             </Button>
           </Reveal>

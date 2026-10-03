@@ -5,6 +5,7 @@ import Arrow from '../../components/ui/Arrow';
 import PageHero from '../../components/ui/PageHero';
 import SectionHead from '../../components/ui/SectionHead';
 import { Reveal, RevealGroup, RevealItem } from '../../components/ui/Reveal';
+import StudentOutcomesGrid from '../../components/home/StudentOutcomesGrid';
 
 export const metadata = {
   title: 'For Students | Second Innings',
@@ -123,21 +124,7 @@ export default function ForStudentsPage() {
             lede="Five pillars that develop through sustained, thoughtful conversations."
           />
 
-          <div className="mt-16 border-t border-ink">
-            <RevealGroup>
-              {outcomes.map((item, idx) => (
-                <RevealItem key={item.title} className="grid grid-cols-1 md:grid-cols-12 border-b border-line py-7 md:py-8 items-baseline gap-4">
-                  <div className="md:col-span-2 flex items-baseline gap-4">
-                    <span className="meta">{String(idx + 1).padStart(2, '0')}</span>
-                    <h3 className="font-serif text-[1.75rem] text-ink">{item.title}</h3>
-                  </div>
-                  <div className="md:col-span-10">
-                    <p className="text-[1.0625rem] text-muted leading-relaxed">{item.desc}</p>
-                  </div>
-                </RevealItem>
-              ))}
-            </RevealGroup>
-          </div>
+          <StudentOutcomesGrid className="mt-16" />
         </div>
       </section>
 

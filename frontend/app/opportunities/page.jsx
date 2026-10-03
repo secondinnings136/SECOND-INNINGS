@@ -283,11 +283,26 @@ export default function OpportunitiesPage() {
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <span className="meta text-signal">
-                      {opp.category}
-                    </span>
+                    {(() => {
+                      const catColors = {
+                        internships: 'bg-sun-soft text-sun border-sun-border',
+                        fellowships: 'bg-coral-soft text-coral border-coral-border',
+                        scholarships: 'bg-sun-soft text-sun border-sun-border',
+                        'higher-education': 'bg-sky-soft text-sky border-sky-border',
+                        'social-impact': 'bg-sprout-soft text-sprout border-sprout-border',
+                        entrepreneurship: 'bg-coral-soft text-coral border-coral-border',
+                        courses: 'bg-sky-soft text-sky border-sky-border',
+                        'professional-exposure': 'bg-sprout-soft text-sprout border-sprout-border',
+                      };
+                      const colorClass = catColors[opp.category] || 'bg-paper-3 text-ink border-line';
+                      return (
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.6875rem] font-mono uppercase tracking-wider border ${colorClass}`}>
+                          {opp.category}
+                        </span>
+                      );
+                    })()}
                     {opp.costFunding && (
-                      <span className="meta">
+                      <span className="meta text-muted">
                         {opp.costFunding}
                       </span>
                     )}

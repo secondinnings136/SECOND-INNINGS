@@ -196,7 +196,7 @@ export default function AboutPage() {
               lede="Reflections shared by students and alumni who worked closely with Deepak."
             />
             <Reveal className="md:col-span-5 text-left md:text-right">
-              <Button href="https://www.linkedin.com/in/deepaksogani" variant="link" arrow="up-right">
+              <Button href="https://www.linkedin.com/in/deepak-sogani/" variant="link" arrow="up-right">
                 View on LinkedIn
               </Button>
             </Reveal>
@@ -217,7 +217,7 @@ export default function AboutPage() {
                   <div className="flex items-center justify-between text-[0.75rem] text-muted mt-3">
                     <span>Former Student</span>
                     <a
-                      href="https://www.linkedin.com/in/deepaksogani"
+                      href="https://www.linkedin.com/in/deepak-sogani/"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="hover:text-ink transition-colors"

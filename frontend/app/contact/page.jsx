@@ -125,7 +125,7 @@ export default function Contact() {
           <div className="p-8 flex flex-col justify-between min-h-[14rem]">
             <span className="meta">LinkedIn</span>
             <div>
-              <a href="https://www.linkedin.com/in/deepaksogani" target="_blank" rel="noopener noreferrer" className="font-serif text-[1.25rem] text-ink hover:text-signal transition-colors block">
+              <a href="https://www.linkedin.com/in/deepak-sogani/" target="_blank" rel="noopener noreferrer" className="font-serif text-[1.25rem] text-ink hover:text-signal transition-colors block">
                 Deepak Sogani ↗
               </a>
               <p className="text-xs text-muted mt-2">Professional reflections &amp; alumni voices</p>

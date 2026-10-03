@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Arrow from './ui/Arrow';
+import Logo from './Logo';
 
 const columns = [
   {
@@ -45,7 +46,9 @@ export default function Footer() {
         {/* Invitation row */}
         <div className="grid grid-cols-1 gap-10 md:grid-cols-12 md:gap-6">
           <div className="md:col-span-7">
-            <p className="meta mb-6">Jaipur, Rajasthan, India</p>
+            <div className="mb-8">
+              <Logo size="md" showTagline={true} />
+            </div>
             <p className="max-w-[18ch] font-serif text-[clamp(2.25rem,4.4vw,4rem)] leading-[1] tracking-[-0.02em] text-ink">
               Your first step can simply be a conversation.
             </p>
@@ -86,7 +89,7 @@ export default function Footer() {
                 <a href="tel:+917737220724" className="text-ink hover:text-signal transition-colors font-mono text-[0.8125rem] tracking-tight">
                   +91 77372 20724
                 </a>
-                <a href="https://www.linkedin.com/in/deepaksogani" target="_blank" rel="noopener noreferrer" className="text-ink hover:text-signal transition-colors">
+                <a href="https://www.linkedin.com/in/deepak-sogani/" target="_blank" rel="noopener noreferrer" className="text-ink hover:text-signal transition-colors">
                   LinkedIn ↗
                 </a>
               </li>

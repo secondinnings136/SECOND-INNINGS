@@ -25,6 +25,12 @@ module.exports = {
         line: 'rgba(28, 27, 24, 0.12)',
         signal: { DEFAULT: signal, soft: signalSoft, deep: '#8E3522' },
 
+        // Student Vitality & Life palette (sun, sprout, sky, coral)
+        sun: { DEFAULT: '#D97724', soft: '#FDF6ED', border: '#F4CA98', deep: '#B85E14' },
+        sprout: { DEFAULT: '#38784E', soft: '#EEF6F0', border: '#BFE0C8', deep: '#265636' },
+        sky: { DEFAULT: '#2B6A8F', soft: '#EAF3F8', border: '#B5D8EB', deep: '#1B4D6B' },
+        coral: { DEFAULT: '#C85236', soft: '#FBF0EC', border: '#F2C2B5', deep: '#9B3921' },
+
         // Legacy names remapped so untouched screens (admin) adopt the new palette.
         'charcoal-blue': ink,
         'golden-pollen': signal,
