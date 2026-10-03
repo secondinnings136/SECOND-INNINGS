@@ -162,6 +162,16 @@ export const metadata = {
       'msvalidate.01': process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION || '08CBBEF04FF2915E3D43FC9C8CD43BC6',
     },
   },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/icon', sizes: '32x32', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: [
+      { url: '/apple-icon', sizes: '180x180', type: 'image/png' },
+    ],
+  },
 };
 
 const jsonLd = {
