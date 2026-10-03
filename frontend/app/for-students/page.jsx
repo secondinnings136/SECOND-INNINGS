@@ -8,8 +8,32 @@ import { Reveal, RevealGroup, RevealItem } from '../../components/ui/Reveal';
 import StudentOutcomesGrid from '../../components/home/StudentOutcomesGrid';
 
 export const metadata = {
-  title: 'For Students | Second Innings',
-  description: 'Career mentoring, confidence building, and guidance for young people aged 16 to 25 navigating their next steps.',
+  title: 'Mentoring for Students (Ages 16–25) | Career Clarity & Self-Belief — Second Innings',
+  description:
+    'Feeling stuck in career choices or college transitions? Second Innings provides independent, non-judgmental one-on-one mentoring for young people aged 16–25 to think clearly and decide with confidence.',
+  keywords: [
+    'career confusion after 12th',
+    'what to do after graduation if confused',
+    'career guidance for college students',
+    'feeling stuck in college career',
+    'how to choose the right career path',
+    'life guidance for 20 year olds',
+    'how to build confidence for interviews',
+    'finding direction in early 20s',
+    'peer pressure and career choices',
+    'how to talk to parents about career choice',
+    'youth mentoring platform India',
+    'one on one student mentoring',
+  ],
+  alternates: {
+    canonical: 'https://second-innings.in/for-students',
+  },
+  openGraph: {
+    title: 'Mentoring for Students (16–25) — Second Innings',
+    description:
+      'You have the information. What you need is perspective. One-on-one mentoring to navigate what comes next.',
+    url: 'https://second-innings.in/for-students',
+  },
 };
 
 const concerns = [

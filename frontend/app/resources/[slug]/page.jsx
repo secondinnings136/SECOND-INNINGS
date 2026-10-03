@@ -22,9 +22,26 @@ export async function generateMetadata({ params }) {
   if (!resource) {
     return { title: 'Resource Not Found | Second Innings' };
   }
+  const url = `https://second-innings.in/resources/${params.slug}`;
   return {
-    title: `${resource.title} | Second Innings`,
-    description: resource.excerpt,
+    title: `${resource.title} | Second Innings Guidance`,
+    description: resource.excerpt || 'Thoughtful perspective and mentoring insights by Deepak Sogani.',
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title: resource.title,
+      description: resource.excerpt,
+      url,
+      type: 'article',
+      authors: [resource.author || 'Deepak Sogani'],
+      publishedTime: resource.createdAt,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: resource.title,
+      description: resource.excerpt,
+    },
   };
 }
 

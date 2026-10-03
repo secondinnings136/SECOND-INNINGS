@@ -7,8 +7,29 @@ import SectionHead from '../../components/ui/SectionHead';
 import { Reveal, RevealGroup, RevealItem } from '../../components/ui/Reveal';
 
 export const metadata = {
-  title: 'For Institutions | Second Innings',
-  description: 'A student development layer that complements academic systems.',
+  title: 'For Schools & Universities | Student Development Layer & 90-Day Pilot — Second Innings',
+  description:
+    'A student development layer that complements academic systems without disrupting them. Individual mentoring, student leadership workshops, and structured 90-day pilots for schools, colleges, and universities.',
+  keywords: [
+    'student development program for colleges',
+    'mentoring programs for higher education institutions',
+    'school to university transition workshop',
+    'student affairs leadership program',
+    'holistic student mentoring pilot',
+    'career exposure workshops for schools',
+    'student mental clarity and leadership',
+    'institution student retention and engagement',
+    '90 day student development pilot',
+  ],
+  alternates: {
+    canonical: 'https://second-innings.in/for-institutions',
+  },
+  openGraph: {
+    title: 'For Schools & Universities — Second Innings',
+    description:
+      'Complements your academic and counseling systems with experienced student affairs mentorship. Discover our 90-day institutional pilot.',
+    url: 'https://second-innings.in/for-institutions',
+  },
 };
 
 const models = [

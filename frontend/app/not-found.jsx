@@ -1,6 +1,15 @@
 import Link from 'next/link';
 import Button from '../components/ui/Button';
 
+export const metadata = {
+  title: '404 — Page Not Found | Second Innings',
+  description: 'The page you requested could not be found.',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 export default function NotFound() {
   return (
     <div className="page-x flex min-h-[75vh] flex-col items-start justify-center pt-36 pb-24">

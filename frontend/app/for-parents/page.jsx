@@ -7,8 +7,29 @@ import SectionHead from '../../components/ui/SectionHead';
 import { Reveal, RevealGroup, RevealItem } from '../../components/ui/Reveal';
 
 export const metadata = {
-  title: 'For Parents | Second Innings',
-  description: 'Second Innings seeks to complement, not replace, the role of parents, teachers, and institutions.',
+  title: 'Guidance for Parents | Supporting Young Adults Without Pressure — Second Innings',
+  description:
+    'The world has changed, and so has the nature of careers. Second Innings helps parents and children build mutual trust, bridge communication gaps, and explore new-age pathways together.',
+  keywords: [
+    'how to support child career choice',
+    'how to talk to teenager about future without arguing',
+    'guidance for parents of college students',
+    'parent child communication about career',
+    'mentor for my teenage son daughter',
+    'helping child choose career without pressure',
+    'new age careers advice for parents',
+    'understanding modern career options India',
+    'parenting young adults transition',
+  ],
+  alternates: {
+    canonical: 'https://second-innings.in/for-parents',
+  },
+  openGraph: {
+    title: 'Guidance for Parents — Second Innings',
+    description:
+      'You want the best for your child. So do we. Bridging the conversation between parent expectations and student aspirations.',
+    url: 'https://second-innings.in/for-parents',
+  },
 };
 
 const principles = [

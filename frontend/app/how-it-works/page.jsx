@@ -6,8 +6,27 @@ import SectionHead from '../../components/ui/SectionHead';
 import { Reveal, RevealGroup, RevealItem } from '../../components/ui/Reveal';
 
 export const metadata = {
-  title: 'How It Works | Second Innings',
-  description: 'One conversation can be a beginning. Discover our five-stage mentoring approach.',
+  title: 'How Mentoring Works | Our 5-Stage Human-Led Approach — Second Innings',
+  description:
+    'Discover how every Second Innings mentoring conversation unfolds: Talk, Understand, Explore, Choose Your Next Step, and Follow Through. Listening first, followed by clear, owned actions.',
+  keywords: [
+    'how career mentoring works',
+    'youth mentoring methodology',
+    'student mentoring stages',
+    'human led mentoring framework',
+    'career guidance process India',
+    '7 day next step mentoring',
+    'mentoring vs counselling',
+  ],
+  alternates: {
+    canonical: 'https://second-innings.in/how-it-works',
+  },
+  openGraph: {
+    title: 'How Mentoring Works — Second Innings',
+    description:
+      'Listening and perspective before prescription. Explore the five-stage methodology that turns uncertainty into clarity and action.',
+    url: 'https://second-innings.in/how-it-works',
+  },
 };
 
 const HOW_IT_WORKS_STEPS = [
