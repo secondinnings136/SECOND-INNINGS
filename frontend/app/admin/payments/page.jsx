@@ -12,9 +12,11 @@ import {
   ArrowUpRight,
   Lock,
   Copy,
-  Check
+  Check,
+  Plus
 } from 'lucide-react';
-import { getAdminPaymentSettings, updateAdminPaymentSettings, getBookings } from '../../../lib/adminApi';
+import { getAdminPaymentSettings, updateAdminPaymentSettings, getBookings, createBooking } from '../../../lib/adminApi';
+import Modal from '../../../components/admin/Modal';
 
 export default function AdminPaymentsPage() {
   const [loading, setLoading] = useState(true);
@@ -38,9 +40,80 @@ export default function AdminPaymentsPage() {
   });
   const [recentBookings, setRecentBookings] = useState([]);
 
+  // Manual payment / booking recording state
+  const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+  const [recordingManual, setRecordingManual] = useState(false);
+  const [manualForm, setManualForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    userType: 'student',
+    paymentStatus: 'paid',
+    paymentAmount: 50,
+    paymentMode: 'DIRECT_UPI',
+    topic: '',
+    status: 'confirmed',
+    notes: ''
+  });
+
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleOpenManualModal = () => {
+    setManualForm({
+      name: '',
+      phone: '',
+      email: '',
+      userType: 'student',
+      paymentStatus: paymentsEnabled ? 'paid' : 'not_required',
+      paymentAmount: paymentsEnabled ? Number(sessionFee || 50) : 0,
+      paymentMode: paymentsEnabled ? 'DIRECT_UPI' : 'COMPLIMENTARY',
+      topic: '',
+      status: 'confirmed',
+      notes: ''
+    });
+    setIsManualModalOpen(true);
+  };
+
+  const handleManualSubmit = async (e) => {
+    e?.preventDefault();
+    if (!manualForm.name || !manualForm.phone) {
+      alert('Please provide student name and mobile number.');
+      return;
+    }
+
+    setRecordingManual(true);
+    try {
+      const payload = {
+        name: manualForm.name.trim(),
+        phone: manualForm.phone.trim(),
+        email: manualForm.email ? manualForm.email.trim() : undefined,
+        userType: manualForm.userType,
+        paymentStatus: manualForm.paymentStatus,
+        paymentAmount: manualForm.paymentStatus === 'not_required' ? 0 : Number(manualForm.paymentAmount || 0),
+        paymentMode: manualForm.paymentMode,
+        paymentTime: manualForm.paymentStatus === 'paid' ? new Date() : null,
+        paymentRequired: manualForm.paymentStatus === 'paid' || manualForm.paymentStatus === 'pending',
+        topic: manualForm.topic,
+        status: manualForm.status,
+        notes: manualForm.notes || 'Recorded manually via Admin Portal',
+        source: 'Admin Portal (Manual Entry)'
+      };
+
+      await createBooking(payload);
+      setIsManualModalOpen(false);
+      setFeedback({ 
+        type: 'success', 
+        message: `Booking for "${payload.name}" recorded successfully with payment status "${payload.paymentStatus.toUpperCase()}"!` 
+      });
+      fetchData();
+    } catch (err) {
+      alert(err.message || 'Failed to record manual booking');
+    } finally {
+      setRecordingManual(false);
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -394,13 +467,23 @@ export default function AdminPaymentsPage() {
 
       {/* Recent Bookings & Payment Status Table */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h3 className="text-base font-bold text-gray-900">
-            Recent Bookings &amp; Payment Status
-          </h3>
-          <span className="text-xs text-gray-500">
-            Showing latest {recentBookings.length} bookings
-          </span>
+        <div className="px-6 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3 bg-gray-50/40">
+          <div>
+            <h3 className="text-base font-bold text-gray-900">
+              Recent Bookings &amp; Payment Status
+            </h3>
+            <span className="text-xs text-gray-500">
+              Showing latest {recentBookings.length} bookings
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleOpenManualModal}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#D97724] hover:bg-[#c4681d] text-white text-xs font-bold rounded-xl shadow-xs transition-all shrink-0 cursor-pointer"
+          >
+            <Plus size={16} /> Record Manual Payment
+          </button>
         </div>
 
         <div className="overflow-x-auto">
@@ -412,22 +495,24 @@ export default function AdminPaymentsPage() {
                 <th className="px-6 py-3">Type</th>
                 <th className="px-6 py-3">Payment Status</th>
                 <th className="px-6 py-3">Amount</th>
-                <th className="px-6 py-3">Order ID</th>
+                <th className="px-6 py-3">Channel / Mode</th>
+                <th className="px-6 py-3">Order ID / Ref</th>
                 <th className="px-6 py-3">Booking Date</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {recentBookings.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-gray-400 text-sm">
-                    No bookings found yet.
+                  <td colSpan={8} className="px-6 py-10 text-center text-gray-400 text-sm">
+                    No bookings found yet. Click &quot;Record Manual Payment&quot; above to add an offline or direct booking.
                   </td>
                 </tr>
               ) : (
                 recentBookings.map((b) => (
                   <tr key={b._id} className="hover:bg-gray-50/70 transition-colors">
                     <td className="px-6 py-3.5 font-medium text-gray-900">
-                      {b.name}
+                      <div>{b.name}</div>
+                      {b.topic && <div className="text-[11px] text-gray-400 truncate max-w-[200px]">{b.topic}</div>}
                     </td>
                     <td className="px-6 py-3.5 font-mono text-xs">
                       {b.phone}
@@ -443,14 +528,19 @@ export default function AdminPaymentsPage() {
                           ? 'bg-amber-100 text-amber-800'
                           : 'bg-gray-100 text-gray-700'
                       }`}>
-                        {b.paymentStatus === 'paid' ? 'Paid' : b.paymentStatus === 'pending' ? 'Pending Payment' : 'Complimentary'}
+                        {b.paymentStatus === 'paid' ? 'Paid' : b.paymentStatus === 'pending' ? 'Pending' : 'Complimentary'}
                       </span>
                     </td>
                     <td className="px-6 py-3.5 font-semibold text-gray-900">
                       ₹{b.paymentAmount || 0}
                     </td>
+                    <td className="px-6 py-3.5 text-xs text-gray-600">
+                      <span className="px-2 py-0.5 rounded bg-gray-100 font-mono text-[11px]">
+                        {b.paymentMode?.replace('_', ' ') || (b.cashfreeOrderId ? 'Cashfree' : 'Direct')}
+                      </span>
+                    </td>
                     <td className="px-6 py-3.5 font-mono text-xs text-gray-500">
-                      {b.cashfreeOrderId || '—'}
+                      {b.cashfreeOrderId || (b.source === 'Admin Portal (Manual Entry)' ? 'Manual Entry' : '—')}
                     </td>
                     <td className="px-6 py-3.5 text-xs text-gray-500">
                       {b.createdAt ? new Date(b.createdAt).toLocaleDateString('en-IN') : '—'}
@@ -462,6 +552,201 @@ export default function AdminPaymentsPage() {
           </table>
         </div>
       </div>
+
+      {/* Manual Payment / Booking Modal */}
+      <Modal
+        isOpen={isManualModalOpen}
+        onClose={() => setIsManualModalOpen(false)}
+        title="Record Manual / Offline Payment & Booking"
+        actions={
+          <>
+            <button
+              type="button"
+              onClick={() => setIsManualModalOpen(false)}
+              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-xl text-sm font-medium transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleManualSubmit}
+              disabled={recordingManual}
+              className="px-5 py-2.5 bg-[#D97724] hover:bg-[#c4681d] text-white text-xs font-bold rounded-xl shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+            >
+              {recordingManual ? 'Recording...' : 'Save & Record Booking'}
+            </button>
+          </>
+        }
+      >
+        <form onSubmit={handleManualSubmit} className="space-y-4">
+          <p className="text-xs text-gray-500 pb-2 border-b border-gray-100">
+            Use this to manually register sessions booked via phone, WhatsApp, or paid offline (Cash, direct UPI/GPay, Bank Transfer).
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                Student / Mentee Name *
+              </label>
+              <input
+                type="text"
+                required
+                value={manualForm.name}
+                onChange={(e) => setManualForm({ ...manualForm, name: e.target.value })}
+                placeholder="e.g. Rahul Sharma"
+                className="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#D97724]/20 focus:border-[#D97724]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                Mobile / WhatsApp *
+              </label>
+              <input
+                type="tel"
+                required
+                value={manualForm.phone}
+                onChange={(e) => setManualForm({ ...manualForm, phone: e.target.value })}
+                placeholder="+91 98765 43210"
+                className="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#D97724]/20 focus:border-[#D97724]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                Email Address (Optional)
+              </label>
+              <input
+                type="email"
+                value={manualForm.email}
+                onChange={(e) => setManualForm({ ...manualForm, email: e.target.value })}
+                placeholder="rahul@example.com"
+                className="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#D97724]/20 focus:border-[#D97724]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                Mentee Category
+              </label>
+              <select
+                value={manualForm.userType}
+                onChange={(e) => setManualForm({ ...manualForm, userType: e.target.value })}
+                className="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#D97724]/20 focus:border-[#D97724]"
+              >
+                <option value="student">Student (Ages 16–25)</option>
+                <option value="parent">Parent</option>
+                <option value="institution">Institutional Rep</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="p-4 bg-gray-50/80 rounded-xl border border-gray-200/70 space-y-3">
+            <div className="text-xs font-bold text-gray-900 uppercase tracking-wider">
+              Payment Details
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                  Payment Status
+                </label>
+                <select
+                  value={manualForm.paymentStatus}
+                  onChange={(e) => {
+                    const status = e.target.value;
+                    setManualForm({
+                      ...manualForm,
+                      paymentStatus: status,
+                      paymentAmount: status === 'not_required' ? 0 : manualForm.paymentAmount || 50,
+                      paymentMode: status === 'not_required' ? 'COMPLIMENTARY' : manualForm.paymentMode
+                    });
+                  }}
+                  className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#D97724]/20"
+                >
+                  <option value="paid">Paid (Collected)</option>
+                  <option value="not_required">Complimentary (Free)</option>
+                  <option value="pending">Pending Payment</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                  Fee Amount (₹ INR)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  disabled={manualForm.paymentStatus === 'not_required'}
+                  value={manualForm.paymentAmount}
+                  onChange={(e) => setManualForm({ ...manualForm, paymentAmount: e.target.value })}
+                  className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#D97724]/20 disabled:bg-gray-100 disabled:text-gray-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                  Payment Mode
+                </label>
+                <select
+                  value={manualForm.paymentMode}
+                  onChange={(e) => setManualForm({ ...manualForm, paymentMode: e.target.value })}
+                  className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#D97724]/20"
+                >
+                  <option value="DIRECT_UPI">Direct UPI (GPay/PhonePe/Paytm)</option>
+                  <option value="CASH">Cash (In-person)</option>
+                  <option value="BANK_TRANSFER">Bank Transfer (IMPS/NEFT)</option>
+                  <option value="CASHFREE">Cashfree Gateway</option>
+                  <option value="COMPLIMENTARY">Complimentary / Waived</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                Booking Status
+              </label>
+              <select
+                value={manualForm.status}
+                onChange={(e) => setManualForm({ ...manualForm, status: e.target.value })}
+                className="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#D97724]/20 focus:border-[#D97724]"
+              >
+                <option value="confirmed">Confirmed</option>
+                <option value="completed">Completed</option>
+                <option value="pending">Pending</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                Discussion Topic / Focus
+              </label>
+              <input
+                type="text"
+                value={manualForm.topic}
+                onChange={(e) => setManualForm({ ...manualForm, topic: e.target.value })}
+                placeholder="e.g. Career dilemma after graduation"
+                className="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#D97724]/20 focus:border-[#D97724]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+              Internal Admin Notes
+            </label>
+            <textarea
+              rows={2}
+              value={manualForm.notes}
+              onChange={(e) => setManualForm({ ...manualForm, notes: e.target.value })}
+              placeholder="e.g. Paid via GPay on WhatsApp; session scheduled for Thursday 4 PM"
+              className="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#D97724]/20 focus:border-[#D97724]"
+            />
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

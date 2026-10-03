@@ -38,6 +38,7 @@ export const getBooking = async (id) => {
   const res = await adminFetch(`/bookings/${id}`);
   return res.data || res;
 };
+export const createBooking = (data) => adminFetch('/bookings', { method: 'POST', body: JSON.stringify(data) });
 export const updateBooking = (id, data) => adminFetch(`/bookings/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
 
 // Contacts
