@@ -235,7 +235,7 @@ export default function Home() {
       </section>
 
       {/* 5. HOW IT WORKS: sticky stacking cards */}
-      <section className="border-t border-line bg-paper-2">
+      <section id="how-it-works" className="scroll-mt-24 border-t border-line bg-paper-2">
         <div className="page-x py-28 md:py-40">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:items-end">
             <SectionHead className="md:col-span-7" meta="How it works" title="One conversation can be a beginning" />

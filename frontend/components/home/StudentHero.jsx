@@ -137,7 +137,15 @@ export default function StudentHero() {
               <Button href="/book">Start a Conversation</Button>
               <Link
                 href="#how-it-works"
-                className="inline-flex items-center gap-2 text-ink text-[0.9375rem] font-medium hover:text-coral transition-colors group"
+                onClick={(e) => {
+                  const el = document.getElementById('how-it-works');
+                  if (el) {
+                    e.preventDefault();
+                    el.scrollIntoView({ behavior: 'smooth' });
+                    window.history.pushState(null, '', '#how-it-works');
+                  }
+                }}
+                className="inline-flex items-center gap-2 text-ink text-[0.9375rem] font-medium hover:text-coral transition-colors group cursor-pointer"
               >
                 <span>Explore Second Innings</span>
                 <Arrow direction="down" className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-y-0.5" />

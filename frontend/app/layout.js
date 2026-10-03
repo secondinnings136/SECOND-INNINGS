@@ -203,7 +203,7 @@ const jsonLd = {
         '@type': 'ContactPoint',
         telephone: '+91-9314072153',
         contactType: 'customer service',
-        email: 'deepak@second-innings.in',
+        email: 'secondinnings136@gmail.com',
         areaServed: 'IN',
         availableLanguage: ['English', 'Hindi'],
       },

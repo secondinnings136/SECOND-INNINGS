@@ -132,7 +132,7 @@ export default function Book() {
         if (cfResult?.error) {
           setStatus({
             type: 'error',
-            message: 'Payment was not completed. You can try again or connect with us directly on WhatsApp.'
+            message: 'Payment was not completed. You can review your details and try again whenever you are ready.'
           });
           setIsSubmitting(false);
           return;
@@ -197,7 +197,7 @@ export default function Book() {
       console.error('Booking submission error:', error);
       setStatus({
         type: 'error',
-        message: error.message || 'Something went wrong while submitting. Please feel free to reach out directly via WhatsApp or phone.'
+        message: error.message || 'Something went wrong while submitting. Please review your details and try again.'
       });
     } finally {
       setIsSubmitting(false);
@@ -219,30 +219,10 @@ export default function Book() {
                 Every meaningful conversation starts somewhere. There is nothing to prepare and no need to know exactly what you want to discuss. Tell us a little about yourself and what you would like to talk about.
               </p>
 
-              <div className="border-t border-line pt-8 space-y-6">
-                <div>
-                  <p className="meta text-muted mb-2">Prefer to reach out directly?</p>
-                  <p className="text-[0.9375rem] text-ink-2">
-                    Write to <a href="mailto:deepak@second-innings.in" className="text-ink underline decoration-ink/20 underline-offset-4 hover:decoration-signal">deepak@second-innings.in</a>
-                  </p>
-                </div>
-                <div>
-                  <p className="meta text-muted mb-2">Direct call or message</p>
-                  <div className="flex flex-wrap items-center gap-4 text-[0.9375rem]">
-                    <a href="https://wa.me/917737220724" target="_blank" rel="noopener noreferrer" className="text-ink hover:text-signal transition-colors">
-                      WhatsApp ↗
-                    </a>
-                    <span className="text-line">•</span>
-                    <a href="tel:+917737220724" className="font-mono text-ink text-[0.875rem]">
-                      +91 77372 20724
-                    </a>
-                  </div>
-                </div>
-                <div className="pt-2">
-                  <p className="text-xs text-muted leading-relaxed">
-                    Under 18? A parent or guardian consent step is required in compliance with Indian safeguarding guidelines.
-                  </p>
-                </div>
+              <div className="border-t border-line pt-6">
+                <p className="text-xs text-muted leading-relaxed">
+                  Under 18? A parent or guardian consent step is required in compliance with Indian safeguarding guidelines.
+                </p>
               </div>
             </div>
           </div>
@@ -259,11 +239,8 @@ export default function Book() {
                   Your first step doesn&apos;t have to be a big one. Sometimes, it can simply be a conversation.
                 </p>
                 <div className="pt-4">
-                  <Button
-                    href="https://wa.me/917737220724?text=Hi%20Mr.%20Deepak%20Sogani,%20I%20just%20submitted%20a%20conversation%20enquiry%20on%20Second%20Innings."
-                    arrow="up-right"
-                  >
-                    Message on WhatsApp
+                  <Button href="/">
+                    Back to Homepage
                   </Button>
                 </div>
               </div>

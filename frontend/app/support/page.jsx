@@ -70,7 +70,7 @@ export default function SupportPage() {
       console.error(err);
       setStatus({
         type: 'error',
-        message: 'Failed to submit support ticket. Please email us directly at deepak@second-innings.in or message us on WhatsApp.',
+        message: 'Failed to submit support ticket. Please email us directly at secondinnings136@gmail.com or message us on WhatsApp.',
         ticketId: null,
       });
     } finally {
@@ -283,8 +283,8 @@ export default function SupportPage() {
               <div className="space-y-3 pt-2 text-sm">
                 <div>
                   <span className="block text-xs text-muted font-mono uppercase">Direct Support Email</span>
-                  <a href="mailto:deepak@second-innings.in" className="font-medium text-ink hover:text-coral transition-colors underline">
-                    deepak@second-innings.in
+                  <a href="mailto:secondinnings136@gmail.com" className="font-medium text-ink hover:text-coral transition-colors underline">
+                    secondinnings136@gmail.com
                   </a>
                 </div>
                 <div>

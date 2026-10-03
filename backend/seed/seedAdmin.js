@@ -18,12 +18,12 @@ const seedAdmin = async () => {
       process.exit(0);
     }
 
-    // Also check if old gmail admin exists, update or create new
-    const oldAdmin = await Admin.findOne({ email: 'deepaksogani18@gmail.com' });
-    if (oldAdmin) {
-      oldAdmin.email = adminEmail;
-      await oldAdmin.save();
-      console.log(`Updated existing admin to professional email: ${adminEmail}`);
+    // Check if secondinnings136@gmail.com or old gmail exists, revert to deepak@second-innings.in
+    const existingAdmin = await Admin.findOne({ email: { $in: ['secondinnings136@gmail.com', 'deepaksogani18@gmail.com'] } });
+    if (existingAdmin) {
+      existingAdmin.email = adminEmail;
+      await existingAdmin.save();
+      console.log(`Reverted admin to: ${adminEmail}`);
       process.exit(0);
     }
 

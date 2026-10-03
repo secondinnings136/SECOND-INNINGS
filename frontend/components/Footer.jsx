@@ -70,10 +70,10 @@ export default function Footer() {
             <p className="meta mb-6">Write or call</p>
             <ul className="space-y-4 text-[0.9375rem]">
               <li>
-                <a href="mailto:deepak@second-innings.in" className="group flex flex-col">
+                <a href="mailto:secondinnings136@gmail.com" className="group flex flex-col">
                   <span className="text-muted text-[0.8125rem]">Primary</span>
                   <span className="text-ink underline decoration-ink/20 underline-offset-4 group-hover:decoration-signal">
-                    deepak@second-innings.in
+                    secondinnings136@gmail.com
                   </span>
                 </a>
               </li>

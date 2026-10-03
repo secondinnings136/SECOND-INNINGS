@@ -177,8 +177,8 @@ export default function PrivacyPolicyPage() {
               </div>
               <p className="text-sm text-muted pt-2">
                 To exercise any of these rights, email us at{' '}
-                <a href="mailto:deepak@second-innings.in" className="text-ink underline decoration-ink/20 hover:decoration-signal font-medium">
-                  deepak@second-innings.in
+                <a href="mailto:secondinnings136@gmail.com" className="text-ink underline decoration-ink/20 hover:decoration-signal font-medium">
+                  secondinnings136@gmail.com
                 </a>{' '}
                 with the subject line &ldquo;Data Subject Request&rdquo;. We respond within 7 business days.
               </p>
@@ -196,7 +196,7 @@ export default function PrivacyPolicyPage() {
               <div className="text-xs sm:text-sm text-ink-2 font-mono space-y-1.5 pt-2">
                 <p><strong>Officer:</strong> Deepak Sogani</p>
                 <p><strong>Designation:</strong> Founder &amp; Data Fiduciary, Second Innings</p>
-                <p><strong>Email:</strong> <a href="mailto:deepak@second-innings.in" className="underline hover:text-signal">deepak@second-innings.in</a></p>
+                <p><strong>Email:</strong> <a href="mailto:secondinnings136@gmail.com" className="underline hover:text-signal">secondinnings136@gmail.com</a></p>
                 <p><strong>Location:</strong> Jaipur, Rajasthan, India</p>
               </div>
             </section>

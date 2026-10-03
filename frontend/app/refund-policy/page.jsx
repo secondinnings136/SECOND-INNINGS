@@ -133,7 +133,7 @@ export default function RefundPolicyPage() {
                   You are entitled to a <strong>pro-rata refund for all unconducted sessions</strong> with zero penalty.
                 </li>
                 <li>
-                  Simply notify us via email at <a href="mailto:deepak@second-innings.in" className="text-ink underline">deepak@second-innings.in</a> stating your request to discontinue.
+                  Simply notify us via email at <a href="mailto:secondinnings136@gmail.com" className="text-ink underline">secondinnings136@gmail.com</a> stating your request to discontinue.
                 </li>
               </ul>
             </section>
@@ -185,7 +185,7 @@ export default function RefundPolicyPage() {
                 To request a reschedule, cancellation, or refund, contact us directly with your booking name or phone number:
               </p>
               <div className="text-xs sm:text-sm text-ink-2 font-mono space-y-1.5 pt-2">
-                <p><strong>Email:</strong> <a href="mailto:deepak@second-innings.in" className="underline hover:text-signal">deepak@second-innings.in</a> (Subject: &ldquo;Refund / Reschedule Request&rdquo;)</p>
+                <p><strong>Email:</strong> <a href="mailto:secondinnings136@gmail.com" className="underline hover:text-signal">secondinnings136@gmail.com</a> (Subject: &ldquo;Refund / Reschedule Request&rdquo;)</p>
                 <p><strong>WhatsApp Support:</strong> <a href="https://wa.me/917737220724" target="_blank" rel="noopener noreferrer" className="underline hover:text-signal">+91 77372 20724</a></p>
                 <p><strong>Address:</strong> Second Innings, Jaipur, Rajasthan, India</p>
               </div>
