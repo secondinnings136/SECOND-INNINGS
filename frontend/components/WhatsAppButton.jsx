@@ -4,7 +4,7 @@
 export default function WhatsAppButton() {
   return (
     <a
-      href="https://wa.me/919314072153?text=Hi,%20I%20would%20like%20to%20know%20more%20about%20Second%20Innings"
+      href="https://wa.me/917737220724?text=Hi,%20I%20would%20like%20to%20know%20more%20about%20Second%20Innings"
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat on WhatsApp"

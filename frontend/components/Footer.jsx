@@ -80,11 +80,11 @@ export default function Footer() {
                 </a>
               </li>
               <li className="flex flex-wrap gap-x-6 gap-y-2 pt-1">
-                <a href="https://wa.me/919314072153" target="_blank" rel="noopener noreferrer" className="text-ink hover:text-signal transition-colors">
+                <a href="https://wa.me/917737220724" target="_blank" rel="noopener noreferrer" className="text-ink hover:text-signal transition-colors">
                   WhatsApp ↗
                 </a>
-                <a href="tel:+919314072153" className="text-ink hover:text-signal transition-colors font-mono text-[0.8125rem] tracking-tight">
-                  +91 93140 72153
+                <a href="tel:+917737220724" className="text-ink hover:text-signal transition-colors font-mono text-[0.8125rem] tracking-tight">
+                  +91 77372 20724
                 </a>
                 <a href="https://www.linkedin.com/in/deepaksogani" target="_blank" rel="noopener noreferrer" className="text-ink hover:text-signal transition-colors">
                   LinkedIn ↗

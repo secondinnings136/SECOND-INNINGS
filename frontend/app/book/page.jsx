@@ -148,12 +148,12 @@ export default function Book() {
                 <div>
                   <p className="meta text-muted mb-2">Direct call or message</p>
                   <div className="flex flex-wrap items-center gap-4 text-[0.9375rem]">
-                    <a href="https://wa.me/919314072153" target="_blank" rel="noopener noreferrer" className="text-ink hover:text-signal transition-colors">
+                    <a href="https://wa.me/917737220724" target="_blank" rel="noopener noreferrer" className="text-ink hover:text-signal transition-colors">
                       WhatsApp ↗
                     </a>
                     <span className="text-line">•</span>
-                    <a href="tel:+919314072153" className="font-mono text-ink text-[0.875rem]">
-                      +91 93140 72153
+                    <a href="tel:+917737220724" className="font-mono text-ink text-[0.875rem]">
+                      +91 77372 20724
                     </a>
                   </div>
                 </div>
@@ -179,7 +179,7 @@ export default function Book() {
                 </p>
                 <div className="pt-4">
                   <Button
-                    href="https://wa.me/919314072153?text=Hi%20Deepak%20Sir,%20I%20just%20submitted%20a%20conversation%20enquiry%20on%20Second%20Innings."
+                    href="https://wa.me/917737220724?text=Hi%20Deepak%20Sir,%20I%20just%20submitted%20a%20conversation%20enquiry%20on%20Second%20Innings."
                     arrow="up-right"
                   >
                     Message on WhatsApp

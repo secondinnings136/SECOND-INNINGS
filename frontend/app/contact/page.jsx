@@ -105,8 +105,8 @@ export default function Contact() {
           <div className="p-8 flex flex-col justify-between min-h-[14rem]">
             <span className="meta">WhatsApp</span>
             <div>
-              <a href="https://wa.me/919314072153" target="_blank" rel="noopener noreferrer" className="font-serif text-[1.25rem] text-ink hover:text-signal transition-colors block">
-                +91 93140 72153 ↗
+              <a href="https://wa.me/917737220724" target="_blank" rel="noopener noreferrer" className="font-serif text-[1.25rem] text-ink hover:text-signal transition-colors block">
+                +91 77372 20724 ↗
               </a>
               <p className="text-xs text-muted mt-2">Direct messaging</p>
             </div>
@@ -115,8 +115,8 @@ export default function Contact() {
           <div className="p-8 flex flex-col justify-between min-h-[14rem]">
             <span className="meta">Phone</span>
             <div>
-              <a href="tel:+919314072153" className="font-serif text-[1.25rem] text-ink hover:text-signal transition-colors block font-mono text-base">
-                +91 93140 72153
+              <a href="tel:+917737220724" className="font-serif text-[1.25rem] text-ink hover:text-signal transition-colors block font-mono text-base">
+                +91 77372 20724
               </a>
               <p className="text-xs text-muted mt-2">Mon–Sat, 10 AM – 6 PM IST</p>
             </div>
