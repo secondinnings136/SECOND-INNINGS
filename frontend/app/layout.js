@@ -157,9 +157,9 @@ export const metadata = {
     },
   },
   verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || 'google-site-verification-code',
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || '',
     other: {
-      'msvalidate.01': process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION || 'bing-site-verification-code',
+      'msvalidate.01': process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION || '08CBBEF04FF2915E3D43FC9C8CD43BC6',
     },
   },
 };
