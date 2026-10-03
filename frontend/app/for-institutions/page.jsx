@@ -1,6 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
-import { Users, Presentation, Target, Compass, Heart, GraduationCap, Briefcase, BarChart, ArrowRight, ShieldCheck } from 'lucide-react';
+import Button from '../../components/ui/Button';
+import Arrow from '../../components/ui/Arrow';
+import PageHero from '../../components/ui/PageHero';
+import SectionHead from '../../components/ui/SectionHead';
+import { Reveal, RevealGroup, RevealItem } from '../../components/ui/Reveal';
 
 export const metadata = {
   title: 'For Institutions | Second Innings',
@@ -8,14 +12,14 @@ export const metadata = {
 };
 
 const models = [
-  { icon: Users, title: "Individual Mentoring", text: "One-to-one conversations on career direction, confidence, transition, and self-understanding." },
-  { icon: Presentation, title: "Small-Group Conversations", text: "Structured cohort sessions around common adolescent and career decision concerns." },
-  { icon: Target, title: "Student Leadership Development", text: "Using councils, clubs, and peer activities as practical leadership laboratories." },
-  { icon: Compass, title: "Career & Higher-Ed Exposure", text: "Candid, grounded interactions with seasoned professionals, alumni, and academics." },
-  { icon: Heart, title: "Parent Engagement", text: "Constructive forums helping parents understand modern career dynamics without friction." },
-  { icon: GraduationCap, title: "School-to-Life Transition", text: "Preparing senior students for personal independence, campus life, and emotional readiness." },
-  { icon: Briefcase, title: "Professional Exposure", text: "Connecting students with curated internships, fellowships, and real-world pathways." },
-  { icon: BarChart, title: "Student Development Insights", text: "Evidence-based, aggregate reporting on student needs, concerns, and observable movement." }
+  { title: "Individual Mentoring", text: "One-to-one conversations on career direction, confidence, transition, and self-understanding." },
+  { title: "Small-Group Conversations", text: "Structured cohort sessions around common adolescent and career decision concerns." },
+  { title: "Student Leadership Development", text: "Using councils, clubs, and peer activities as practical leadership laboratories." },
+  { title: "Career & Higher-Ed Exposure", text: "Candid, grounded interactions with seasoned professionals, alumni, and academics." },
+  { title: "Parent Engagement", text: "Constructive forums helping parents understand modern career dynamics without friction." },
+  { title: "School-to-Life Transition", text: "Preparing senior students for personal independence, campus life, and emotional readiness." },
+  { title: "Professional Exposure", text: "Connecting students with curated internships, fellowships, and real-world pathways." },
+  { title: "Student Development Insights", text: "Evidence-based, aggregate reporting on student needs, concerns, and observable movement." }
 ];
 
 const dimensions = [
@@ -28,48 +32,56 @@ const dimensions = [
   { name: "Institutional Value", evidence: "Enhanced institutional reputation, stronger parent trust, and positive word-of-mouth." }
 ];
 
+const pilotPhases = [
+  {
+    period: "Days 1–30",
+    title: "Understand & Listen",
+    desc: "Immerse into institutional culture, existing student services, and identify 2–3 genuine priority focus areas."
+  },
+  {
+    period: "Days 31–60",
+    title: "Pilot & Engage",
+    desc: "Deliver pilot 1-on-1 conversations, small-group sessions, and parent dialogues based on initial findings."
+  },
+  {
+    period: "Days 61–90",
+    title: "Integrate & Review",
+    desc: "Present documented qualitative and quantitative movement to leadership for informed joint decision-making."
+  }
+];
+
 export default function ForInstitutionsPage() {
   return (
-    <div className="min-h-screen font-sans">
-      {/* S1: Hero */}
-      <section className="bg-gradient-to-br from-charcoal-blue via-[#263747] to-midnight-violet text-white py-24 px-6 md:px-12 text-center relative overflow-hidden">
-        <div className="absolute top-0 right-1/4 w-80 h-80 bg-tea-green/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="max-w-4xl mx-auto relative z-10">
-          <div className="inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-tea-green text-xs font-semibold uppercase tracking-wider mb-6">
-            Institutional Partnership
-          </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 font-serif leading-tight">
-            A Student Development Layer That Complements What You Already Do
-          </h1>
-          <p className="text-xl md:text-2xl mb-10 text-gray-200 font-light max-w-3xl mx-auto">
-            Second Innings works alongside your academic, counselling and administrative systems, not instead of them.
-          </p>
-          <Link href="/contact" className="inline-block bg-golden-pollen text-charcoal-blue font-bold py-3.5 px-8 rounded-full text-lg shadow-lg hover:bg-secondary-hover transition-all">
-            Talk to Us About Your Institution
-          </Link>
+    <div className="w-full">
+      <PageHero
+        meta={['For Schools, Colleges & Universities', 'Campus Partnership', 'Student Development Layer']}
+        title="A student development layer that complements what you already do."
+        lede="Second Innings works alongside your academic, counselling and administrative systems, not instead of them."
+      >
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+          <Button href="/contact">Talk to Us About Your Institution</Button>
+          <Button href="#pilot" variant="link" arrow="down">See the 90-day pilot</Button>
         </div>
-      </section>
+      </PageHero>
 
       {/* S2: Value Cycle */}
-      <section className="py-24 bg-white px-6 md:px-12 overflow-hidden">
-        <div className="max-w-6xl mx-auto text-center">
-          <div className="inline-block px-3 py-1 rounded-full bg-tea-green/35 text-charcoal-blue text-xs font-bold uppercase tracking-wider mb-3">
-            Institutional Impact
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 font-serif text-charcoal-blue">The Virtuous Cycle of Student Development</h2>
-          <p className="text-gray-500 max-w-2xl mx-auto mb-16">How a dedicated mentoring presence compounds institutional reputation over time.</p>
-          
-          <div className="flex flex-col md:flex-row items-center justify-center gap-3 lg:gap-4 flex-wrap">
-            {['Better Student Experience', 'Stronger Parent Confidence', 'Positive Word of Mouth', 'Stronger Reputation', 'Admissions & Retention'].map((step, idx, arr) => (
+      <section className="border-t border-line bg-paper-2">
+        <div className="page-x py-28 md:py-40 text-center">
+          <SectionHead
+            meta="Potential institutional value"
+            title="The virtuous cycle of student development"
+            lede="How a dedicated mentoring presence compounds institutional trust and student ownership over time."
+            className="max-w-3xl mx-auto"
+          />
+
+          <div className="mt-16 flex flex-wrap justify-center items-center gap-3 md:gap-4 max-w-5xl mx-auto">
+            {['Better Student Experience', 'Stronger Parent Trust', 'Positive Word of Mouth', 'Enhanced Campus Culture', 'Sustained Engagement'].map((step, idx, arr) => (
               <React.Fragment key={idx}>
-                <div className="bg-slate-50 border-2 border-slate-100 hover:border-tea-green text-charcoal-blue font-bold py-4 px-6 rounded-2xl shadow-sm text-center w-full md:w-auto flex-1 min-w-[180px] transition-all">
+                <div className="rounded-full border border-line bg-paper px-6 py-3.5 font-serif text-[1.125rem] text-ink">
                   {step}
                 </div>
                 {idx < arr.length - 1 && (
-                  <ArrowRight className="hidden md:block w-5 h-5 text-golden-pollen flex-shrink-0" />
-                )}
-                {idx < arr.length - 1 && (
-                  <div className="block md:hidden w-1 h-5 bg-golden-pollen rounded my-1"></div>
+                  <span className="text-muted text-sm hidden md:inline">→</span>
                 )}
               </React.Fragment>
             ))}
@@ -77,98 +89,115 @@ export default function ForInstitutionsPage() {
         </div>
       </section>
 
-      {/* S3: Engagement Models */}
-      <section className="py-20 bg-slate-50 px-6 md:px-12 border-t border-b border-gray-100">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold font-serif text-charcoal-blue">8 Engagement Frameworks for Your Campus</h2>
-            <p className="text-gray-500 mt-2">Tailored modules that integrate smoothly with your existing academic calendar.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* S3: Engagement Models (8 Hairline Grid cells) */}
+      <section className="border-t border-line">
+        <div className="page-x py-28 md:py-40">
+          <SectionHead
+            meta="Frameworks"
+            title="8 engagement frameworks for your campus"
+            lede="Tailored modules that integrate smoothly with your existing academic calendar."
+          />
+
+          <RevealGroup className="hairline-grid mt-16 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             {models.map((model, idx) => (
-              <div key={idx} className="bg-white p-7 rounded-2xl shadow-sm border border-slate-100 hover:border-golden-pollen transition-all flex flex-col h-full">
-                <div className="mb-4 text-charcoal-blue p-3 bg-tea-green/30 inline-block rounded-xl self-start">
-                  <model.icon size={24} />
+              <RevealItem
+                key={idx}
+                className="group flex min-h-[17rem] flex-col justify-between p-8 transition-colors duration-500 ease-editorial hover:bg-paper-2"
+              >
+                <span className="meta">{String(idx + 1).padStart(2, '0')}</span>
+                <div>
+                  <h3 className="font-serif text-[1.5rem] leading-snug text-ink mb-3">
+                    {model.title}
+                  </h3>
+                  <p className="text-[0.9375rem] text-muted leading-relaxed">
+                    {model.text}
+                  </p>
                 </div>
-                <h3 className="text-lg font-bold mb-2 text-charcoal-blue leading-tight">{model.title}</h3>
-                <p className="text-gray-600 text-sm leading-relaxed mt-auto">{model.text}</p>
-              </div>
+              </RevealItem>
             ))}
-          </div>
+          </RevealGroup>
         </div>
       </section>
 
       {/* S4: 90-Day Pilot */}
-      <section className="py-24 bg-white px-6 md:px-12">
-        <div className="max-w-5xl mx-auto text-center">
-          <div className="inline-block px-3 py-1 rounded-full bg-golden-pollen/20 text-[#734A00] text-xs font-bold uppercase tracking-wider mb-3">
-            Risk-Free Validation
+      <section id="pilot" className="scroll-mt-24 border-t border-line bg-paper-2">
+        <div className="page-x py-28 md:py-40">
+          <SectionHead
+            meta="Risk-free validation"
+            title="Start small. Understand first. Demonstrate value. Then decide."
+            lede="Our structured 90-day pilot model is designed to explore your campus environment, observe student engagement, and determine what measurable value emerges before any long-term commitment."
+          />
+
+          <div className="mt-16 md:mt-24 grid grid-cols-1 md:grid-cols-3 gap-8">
+            {pilotPhases.map((phase, idx) => (
+              <Reveal key={idx} delay={idx * 0.1} className="rounded-[1.75rem] border border-line bg-paper p-8 flex flex-col justify-between min-h-[18rem]">
+                <div>
+                  <span className="meta text-signal">{phase.period}</span>
+                  <h3 className="font-serif text-[1.75rem] text-ink mt-4 mb-3">
+                    {phase.title}
+                  </h3>
+                  <p className="text-[0.9375rem] text-muted leading-relaxed">
+                    {phase.desc}
+                  </p>
+                </div>
+                <div className="pt-6 border-t border-line mt-6">
+                  <span className="meta">Phase {idx + 1} of 3</span>
+                </div>
+              </Reveal>
+            ))}
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 font-serif text-charcoal-blue">Start Small. Understand First. Demonstrate Value. Then Decide.</h2>
-          <p className="text-lg text-gray-600 mb-16 max-w-3xl mx-auto">Our structured 90-day pilot model is built to validate tangible impact before any long-term commitment.</p>
-          
-          <div className="relative border-l-4 md:border-l-0 md:border-t-4 border-slate-200 md:flex md:justify-between pt-8 pb-12 ml-4 md:ml-0 md:pl-0 pl-8 space-y-12 md:space-y-0">
-            {/* Phase 1 */}
-            <div className="relative md:w-1/3 md:-mt-12 text-left md:text-center px-4">
-              <div className="absolute -left-10 md:left-1/2 md:-ml-3 -top-1 md:-top-11 w-6 h-6 rounded-full bg-tea-green border-4 border-white shadow"></div>
-              <h4 className="font-bold text-charcoal-blue mb-1 text-sm uppercase tracking-wider">Days 1–30</h4>
-              <h3 className="text-xl font-bold text-charcoal-blue mb-2 font-serif">UNDERSTAND & LISTEN</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">Immerse into institutional culture, existing student services, and identify 2–3 genuine priority focus areas.</p>
-            </div>
-            {/* Phase 2 */}
-            <div className="relative md:w-1/3 md:-mt-12 text-left md:text-center px-4">
-              <div className="absolute -left-10 md:left-1/2 md:-ml-3 -top-1 md:-top-11 w-6 h-6 rounded-full bg-golden-pollen border-4 border-white shadow"></div>
-              <h4 className="font-bold text-[#734A00] mb-1 text-sm uppercase tracking-wider">Days 31–60</h4>
-              <h3 className="text-xl font-bold text-charcoal-blue mb-2 font-serif">PILOT & ENGAGE</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">Deliver pilot 1-on-1 conversations, small-group sessions, and parent dialogues based on initial findings.</p>
-            </div>
-            {/* Phase 3 */}
-            <div className="relative md:w-1/3 md:-mt-12 text-left md:text-center px-4">
-              <div className="absolute -left-10 md:left-1/2 md:-ml-3 -top-1 md:-top-11 w-6 h-6 rounded-full bg-midnight-violet border-4 border-white shadow"></div>
-              <h4 className="font-bold text-midnight-violet mb-1 text-sm uppercase tracking-wider">Days 61–90</h4>
-              <h3 className="text-xl font-bold text-charcoal-blue mb-2 font-serif">INTEGRATE & REVIEW</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">Present documented qualitative and quantitative movement to leadership for informed joint decision-making.</p>
-            </div>
-          </div>
-          
-          <div className="bg-golden-pollen/15 border-2 border-golden-pollen/50 p-8 rounded-3xl max-w-3xl mx-auto mt-6 shadow-sm">
-            <h3 className="text-lg font-bold text-charcoal-blue mb-2 uppercase tracking-wider">The Day-90 Question:</h3>
-            <p className="text-xl md:text-2xl italic font-serif text-charcoal-blue">"Has Deepak's presence created meaningful additional value for your institution and its students?"</p>
-          </div>
+
+          <Reveal className="mt-16 rounded-[1.75rem] border border-ink bg-paper p-8 md:p-12 text-center max-w-3xl mx-auto">
+            <p className="meta text-signal mb-3">The Day-90 Question</p>
+            <p className="font-serif italic text-[clamp(1.5rem,2.5vw,2.25rem)] text-ink leading-snug">
+              &ldquo;Has Deepak&apos;s presence created meaningful additional value for your institution and its students?&rdquo;
+            </p>
+          </Reveal>
         </div>
       </section>
 
       {/* S5: Measurable Outcomes */}
-      <section className="py-20 bg-slate-50 px-6 md:px-12 border-t border-gray-100">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold font-serif text-charcoal-blue">7 Dimensions of Measurable Movement</h2>
-            <p className="text-gray-500 mt-2">Clear observable benchmarks we track across the engagement.</p>
-          </div>
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden divide-y divide-slate-100">
-            {dimensions.map((dim, idx) => (
-              <div key={idx} className="p-6 md:flex items-center hover:bg-slate-50/80 transition-colors">
-                <div className="md:w-1/3 mb-2 md:mb-0 flex items-center gap-3">
-                  <span className="w-2.5 h-2.5 rounded-full bg-golden-pollen flex-shrink-0"></span>
-                  <span className="font-bold text-charcoal-blue text-lg">{dim.name}</span>
-                </div>
-                <div className="md:w-2/3">
-                  <p className="text-gray-600 text-sm leading-relaxed">{dim.evidence}</p>
-                </div>
-              </div>
-            ))}
+      <section className="border-t border-line">
+        <div className="page-x py-28 md:py-40">
+          <SectionHead
+            meta="Observable metrics"
+            title="7 dimensions of measurable movement"
+            lede="Clear observable benchmarks we track across the engagement."
+          />
+
+          <div className="mt-16 border-t border-ink">
+            <RevealGroup>
+              {dimensions.map((dim, idx) => (
+                <RevealItem key={dim.name} className="grid grid-cols-1 md:grid-cols-12 border-b border-line py-7 md:py-8 items-baseline gap-4">
+                  <div className="md:col-span-3 flex items-baseline gap-4">
+                    <span className="meta">{String(idx + 1).padStart(2, '0')}</span>
+                    <h3 className="font-serif text-[1.625rem] text-ink">{dim.name}</h3>
+                  </div>
+                  <div className="md:col-span-9">
+                    <p className="text-[1.0625rem] text-muted leading-relaxed">{dim.evidence}</p>
+                  </div>
+                </RevealItem>
+              ))}
+            </RevealGroup>
           </div>
         </div>
       </section>
 
       {/* S6: CTA */}
-      <section className="py-24 bg-gradient-to-br from-charcoal-blue via-[#263747] to-midnight-violet text-white text-center px-6">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold font-serif mb-4">Start With an Institutional Discovery Call</h2>
-          <p className="text-gray-200 text-lg mb-8 max-w-xl mx-auto font-light">We will discuss your campus dynamics, student priorities, and explore a low-friction pilot.</p>
-          <Link href="/contact" className="inline-block bg-golden-pollen text-charcoal-blue font-bold py-4 px-10 rounded-full text-lg shadow-xl hover:bg-secondary-hover transition-all">
-            Talk to Us About Your Institution
-          </Link>
+      <section className="border-t border-line bg-paper-2">
+        <div className="page-x py-32 md:py-44">
+          <RevealGroup className="max-w-[56rem]">
+            <RevealItem as="p" className="meta mb-6">Discovery</RevealItem>
+            <RevealItem as="h2" className="font-serif text-[clamp(2.5rem,5.5vw,5rem)] leading-[0.95] text-ink">
+              Start with an institutional discovery call.
+            </RevealItem>
+            <RevealItem as="p" className="lede mt-6 text-[1.125rem]">
+              We will discuss your campus dynamics, student priorities, and explore a low-friction pilot.
+            </RevealItem>
+            <RevealItem className="mt-10">
+              <Button href="/contact">Talk to Us About Your Institution</Button>
+            </RevealItem>
+          </RevealGroup>
         </div>
       </section>
     </div>

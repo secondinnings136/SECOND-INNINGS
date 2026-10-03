@@ -2,69 +2,138 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --tea-green: #BDD9BF;
-  --charcoal-blue: #2E4052;
-  --golden-pollen: #FFC857;
-  --white: #FFFFFF;
-  --midnight-violet: #412234;
-}
-
 @layer base {
   html {
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
   }
+
   body {
-    @apply text-charcoal-blue bg-white antialiased font-sans;
+    @apply bg-paper text-ink font-sans antialiased;
+    font-feature-settings: 'ss01', 'cv11';
   }
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-serif text-charcoal-blue;
+
+  h1, h2, h3, h4 {
+    @apply font-serif text-ink font-normal;
+    text-wrap: balance;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    @apply bg-signal text-paper;
+  }
+
+  :focus-visible {
+    outline: 2px solid theme('colors.signal.DEFAULT');
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  input, textarea, select {
+    font: inherit;
   }
 }
 
 @layer components {
-  /* High-contrast brand buttons */
+  /* Shared container. */
+  .page-x {
+    @apply mx-auto w-full max-w-page px-5 md:px-10;
+  }
+
+  /* Mono metadata label. */
+  .meta {
+    @apply font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-muted;
+  }
+
+  /* Editorial body copy. */
+  .lede {
+    @apply text-[1.0625rem] leading-[1.65] text-ink-2 max-w-[62ch];
+  }
+
+  /* Form field on paper. Labels sit above, errors below (taste-v1 rule 6). */
+  .field {
+    @apply w-full rounded-xl border border-line bg-paper px-4 py-3 text-[0.9375rem] text-ink placeholder:text-muted/70
+      transition-colors duration-300 ease-editorial
+      hover:border-ink/25 focus:border-ink focus:outline-none focus:ring-0;
+  }
+
+  .field-label {
+    @apply mb-2 block text-sm font-medium text-ink;
+  }
+
+  /* Legacy helpers kept so older markup still renders on-palette. */
   .btn-primary {
-    @apply bg-golden-pollen text-charcoal-blue font-semibold px-6 py-3 rounded-full shadow-md hover:bg-secondary-hover hover:shadow-lg transition-all duration-200 inline-flex items-center justify-center gap-2;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-ink px-6 py-3 font-medium text-paper transition-transform duration-300 ease-editorial hover:bg-ink-2 active:scale-[0.98];
   }
-  
   .btn-outline {
-    @apply border-2 border-charcoal-blue text-charcoal-blue font-semibold px-6 py-3 rounded-full hover:bg-charcoal-blue hover:text-white transition-all duration-200 inline-flex items-center justify-center gap-2;
-  }
-
-  .btn-violet {
-    @apply bg-midnight-violet text-white font-semibold px-6 py-3 rounded-full shadow-md hover:bg-violet-hover hover:shadow-lg transition-all duration-200 inline-flex items-center justify-center gap-2;
-  }
-
-  /* Color-coded tags & badges */
-  .badge-tea {
-    @apply bg-tea-green/35 text-charcoal-blue border border-tea-green font-medium px-3 py-1 rounded-full text-xs;
-  }
-
-  .badge-golden {
-    @apply bg-golden-pollen/25 text-[#734A00] border border-golden-pollen/50 font-medium px-3 py-1 rounded-full text-xs;
-  }
-
-  .badge-violet {
-    @apply bg-midnight-violet/15 text-midnight-violet border border-midnight-violet/30 font-medium px-3 py-1 rounded-full text-xs;
-  }
-
-  .badge-blue {
-    @apply bg-charcoal-blue/10 text-charcoal-blue border border-charcoal-blue/20 font-medium px-3 py-1 rounded-full text-xs;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-ink px-6 py-3 font-medium text-ink transition-colors duration-300 ease-editorial hover:bg-ink hover:text-paper;
   }
 }
 
-/* Custom Scrollbar */
+@layer utilities {
+  /* Swiss hairline grid: children paint paper, the 1px gaps show the line colour. */
+  .hairline-grid {
+    @apply grid gap-px border border-line bg-line;
+  }
+  .hairline-grid > * {
+    @apply bg-paper;
+  }
+
+  /* Analog halftone dot-matrix (industrial-brutalist textural effect). */
+  .halftone {
+    background-image: radial-gradient(circle at center, rgba(28, 27, 24, 0.55) 0.7px, transparent 1.3px);
+    background-size: 4px 4px;
+    mix-blend-mode: multiply;
+  }
+
+  /* Struck-through text with a signal-red rule. */
+  .strike-signal {
+    text-decoration: line-through;
+    text-decoration-color: theme('colors.signal.DEFAULT');
+    text-decoration-thickness: 2px;
+  }
+
+  .text-outline {
+    color: transparent;
+    -webkit-text-stroke: 1px theme('colors.ink.DEFAULT');
+  }
+}
+
+/* Fixed film grain. Pointer-events none and fixed so it never repaints on scroll. */
+.grain::before {
+  content: '';
+  position: fixed;
+  inset: -50%;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #f7f9f8; 
+  background: #F4F2EC;
 }
 ::-webkit-scrollbar-thumb {
-  background: #BDD9BF; 
-  border-radius: 4px;
+  background: #CFC9BC;
+  border: 3px solid #F4F2EC;
+  border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #2E4052; 
+  background: #1C1B18;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -13,6 +13,12 @@ const bookingSchema = new mongoose.Schema({
   topic: { type: String }, // What would you like to talk about?
   usefulGoal: { type: String }, // What would make this conversation useful for you?
   concern: { type: String }, // backward compatibility
+  // Under-18 Safeguarding & DPDP Compliance
+  isUnder18: { type: Boolean, default: false },
+  parentName: { type: String, trim: true },
+  parentPhone: { type: String, trim: true },
+  parentEmail: { type: String, trim: true },
+  parentConsentConfirmed: { type: Boolean, default: false },
   preferredDate: { type: Date },
   preferredTime: { type: String },
   status: { type: String, enum: ['pending', 'confirmed', 'completed', 'cancelled'], default: 'pending' },

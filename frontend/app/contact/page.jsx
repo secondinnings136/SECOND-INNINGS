@@ -1,17 +1,20 @@
-'use client'
+'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Mail, Phone, MessageCircle, Linkedin, MapPin, Sparkles, CheckCircle2 } from 'lucide-react';
+import Button from '../../components/ui/Button';
+import Arrow from '../../components/ui/Arrow';
+import PageHero from '../../components/ui/PageHero';
 import { submitContact, submitInstitutionalEnquiry } from '../../lib/api';
 
-const fadeIn = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
-};
+const INTEREST_OPTIONS = [
+  "Individual Mentoring", "Small-Group Conversations", 
+  "Student Leadership", "Career/Higher-Ed Exposure", 
+  "Parent Engagement", "School-to-Life Transition", 
+  "Professional Exposure", "Student Development Insights"
+];
 
 export default function Contact() {
-  const [activeTab, setActiveTab] = useState('general'); // 'general' or 'institutional'
+  const [activeTab, setActiveTab] = useState('general');
   const [status, setStatus] = useState({ type: '', message: '' });
   const [loading, setLoading] = useState(false);
 
@@ -34,7 +37,7 @@ export default function Contact() {
 
     try {
       await submitContact(generalForm);
-      setStatus({ type: 'success', message: 'Thank you! Your message has been received. We will get back to you shortly.' });
+      setStatus({ type: 'success', message: 'Thank you. Your message has been received. We will get back to you shortly.' });
       setGeneralForm({ name: '', email: '', phone: '', subject: '', message: '' });
     } catch (err) {
       console.error(err);
@@ -77,336 +80,321 @@ export default function Contact() {
   };
 
   return (
-    <div className="flex flex-col w-full min-h-screen bg-slate-50">
-      {/* S1: Hero */}
-      <section className="bg-gradient-to-br from-charcoal-blue via-[#263747] to-midnight-violet text-white py-20 px-6 text-center relative overflow-hidden">
-        <div className="absolute top-0 right-1/4 w-80 h-80 bg-tea-green/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="container mx-auto max-w-3xl relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-tea-green text-xs font-semibold uppercase tracking-wider mb-6">
-            <Sparkles size={14} className="text-golden-pollen" />
-            Let's Connect
+    <div className="w-full">
+      <PageHero
+        meta={['Get in Touch', 'Direct Channels', 'Jaipur, India']}
+        title="Direct, human perspective."
+        lede="Whether you are a student exploring next steps, a parent looking to support your child, or an institution evaluating our student development layer, we are here to talk."
+      />
+
+      {/* S2: Contact Channels (Hairline Grid) */}
+      <section className="page-x py-12 md:py-20">
+        <div className="hairline-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="p-8 flex flex-col justify-between min-h-[14rem]">
+            <span className="meta">Email</span>
+            <div>
+              <a href="mailto:deepak@second-innings.in" className="font-serif text-[1.25rem] text-ink hover:text-signal transition-colors block leading-snug">
+                deepak@second-innings.in
+              </a>
+              <a href="mailto:connect@second-innings.in" className="text-xs text-muted mt-2 block hover:text-ink">
+                Support: connect@second-innings.in
+              </a>
+            </div>
           </div>
-          <motion.h1 initial="hidden" animate="visible" variants={fadeIn} className="text-4xl md:text-5xl font-bold mb-4 font-serif">
-            Get in Touch
-          </motion.h1>
-          <motion.p initial="hidden" animate="visible" variants={fadeIn} className="text-lg md:text-xl text-gray-200 font-light max-w-xl mx-auto">
-            Direct, human perspective for students, parents, and educational institutions.
-          </motion.p>
+
+          <div className="p-8 flex flex-col justify-between min-h-[14rem]">
+            <span className="meta">WhatsApp</span>
+            <div>
+              <a href="https://wa.me/919314072153" target="_blank" rel="noopener noreferrer" className="font-serif text-[1.25rem] text-ink hover:text-signal transition-colors block">
+                +91 93140 72153 ↗
+              </a>
+              <p className="text-xs text-muted mt-2">Direct messaging</p>
+            </div>
+          </div>
+
+          <div className="p-8 flex flex-col justify-between min-h-[14rem]">
+            <span className="meta">Phone</span>
+            <div>
+              <a href="tel:+919314072153" className="font-serif text-[1.25rem] text-ink hover:text-signal transition-colors block font-mono text-base">
+                +91 93140 72153
+              </a>
+              <p className="text-xs text-muted mt-2">Mon–Sat, 10 AM – 6 PM IST</p>
+            </div>
+          </div>
+
+          <div className="p-8 flex flex-col justify-between min-h-[14rem]">
+            <span className="meta">LinkedIn</span>
+            <div>
+              <a href="https://www.linkedin.com/in/deepaksogani" target="_blank" rel="noopener noreferrer" className="font-serif text-[1.25rem] text-ink hover:text-signal transition-colors block">
+                Deepak Sogani ↗
+              </a>
+              <p className="text-xs text-muted mt-2">Professional reflections &amp; alumni voices</p>
+            </div>
+          </div>
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-12 max-w-6xl">
-        {/* S2: Contact Methods (4 cards) */}
-        <motion.div initial="hidden" animate="visible" variants={fadeIn} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-          <a href="mailto:deepaksogani18@gmail.com" className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col items-center text-center hover:border-golden-pollen hover:shadow-md transition-all group">
-            <div className="w-14 h-14 bg-golden-pollen/20 text-[#734A00] rounded-2xl flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-              <Mail size={24} />
-            </div>
-            <h3 className="font-bold text-charcoal-blue mb-1">Email</h3>
-            <p className="text-xs text-gray-500 break-all">deepaksogani18@gmail.com</p>
-          </a>
-
-          <a href="https://wa.me/919314072153" target="_blank" rel="noopener noreferrer" className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col items-center text-center hover:border-tea-green hover:shadow-md transition-all group">
-            <div className="w-14 h-14 bg-tea-green/35 text-charcoal-blue rounded-2xl flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-              <MessageCircle size={24} />
-            </div>
-            <h3 className="font-bold text-charcoal-blue mb-1">WhatsApp</h3>
-            <p className="text-xs text-gray-500">+91 93140 72153</p>
-          </a>
-
-          <a href="tel:+919314072153" className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col items-center text-center hover:border-charcoal-blue hover:shadow-md transition-all group">
-            <div className="w-14 h-14 bg-charcoal-blue/10 text-charcoal-blue rounded-2xl flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-              <Phone size={24} />
-            </div>
-            <h3 className="font-bold text-charcoal-blue mb-1">Phone</h3>
-            <p className="text-xs text-gray-500">+91 93140 72153</p>
-          </a>
-
-          <a href="https://linkedin.com/in/deepak-sogani" target="_blank" rel="noopener noreferrer" className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col items-center text-center hover:border-midnight-violet hover:shadow-md transition-all group">
-            <div className="w-14 h-14 bg-midnight-violet/10 text-midnight-violet rounded-2xl flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-              <Linkedin size={24} />
-            </div>
-            <h3 className="font-bold text-charcoal-blue mb-1">LinkedIn</h3>
-            <p className="text-xs text-gray-500">linkedin.com/in/deepak-sogani</p>
-          </a>
-        </motion.div>
-
-        {/* Forms Section */}
-        <motion.div initial="hidden" animate="visible" variants={fadeIn} className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="flex border-b border-slate-200">
-            <button 
+      {/* S3: Form Area */}
+      <section className="border-t border-line bg-paper-2">
+        <div className="page-x py-24 md:py-36 max-w-4xl">
+          {/* Tab Switcher */}
+          <div className="flex items-center gap-2 mb-8">
+            <button
               type="button"
-              className={`flex-1 py-4 font-bold text-center text-sm md:text-base transition-all ${
-                activeTab === 'general' 
-                  ? 'bg-charcoal-blue text-golden-pollen shadow-sm' 
-                  : 'bg-slate-50 text-gray-500 hover:bg-slate-100'
-              }`}
               onClick={() => setActiveTab('general')}
+              className={`rounded-full px-5 py-2.5 text-xs font-mono uppercase tracking-wider transition-colors duration-300 ${
+                activeTab === 'general'
+                  ? 'bg-ink text-paper'
+                  : 'border border-line bg-paper text-ink hover:border-ink'
+              }`}
             >
               General Message
             </button>
-            <button 
+            <button
               type="button"
-              className={`flex-1 py-4 font-bold text-center text-sm md:text-base transition-all ${
-                activeTab === 'institutional' 
-                  ? 'bg-charcoal-blue text-golden-pollen shadow-sm' 
-                  : 'bg-slate-50 text-gray-500 hover:bg-slate-100'
-              }`}
               onClick={() => setActiveTab('institutional')}
+              className={`rounded-full px-5 py-2.5 text-xs font-mono uppercase tracking-wider transition-colors duration-300 ${
+                activeTab === 'institutional'
+                  ? 'bg-ink text-paper'
+                  : 'border border-line bg-paper text-ink hover:border-ink'
+              }`}
             >
-              Institutional Enquiry (Schools & Colleges)
+              Institutional Partnership
             </button>
           </div>
 
-          <div className="p-8 md:p-12">
+          {/* Form Card */}
+          <div className="rounded-[1.75rem] border border-line bg-paper p-8 md:p-14">
             {status.message && (
-              <div className={`mb-8 p-4 rounded-2xl border text-sm flex items-center gap-3 ${
+              <div className={`mb-8 p-4 rounded-xl text-sm ${
                 status.type === 'success' 
-                  ? 'bg-tea-green/30 text-charcoal-blue border-tea-green' 
-                  : 'bg-red-50 text-red-700 border-red-200'
+                  ? 'bg-paper-2 border border-line text-ink' 
+                  : 'bg-signal-soft border border-signal/30 text-signal'
               }`}>
-                {status.type === 'success' && <CheckCircle2 size={18} className="text-charcoal-blue" />}
                 {status.message}
               </div>
             )}
 
-            {/* General Contact Form */}
+            {/* General Form */}
             {activeTab === 'general' && (
-              <form onSubmit={handleGeneralSubmit} className="space-y-6 max-w-3xl mx-auto">
-                <div className="grid md:grid-cols-2 gap-6">
+              <form onSubmit={handleGeneralSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-xs font-bold text-charcoal-blue uppercase tracking-wider mb-2">Name *</label>
+                    <label className="field-label">Name <span className="text-signal">*</span></label>
                     <input 
                       type="text" 
                       required 
                       value={generalForm.name}
                       onChange={(e) => setGeneralForm({ ...generalForm, name: e.target.value })}
                       placeholder="Your full name"
-                      className="w-full p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-golden-pollen focus:border-transparent outline-none text-sm text-charcoal-blue" 
+                      className="field" 
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-charcoal-blue uppercase tracking-wider mb-2">Email *</label>
+                    <label className="field-label">Email <span className="text-signal">*</span></label>
                     <input 
                       type="email" 
                       required 
                       value={generalForm.email}
                       onChange={(e) => setGeneralForm({ ...generalForm, email: e.target.value })}
                       placeholder="name@example.com"
-                      className="w-full p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-golden-pollen focus:border-transparent outline-none text-sm text-charcoal-blue" 
+                      className="field" 
                     />
                   </div>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-xs font-bold text-charcoal-blue uppercase tracking-wider mb-2">Phone (Optional)</label>
+                    <label className="field-label">Phone <span className="text-muted font-normal">(Optional)</span></label>
                     <input 
                       type="tel" 
                       value={generalForm.phone}
                       onChange={(e) => setGeneralForm({ ...generalForm, phone: e.target.value })}
                       placeholder="+91 98765 43210"
-                      className="w-full p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-golden-pollen focus:border-transparent outline-none text-sm text-charcoal-blue" 
+                      className="field" 
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-charcoal-blue uppercase tracking-wider mb-2">Subject</label>
+                    <label className="field-label">Subject</label>
                     <input 
                       type="text" 
                       value={generalForm.subject}
                       onChange={(e) => setGeneralForm({ ...generalForm, subject: e.target.value })}
                       placeholder="e.g. Student mentoring inquiry"
-                      className="w-full p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-golden-pollen focus:border-transparent outline-none text-sm text-charcoal-blue" 
+                      className="field" 
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-charcoal-blue uppercase tracking-wider mb-2">Message *</label>
+                  <label className="field-label">Message <span className="text-signal">*</span></label>
                   <textarea 
                     rows="4" 
                     required 
                     value={generalForm.message}
                     onChange={(e) => setGeneralForm({ ...generalForm, message: e.target.value })}
                     placeholder="How can we help you?"
-                    className="w-full p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-golden-pollen focus:border-transparent outline-none resize-none text-sm text-charcoal-blue"
-                  ></textarea>
+                    className="field resize-none"
+                  />
                 </div>
 
-                <div className="text-center pt-2">
-                  <button 
-                    type="submit" 
-                    disabled={loading}
-                    className="bg-golden-pollen text-charcoal-blue px-10 py-3.5 rounded-full font-bold hover:bg-secondary-hover shadow-md transition-all text-base disabled:opacity-50"
-                  >
+                <div className="pt-2">
+                  <Button type="submit" disabled={loading}>
                     {loading ? 'Sending...' : 'Send Message'}
-                  </button>
+                  </Button>
                 </div>
               </form>
             )}
 
-            {/* Institutional Enquiry */}
+            {/* Institutional Form */}
             {activeTab === 'institutional' && (
-              <div className="max-w-4xl mx-auto">
-                <div className="text-center mb-8">
-                  <h2 className="text-2xl font-serif font-bold text-charcoal-blue mb-2">Institutional Partnership Enquiry</h2>
-                  <p className="text-gray-500 text-sm">For schools, colleges and universities interested in our 90-day pilot framework.</p>
+              <form onSubmit={handleInstitutionalSubmit} className="space-y-6">
+                <div className="mb-8 border-b border-line pb-6">
+                  <h2 className="font-serif text-[1.75rem] text-ink mb-2">Institutional Partnership Enquiry</h2>
+                  <p className="text-sm text-muted">For schools, colleges and universities interested in our 90-day pilot framework.</p>
                 </div>
 
-                <form onSubmit={handleInstitutionalSubmit} className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-xs font-bold text-charcoal-blue uppercase tracking-wider mb-2">Institution Name *</label>
-                      <input 
-                        type="text" 
-                        required 
-                        value={instForm.institutionName}
-                        onChange={(e) => setInstForm({ ...instForm, institutionName: e.target.value })}
-                        placeholder="e.g. DPS International / Modern College"
-                        className="w-full p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-golden-pollen outline-none text-sm text-charcoal-blue" 
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-charcoal-blue uppercase tracking-wider mb-2">Institution Type</label>
-                      <select 
-                        value={instForm.institutionType}
-                        onChange={(e) => setInstForm({ ...instForm, institutionType: e.target.value })}
-                        className="w-full p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-golden-pollen outline-none bg-white text-sm text-charcoal-blue"
-                      >
-                        <option value="school">School (Senior Secondary)</option>
-                        <option value="college">Undergraduate College</option>
-                        <option value="university">University</option>
-                        <option value="other">Other Educational Organization</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-xs font-bold text-charcoal-blue uppercase tracking-wider mb-2">Contact Person *</label>
-                      <input 
-                        type="text" 
-                        required 
-                        value={instForm.contactPerson}
-                        onChange={(e) => setInstForm({ ...instForm, contactPerson: e.target.value })}
-                        placeholder="Name of Principal, Dean, or Coordinator"
-                        className="w-full p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-golden-pollen outline-none text-sm text-charcoal-blue" 
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-charcoal-blue uppercase tracking-wider mb-2">Designation</label>
-                      <input 
-                        type="text" 
-                        value={instForm.designation}
-                        onChange={(e) => setInstForm({ ...instForm, designation: e.target.value })}
-                        placeholder="e.g. Dean of Student Welfare / Principal"
-                        className="w-full p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-golden-pollen outline-none text-sm text-charcoal-blue" 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-xs font-bold text-charcoal-blue uppercase tracking-wider mb-2">Email *</label>
-                      <input 
-                        type="email" 
-                        required 
-                        value={instForm.email}
-                        onChange={(e) => setInstForm({ ...instForm, email: e.target.value })}
-                        placeholder="official.email@institution.edu"
-                        className="w-full p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-golden-pollen outline-none text-sm text-charcoal-blue" 
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-charcoal-blue uppercase tracking-wider mb-2">Phone *</label>
-                      <input 
-                        type="tel" 
-                        required 
-                        value={instForm.phone}
-                        onChange={(e) => setInstForm({ ...instForm, phone: e.target.value })}
-                        placeholder="+91 98765 43210"
-                        className="w-full p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-golden-pollen outline-none text-sm text-charcoal-blue" 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-xs font-bold text-charcoal-blue uppercase tracking-wider mb-2">City, State</label>
-                      <input 
-                        type="text" 
-                        value={instForm.city}
-                        onChange={(e) => setInstForm({ ...instForm, city: e.target.value })}
-                        placeholder="e.g. Jaipur, Rajasthan"
-                        className="w-full p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-golden-pollen outline-none text-sm text-charcoal-blue" 
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-charcoal-blue uppercase tracking-wider mb-2">Approximate Student Strength</label>
-                      <input 
-                        type="text" 
-                        value={instForm.studentStrength}
-                        onChange={(e) => setInstForm({ ...instForm, studentStrength: e.target.value })}
-                        placeholder="e.g. 500+ senior students"
-                        className="w-full p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-golden-pollen outline-none text-sm text-charcoal-blue" 
-                      />
-                    </div>
-                  </div>
-
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-xs font-bold text-charcoal-blue uppercase tracking-wider mb-3">Interested In (Select all that apply)</label>
-                    <div className="grid sm:grid-cols-2 gap-3">
-                      {[
-                        "Individual Mentoring", "Small-Group Conversations", 
-                        "Student Leadership", "Career/Higher-Ed Exposure", 
-                        "Parent Engagement", "School-to-Life Transition", 
-                        "Professional Exposure", "Student Development Insights"
-                      ].map((item, i) => (
-                        <label key={i} className="flex items-center space-x-3 text-xs md:text-sm text-gray-700 bg-slate-50 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:border-golden-pollen">
-                          <input 
-                            type="checkbox" 
-                            onChange={() => toggleInterest(item)}
-                            className="w-4 h-4 text-golden-pollen rounded border-gray-300 focus:ring-golden-pollen" 
-                          />
-                          <span>{item}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-charcoal-blue uppercase tracking-wider mb-2">Nature of Enquiry *</label>
-                    <textarea 
-                      rows="4" 
+                    <label className="field-label">Institution Name <span className="text-signal">*</span></label>
+                    <input 
+                      type="text" 
                       required 
-                      value={instForm.enquiryNature}
-                      onChange={(e) => setInstForm({ ...instForm, enquiryNature: e.target.value })}
-                      placeholder="Briefly describe what your institution is looking to achieve for your students."
-                      className="w-full p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-golden-pollen outline-none resize-none text-sm text-charcoal-blue"
-                    ></textarea>
+                      value={instForm.institutionName}
+                      onChange={(e) => setInstForm({ ...instForm, institutionName: e.target.value })}
+                      placeholder="e.g. DPS International / Modern College"
+                      className="field" 
+                    />
                   </div>
-
-                  <div className="text-center pt-2">
-                    <button 
-                      type="submit" 
-                      disabled={loading}
-                      className="bg-golden-pollen text-charcoal-blue px-10 py-3.5 rounded-full font-bold hover:bg-secondary-hover shadow-md transition-all text-base disabled:opacity-50"
+                  <div>
+                    <label className="field-label">Institution Type</label>
+                    <select 
+                      value={instForm.institutionType}
+                      onChange={(e) => setInstForm({ ...instForm, institutionType: e.target.value })}
+                      className="field bg-paper"
                     >
-                      {loading ? 'Submitting...' : 'Submit Institutional Enquiry'}
-                    </button>
+                      <option value="school">School (Senior Secondary)</option>
+                      <option value="college">Undergraduate College</option>
+                      <option value="university">University</option>
+                      <option value="other">Other Educational Organization</option>
+                    </select>
                   </div>
-                </form>
-              </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="field-label">Contact Person <span className="text-signal">*</span></label>
+                    <input 
+                      type="text" 
+                      required 
+                      value={instForm.contactPerson}
+                      onChange={(e) => setInstForm({ ...instForm, contactPerson: e.target.value })}
+                      placeholder="Name of Principal, Dean, or Coordinator"
+                      className="field" 
+                    />
+                  </div>
+                  <div>
+                    <label className="field-label">Designation</label>
+                    <input 
+                      type="text" 
+                      value={instForm.designation}
+                      onChange={(e) => setInstForm({ ...instForm, designation: e.target.value })}
+                      placeholder="e.g. Dean of Student Welfare / Principal"
+                      className="field" 
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="field-label">Email <span className="text-signal">*</span></label>
+                    <input 
+                      type="email" 
+                      required 
+                      value={instForm.email}
+                      onChange={(e) => setInstForm({ ...instForm, email: e.target.value })}
+                      placeholder="official.email@institution.edu"
+                      className="field" 
+                    />
+                  </div>
+                  <div>
+                    <label className="field-label">Phone <span className="text-signal">*</span></label>
+                    <input 
+                      type="tel" 
+                      required 
+                      value={instForm.phone}
+                      onChange={(e) => setInstForm({ ...instForm, phone: e.target.value })}
+                      placeholder="+91 98765 43210"
+                      className="field" 
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="field-label">City, State</label>
+                    <input 
+                      type="text" 
+                      value={instForm.city}
+                      onChange={(e) => setInstForm({ ...instForm, city: e.target.value })}
+                      placeholder="e.g. Jaipur, Rajasthan"
+                      className="field" 
+                    />
+                  </div>
+                  <div>
+                    <label className="field-label">Approximate Student Strength</label>
+                    <input 
+                      type="text" 
+                      value={instForm.studentStrength}
+                      onChange={(e) => setInstForm({ ...instForm, studentStrength: e.target.value })}
+                      placeholder="e.g. 500+ senior students"
+                      className="field" 
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="field-label mb-3">Interested In (Select all that apply)</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {INTEREST_OPTIONS.map((item, i) => (
+                      <label key={i} className="flex items-center gap-3 text-xs md:text-sm text-ink-2 bg-paper-2 p-3 rounded-xl border border-line cursor-pointer hover:border-ink">
+                        <input 
+                          type="checkbox" 
+                          onChange={() => toggleInterest(item)}
+                          className="accent-[#1C1B18]" 
+                        />
+                        <span>{item}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="field-label">Nature of Enquiry <span className="text-signal">*</span></label>
+                  <textarea 
+                    rows="4" 
+                    required 
+                    value={instForm.enquiryNature}
+                    onChange={(e) => setInstForm({ ...instForm, enquiryNature: e.target.value })}
+                    placeholder="Briefly describe what your institution is looking to achieve for your students."
+                    className="field resize-none"
+                  />
+                </div>
+
+                <div className="pt-2">
+                  <Button type="submit" disabled={loading}>
+                    {loading ? 'Submitting...' : 'Submit Institutional Enquiry'}
+                  </Button>
+                </div>
+              </form>
             )}
           </div>
-        </motion.div>
 
-        {/* S5: Location */}
-        <div className="mt-16 text-center text-gray-500 flex items-center justify-center gap-2 text-sm">
-          <MapPin size={18} className="text-charcoal-blue" />
-          <span>Jaipur, Rajasthan, India</span>
+          <div className="mt-16 text-center">
+            <span className="meta">Jaipur, Rajasthan, India</span>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

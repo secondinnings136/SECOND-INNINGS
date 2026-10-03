@@ -1,137 +1,46 @@
-'use client'
-
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { 
-  ArrowRight, 
-  CheckCircle2, 
-  XCircle, 
-  MessageSquare, 
-  Sparkles, 
-  HelpCircle, 
-  Compass, 
-  Lightbulb, 
-  Target, 
-  Repeat,
-  HeartHandshake,
-  ShieldCheck,
-  Quote
-} from 'lucide-react';
+import Button from '../components/ui/Button';
+import Arrow from '../components/ui/Arrow';
+import ScrubText from '../components/ui/ScrubText';
+import SectionHead from '../components/ui/SectionHead';
+import ScalePortrait from '../components/ui/ScalePortrait';
+import { Reveal, RevealGroup, RevealItem } from '../components/ui/Reveal';
+import StepStack from '../components/home/StepStack';
 
-const fadeIn = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }
-};
+const PERSONAL_QUESTIONS = [
+  'What do I really want?',
+  'What am I actually good at?',
+  'Am I choosing for myself, or following what others expect?',
+  'What possibilities am I not even aware of?',
+  'And what should I do next?',
+];
 
 const WHO_IS_IT_FOR = [
-  {
-    title: 'Trying to understand yourself better',
-    desc: 'Your marks, degree or résumé tell only part of your story.',
-    icon: Compass,
-  },
-  {
-    title: 'Wondering what comes next',
-    desc: 'You have options but aren\'t sure how to think about them.',
-    icon: HelpCircle,
-  },
-  {
-    title: 'Exploring education or career possibilities',
-    desc: 'Not simply "Which course should I choose?" but also "Why does this choice make sense for me?"',
-    icon: Lightbulb,
-  },
-  {
-    title: 'Looking beyond conventional options',
-    desc: 'You want to discover opportunities, experiences or paths you may not have encountered before.',
-    icon: Sparkles,
-  },
-  {
-    title: 'Preparing for a transition',
-    desc: 'School to university. University life. Internships. Projects. First career decisions. Life after graduation.',
-    icon: Target,
-  },
-  {
-    title: 'Dealing with a setback or change of plan',
-    desc: 'Something hasn\'t worked as expected, and you\'re trying to understand what comes next.',
-    icon: Repeat,
-  },
-  {
-    title: 'Carrying a question you haven\'t been able to discuss openly',
-    desc: 'Sometimes the starting point isn\'t a career decision at all. It is simply something you need to talk through.',
-    icon: MessageSquare,
-  },
+  { title: 'Trying to understand yourself better', desc: 'Your marks, degree or résumé tell only part of your story.' },
+  { title: 'Wondering what comes next', desc: "You have options but aren't sure how to think about them." },
+  { title: 'Exploring education or career possibilities', desc: 'Not simply "Which course should I choose?" but also "Why does this choice make sense for me?"' },
+  { title: 'Looking beyond conventional options', desc: 'You want to discover opportunities, experiences or paths you may not have encountered before.' },
+  { title: 'Preparing for a transition', desc: 'School to university. University life. Internships. Projects. First career decisions. Life after graduation.' },
+  { title: 'Dealing with a setback or change of plan', desc: "Something hasn't worked as expected, and you're trying to understand what comes next." },
+  { title: "Carrying a question you haven't been able to discuss openly", desc: "Sometimes the starting point isn't a career decision at all. It is simply something you need to talk through." },
 ];
 
 const METHODOLOGY_STEPS = [
-  {
-    step: '01',
-    name: 'TALK',
-    subtitle: 'What\'s on your mind?',
-    description: 'You don\'t need to arrive with a perfectly framed question. Sometimes even "I am confused" is enough to begin.',
-  },
-  {
-    step: '02',
-    name: 'UNDERSTAND',
-    subtitle: 'We look beyond the immediate question.',
-    description: 'What matters to you? What are you experiencing? What are your concerns? What might be influencing your thinking? Understanding comes before advice.',
-  },
-  {
-    step: '03',
-    name: 'EXPLORE',
-    subtitle: 'There may be possibilities you haven\'t considered yet.',
-    description: 'Together, we explore different perspectives, alternatives, opportunities and questions worth thinking about.',
-  },
-  {
-    step: '04',
-    name: 'CHOOSE YOUR NEXT STEP',
-    subtitle: 'The objective isn\'t for someone else to make the decision for you.',
-    description: 'It is to help you move towards a next step that makes sense to you and that you are willing to own.',
-  },
-  {
-    step: '05',
-    name: 'FOLLOW THROUGH',
-    subtitle: 'Where appropriate, we reconnect.',
-    description: 'What did you try? What happened? What did you discover? What should happen next? Because a meaningful conversation becomes more valuable when it leads to action.',
-  },
+  { step: '01', name: 'Talk', subtitle: "What's on your mind?", description: 'You don\'t need to arrive with a perfectly framed question. Sometimes even "I am confused" is enough to begin.' },
+  { step: '02', name: 'Understand', subtitle: 'We look beyond the immediate question.', description: 'What matters to you? What are you experiencing? What are your concerns? What might be influencing your thinking? Understanding comes before advice.' },
+  { step: '03', name: 'Explore', subtitle: "There may be possibilities you haven't considered yet.", description: 'Together, we explore different perspectives, alternatives, opportunities and questions worth thinking about.' },
+  { step: '04', name: 'Choose your next step', subtitle: "The objective isn't for someone else to make the decision for you.", description: 'It is to help you move towards a next step that makes sense to you and that you are willing to own.' },
+  { step: '05', name: 'Follow through', subtitle: 'Where appropriate, we reconnect.', description: 'What did you try? What happened? What did you discover? What should happen next? Because a meaningful conversation becomes more valuable when it leads to action.' },
 ];
 
 const STUDENT_VOICES = [
-  {
-    category: 'LIFE PREPARATION',
-    quote: 'You never just prepared students for university, you prepared us for life. You taught us to take ownership, stay disciplined, think independently, stand by our decisions, and never compromise on our values.',
-    name: 'Priya Kaushik',
-    role: 'Project Manager | Business Analyst',
-  },
-  {
-    category: 'LEADERSHIP',
-    quote: 'You were the person who saw potential in me before I did... The confidence to take on opportunities, make difficult decisions, and lead people is something I owe to you.',
-    name: 'Bismanpreet Singh',
-    role: 'Startup Ecosystem Professional | Former Student Council President',
-  },
-  {
-    category: 'PERSPECTIVE',
-    quote: 'Whenever I found myself unsure of the next step, your perspective helped me see possibilities I couldn\'t see on my own... every student deserves to have a mentor like you.',
-    name: 'Himangi Chaturvedi',
-    role: 'Associate Project Manager',
-  },
-  {
-    category: 'DECISION-MAKING',
-    quote: 'What I value most is that you never simply gave answers - you helped me learn how to find them myself.',
-    name: 'Omprakash Kumawat',
-    role: 'Software Engineer',
-  },
-  {
-    category: 'REAL-WORLD READINESS',
-    quote: 'The professional world has made us realize exactly why you pushed us so hard. You didn\'t just teach us, you built our character and prepared us for reality.',
-    name: 'Jia Soni',
-    role: 'HR Manager | Coaching & Mentoring',
-  },
-  {
-    category: 'CONFIDENCE',
-    quote: 'You\'ve been more than a mentor - you\'ve been a catalyst... Every conversation with you left me feeling clearer, stronger, and more capable.',
-    name: 'Diya Garg',
-    role: 'Data Science Student',
-  },
+  { category: 'Life preparation', quote: 'You never just prepared students for university, you prepared us for life. You taught us to take ownership, stay disciplined, think independently, stand by our decisions, and never compromise on our values.', name: 'Priya Kaushik', role: 'Project Manager | Business Analyst' },
+  { category: 'Leadership', quote: 'You were the person who saw potential in me before I did... The confidence to take on opportunities, make difficult decisions, and lead people is something I owe to you.', name: 'Bismanpreet Singh', role: 'Startup Ecosystem Professional | Former Student Council President' },
+  { category: 'Perspective', quote: "Whenever I found myself unsure of the next step, your perspective helped me see possibilities I couldn't see on my own... every student deserves to have a mentor like you.", name: 'Himangi Chaturvedi', role: 'Associate Project Manager' },
+  { category: 'Decision-making', quote: 'What I value most is that you never simply gave answers. You helped me learn how to find them myself.', name: 'Omprakash Kumawat', role: 'Software Engineer' },
+  { category: 'Real-world readiness', quote: "The professional world has made us realize exactly why you pushed us so hard. You didn't just teach us, you built our character and prepared us for reality.", name: 'Jia Soni', role: 'HR Manager | Coaching & Mentoring' },
+  { category: 'Confidence', quote: "You've been more than a mentor, you've been a catalyst... Every conversation with you left me feeling clearer, stronger, and more capable.", name: 'Diya Garg', role: 'Data Science Student' },
 ];
 
 const WHAT_IT_IS_AND_ISNT = [
@@ -140,447 +49,390 @@ const WHAT_IT_IS_AND_ISNT = [
   { is: 'A place to explore possibilities.', isNot: 'A conventional career-selection service.' },
   { is: 'A source of new perspectives.', isNot: 'A substitute for professional mental-health support.' },
   { is: 'A conversation that can lead to action.', isNot: 'A place where somebody else decides your future for you.' },
-  { is: 'A journey towards greater ownership of one\'s choices.', isNot: 'A system that tells you what you should become.' },
+  { is: "A journey towards greater ownership of one's choices.", isNot: 'A system that tells you what you should become.' },
 ];
 
 export default function Home() {
   return (
-    <div className="flex flex-col w-full text-gray-800">
-      {/* 1. HERO SECTION */}
-      <section className="relative bg-gradient-to-br from-charcoal-blue via-[#263747] to-midnight-violet text-white py-24 sm:py-32 px-6 overflow-hidden">
-        {/* Subtle ambient lighting */}
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-tea-green/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-golden-pollen/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="w-full">
+      {/* 1. HERO: artistic asymmetry, inline portrait pill */}
+      <section className="page-x relative pt-36 md:pt-48 pb-20 md:pb-28">
+        <RevealGroup>
+          <RevealItem className="mb-10 flex flex-wrap items-center gap-x-6 gap-y-2">
+            <span className="meta text-ink">Young Minds. New Perspectives. Wider Possibilities.</span>
+            <span aria-hidden="true" className="hidden h-px w-8 bg-line sm:block" />
+            <span className="meta">Jaipur, India</span>
+            <span aria-hidden="true" className="hidden h-px w-8 bg-line sm:block" />
+            <span className="meta">Ages 16 to 25</span>
+          </RevealItem>
 
-        <div className="container mx-auto px-4 max-w-4xl text-center relative z-10">
-          <p className="text-xs uppercase tracking-widest text-tea-green font-semibold mb-4">
-            SECOND INNINGS
-          </p>
-          <motion.h2 
-            initial="hidden" animate="visible" variants={fadeIn}
-            className="text-sm sm:text-base uppercase tracking-[0.25em] text-golden-pollen font-semibold mb-6"
+          <RevealItem
+            as="h1"
+            className="max-w-[78rem] font-serif text-[clamp(2.75rem,6.2vw,6.25rem)] leading-[0.95] tracking-[-0.025em] text-ink"
           >
-            Young Minds. New Perspectives. Wider Possibilities.
-          </motion.h2>
+            Sometimes, you don&apos;t need another answer.{' '}
+            <span className="relative mx-1 inline-block h-[0.78em] w-[1.7em] translate-y-[0.08em] overflow-hidden rounded-full align-baseline bg-paper-3">
+              <Image
+                src="/deepaksogani.jpeg"
+                alt=""
+                fill
+                priority
+                sizes="200px"
+                className="object-cover object-[50%_25%] grayscale"
+              />
+              <span aria-hidden="true" className="halftone absolute inset-0 opacity-30" />
+            </span>{' '}
+            You need the <em className="italic text-signal">right conversation.</em>
+          </RevealItem>
+        </RevealGroup>
 
-          <motion.h1 
-            initial="hidden" animate="visible" variants={fadeIn}
-            className="text-4xl sm:text-6xl font-bold mb-6 font-serif tracking-tight leading-tight text-white"
-          >
-            Sometimes, you don't need another answer. You need the right conversation.
-          </motion.h1>
-
-          <motion.p 
-            initial="hidden" animate="visible" variants={fadeIn}
-            className="text-lg sm:text-xl text-gray-200 mb-10 max-w-2xl mx-auto font-light leading-relaxed"
-          >
-            Second Innings is a space for young people to talk openly, understand themselves better, explore possibilities and find their own way forward.
-          </motion.p>
-
-          <motion.div 
-            initial="hidden" animate="visible" variants={fadeIn}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
-          >
-            <Link 
-              href="/book" 
-              className="w-full sm:w-auto bg-golden-pollen text-charcoal-blue px-8 py-3.5 rounded-full font-bold hover:bg-secondary-hover shadow-lg hover:shadow-xl transition-all text-base sm:text-lg text-center"
-            >
-              Start a Conversation
-            </Link>
-            <a 
-              href="#about-second-innings" 
-              className="w-full sm:w-auto bg-white/10 border border-white/20 text-white px-8 py-3.5 rounded-full font-medium hover:bg-white/20 transition-all text-base sm:text-lg backdrop-blur-sm text-center"
-            >
-              Explore Second Innings
-            </a>
-          </motion.div>
+        <div className="mt-14 grid grid-cols-1 gap-10 md:mt-20 md:grid-cols-12">
+          <Reveal className="md:col-span-5 md:col-start-7" delay={0.2}>
+            <p className="lede text-[1.1875rem]">
+              Second Innings is a space for young people to talk openly, understand themselves better, explore possibilities and find their own way forward.
+            </p>
+            <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-4">
+              <Button href="/book">Start a Conversation</Button>
+              <Button href="#about-second-innings" variant="link" arrow="down">Explore Second Innings</Button>
+            </div>
+          </Reveal>
         </div>
       </section>
 
-      {/* 2. THE HOOK: INFORMATION EVERYWHERE VS CLARITY */}
-      <section className="py-20 sm:py-28 bg-white border-b border-gray-100">
-        <div className="container mx-auto px-4 max-w-3xl">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn} className="space-y-6 text-gray-700">
-            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-charcoal-blue leading-snug">
-              Not every question has an obvious answer.
-            </h2>
-            <p className="text-lg leading-relaxed">
-              You have information everywhere. Courses to choose from. Careers to consider. Opportunities to explore. Opinions to listen to. Expectations to meet. And countless stories telling you what success should look like.
-            </p>
-            <p className="text-lg font-medium text-charcoal-blue">
-              But more information doesn't always bring more clarity.
-            </p>
-            
-            <div className="p-8 rounded-2xl bg-slate-50 border border-slate-100 space-y-3 my-6">
-              <p className="text-xs uppercase tracking-wider font-semibold text-gray-400 mb-2">Sometimes, the questions are more personal:</p>
-              <ul className="space-y-2 text-base sm:text-lg text-charcoal-blue font-serif italic">
-                <li className="flex items-center gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-golden-pollen flex-shrink-0" />
-                  What do I really want?
-                </li>
-                <li className="flex items-center gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-golden-pollen flex-shrink-0" />
-                  What am I actually good at?
-                </li>
-                <li className="flex items-center gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-golden-pollen flex-shrink-0" />
-                  Am I choosing for myself, or following what others expect?
-                </li>
-                <li className="flex items-center gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-golden-pollen flex-shrink-0" />
-                  What possibilities am I not even aware of?
-                </li>
-                <li className="flex items-center gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-golden-pollen flex-shrink-0" />
-                  And what should I do next?
-                </li>
-              </ul>
+      {/* 2. HOOK: scrubbed paragraph + personal questions */}
+      <section className="border-t border-line">
+        <div className="page-x py-28 md:py-40">
+          <div className="grid grid-cols-1 gap-12 md:grid-cols-12">
+            <div className="md:col-span-4">
+              <Reveal>
+                <h2 className="font-serif text-[clamp(2.25rem,4vw,3.75rem)] leading-[1] tracking-[-0.02em]">
+                  Not every question has an obvious answer.
+                </h2>
+              </Reveal>
             </div>
+            <div className="md:col-span-7 md:col-start-6">
+              <ScrubText
+                className="font-serif text-[clamp(1.5rem,2.4vw,2.125rem)] leading-[1.25] tracking-[-0.01em] text-ink"
+                text="You have information everywhere. Courses to choose from. Careers to consider. Opportunities to explore. Opinions to listen to. Expectations to meet. And countless stories telling you what success should look like. But more information doesn't always bring more clarity."
+              />
+            </div>
+          </div>
 
-            <p className="text-lg leading-relaxed">
-              You don't need to have all the answers. Sometimes, you need a space where you can talk openly, think differently and explore without being judged or told what you should become.
-            </p>
-            <p className="text-lg font-serif font-bold text-charcoal-blue">
-              That's where Second Innings begins. A conversation can bring a new perspective. A new perspective can open wider possibilities.
-            </p>
-          </motion.div>
+          <div className="mt-24 md:mt-32">
+            <Reveal>
+              <p className="meta mb-6">Sometimes, the questions are more personal</p>
+            </Reveal>
+            <RevealGroup as="ol" className="border-t border-line">
+              {PERSONAL_QUESTIONS.map((q, i) => (
+                <RevealItem
+                  as="li"
+                  key={q}
+                  className="group grid grid-cols-12 items-baseline gap-4 border-b border-line py-6 md:py-8"
+                >
+                  <span className="meta col-span-2 md:col-span-1">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="col-span-10 md:col-span-11 font-serif italic text-[clamp(1.625rem,3.2vw,3rem)] leading-[1.05] tracking-[-0.015em] text-ink transition-transform duration-700 ease-editorial group-hover:translate-x-2">
+                    {q}
+                  </span>
+                </RevealItem>
+              ))}
+            </RevealGroup>
+          </div>
+
+          <div className="mt-20 grid grid-cols-1 gap-10 md:grid-cols-12">
+            <Reveal className="md:col-span-6 md:col-start-2">
+              <p className="lede">
+                You don&apos;t need to have all the answers. Sometimes, you need a space where you can talk openly, think differently and explore without being judged or told what you should become.
+              </p>
+            </Reveal>
+            <Reveal className="md:col-span-4" delay={0.1}>
+              <p className="font-serif text-[1.5rem] leading-[1.2] text-ink">
+                That&apos;s where Second Innings begins. A conversation can bring a new perspective. A new perspective can open wider possibilities.
+              </p>
+            </Reveal>
+          </div>
         </div>
       </section>
 
-      {/* 3. ABOUT SECOND INNINGS */}
-      <section id="about-second-innings" className="py-20 sm:py-28 bg-slate-50">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="space-y-8">
-            <div>
-              <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">About Second Innings</p>
-              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-charcoal-blue mb-4">
-                A Space for Perspective, Possibilities and Action
-              </h2>
+      {/* 3. ABOUT: editorial split with sticky title */}
+      <section id="about-second-innings" className="scroll-mt-24 border-t border-line bg-paper-2">
+        <div className="page-x grid grid-cols-1 gap-12 py-28 md:grid-cols-12 md:py-40">
+          <div className="md:col-span-5">
+            <div className="md:sticky md:top-32">
+              <SectionHead meta="About Second Innings" title="A space for perspective, possibilities and action" />
             </div>
+          </div>
 
-            <div className="prose prose-lg text-gray-700 space-y-5 leading-relaxed">
-              <p>
-                Second Innings is an initiative created to support young people as they navigate the choices, transitions and possibilities that shape their lives beyond the classroom.
-              </p>
-              <p>
-                It is built on the belief that preparing for life requires more than academic achievement or access to information. Young people also benefit from opportunities to understand themselves, broaden their exposure, consider different perspectives and develop the confidence to make choices they can own.
-              </p>
-              <p>
-                Second Innings brings these elements together through individual conversations, meaningful exposure, exploration of opportunities and thoughtful follow-through.
-              </p>
-              <p>
-                It is deliberately different from a conventional counselling, coaching or motivational model. There are no ready-made prescriptions and no attempt to define success for the young person.
-              </p>
-              <p>
-                Instead, the approach is to listen before responding, understand before suggesting, explore before narrowing choices, and encourage action rather than dependence.
-              </p>
-            </div>
+          <div className="md:col-span-6 md:col-start-7">
+            <RevealGroup className="space-y-6">
+              {[
+                'Second Innings is an initiative created to support young people as they navigate the choices, transitions and possibilities that shape their lives beyond the classroom.',
+                'It is built on the belief that preparing for life requires more than academic achievement or access to information. Young people also benefit from opportunities to understand themselves, broaden their exposure, consider different perspectives and develop the confidence to make choices they can own.',
+                'Second Innings brings these elements together through individual conversations, meaningful exposure, exploration of opportunities and thoughtful follow-through.',
+                'It is deliberately different from a conventional counselling, coaching or motivational model. There are no ready-made prescriptions and no attempt to define success for the young person.',
+                'Instead, the approach is to listen before responding, understand before suggesting, explore before narrowing choices, and encourage action rather than dependence.',
+              ].map((p) => (
+                <RevealItem as="p" key={p.slice(0, 24)} className="lede">
+                  {p}
+                </RevealItem>
+              ))}
+            </RevealGroup>
 
-            {/* Purpose Callout */}
-            <div className="p-6 sm:p-8 rounded-2xl bg-white border border-gray-200 shadow-sm">
-              <p className="text-xs uppercase tracking-wider text-golden-pollen font-bold mb-2">The Purpose Is Simple</p>
-              <p className="text-xl sm:text-2xl font-serif font-bold text-charcoal-blue">
+            <Reveal className="mt-16 border-y border-ink py-10">
+              <p className="meta mb-5 text-signal">The purpose is simple</p>
+              <p className="font-serif text-[clamp(1.75rem,2.8vw,2.5rem)] leading-[1.1] tracking-[-0.015em] text-ink">
                 To help young people see more, think more clearly and move forward with greater ownership of their choices.
               </p>
-            </div>
+            </Reveal>
 
-            {/* Why Second Innings */}
-            <div className="pt-6 border-t border-gray-200 space-y-4">
-              <h3 className="text-2xl font-serif font-bold text-charcoal-blue">
-                Why "Second Innings"?
-              </h3>
-              <p className="text-gray-700 leading-relaxed">
+            <RevealGroup className="mt-16 space-y-5">
+              <RevealItem as="h3" className="font-serif text-[2rem] leading-none">
+                Why &ldquo;Second Innings&rdquo;?
+              </RevealItem>
+              <RevealItem as="p" className="lede">
                 After more than three decades across the corporate world, entrepreneurship and higher education, Deepak Sogani chose to dedicate the next phase of his professional life to working with young people.
-              </p>
-              <p className="text-gray-700 leading-relaxed">
+              </RevealItem>
+              <RevealItem as="p" className="lede">
                 His experience of working closely with university students reinforced something he had come to value deeply: some of the most meaningful contributions happen through conversations that help a young person gain perspective, discover an opportunity, reconsider a choice or take a meaningful next step.
-              </p>
-              <p className="p-4 rounded-xl bg-tea-green/20 text-charcoal-blue font-medium italic border border-tea-green/40">
+              </RevealItem>
+              <RevealItem as="blockquote" className="border-l-2 border-signal pl-6 font-serif italic text-[1.375rem] leading-[1.3] text-ink">
                 The first innings was about building his own journey. The Second Innings is about using that experience to contribute to the journeys of young people.
+              </RevealItem>
+            </RevealGroup>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. WHO IT IS FOR: Swiss hairline grid, 7 + 1 */}
+      <section className="border-t border-line">
+        <div className="page-x py-28 md:py-40">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:items-end">
+            <SectionHead className="md:col-span-7" meta="Who it is for" title="You don't need to have everything figured out." />
+            <Reveal className="md:col-span-4 md:col-start-9">
+              <p className="lede">
+                Second Innings is primarily for young people navigating important questions, choices and transitions in their lives.
               </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. WHO IT IS FOR (7 SITUATIONS) */}
-      <section className="py-20 sm:py-28 bg-white">
-        <div className="container mx-auto px-4 max-w-5xl">
-          <div className="text-center mb-14">
-            <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">Who It Is For</p>
-            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-charcoal-blue mb-4">
-              You don't need to have everything figured out.
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Second Innings is primarily for young people navigating important questions, choices and transitions in their lives.
-            </p>
+            </Reveal>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {WHO_IS_IT_FOR.map((item, idx) => {
-              const Icon = item.icon;
-              return (
-                <div 
-                  key={idx}
-                  className="p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-golden-pollen/50 hover:shadow-sm transition-all flex items-start gap-4"
-                >
-                  <div className="w-12 h-12 rounded-xl bg-tea-green/30 text-charcoal-blue flex items-center justify-center flex-shrink-0 mt-1">
-                    <Icon className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-charcoal-blue mb-1.5">{item.title}</h3>
-                    <p className="text-gray-600 text-sm leading-relaxed">{item.desc}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="text-center mt-12">
-            <p className="text-charcoal-blue font-serif italic text-lg mb-4">
-              You don't need to arrive with an answer. You can begin with the question.
-            </p>
-            <Link
-              href="/book"
-              className="inline-flex items-center bg-golden-pollen text-charcoal-blue px-8 py-3.5 rounded-full font-bold hover:bg-secondary-hover shadow-md transition-all text-sm uppercase tracking-wider"
-            >
-              Start a Conversation <ArrowRight size={16} className="ml-2" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. HOW IT WORKS (5 STEPS) */}
-      <section className="py-20 sm:py-28 bg-slate-50">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="text-center mb-16">
-            <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">How It Works</p>
-            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-charcoal-blue mb-4">
-              One Conversation Can Be a Beginning
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Second Innings does not begin with a presentation, a questionnaire full of scores or a predetermined solution. It begins with you.
-            </p>
-          </div>
-
-          <div className="space-y-6">
-            {METHODOLOGY_STEPS.map((s) => (
-              <div 
-                key={s.step}
-                className="p-6 sm:p-8 rounded-2xl bg-white border border-gray-100 shadow-sm flex flex-col sm:flex-row items-start gap-6"
+          <RevealGroup className="hairline-grid mt-16 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+            {WHO_IS_IT_FOR.map((item, i) => (
+              <RevealItem
+                key={item.title}
+                className="group flex min-h-[17rem] flex-col justify-between p-7 transition-colors duration-500 ease-editorial hover:bg-paper-2"
               >
-                <div className="text-3xl sm:text-4xl font-serif font-extrabold text-golden-pollen sm:w-16 flex-shrink-0">
-                  {s.step}
+                <span className="meta">{String(i + 1).padStart(2, '0')}</span>
+                <div>
+                  <h3 className="font-serif text-[1.625rem] leading-[1.05] tracking-[-0.01em] text-ink">{item.title}</h3>
+                  <p className="mt-3 text-[0.9375rem] leading-[1.55] text-muted">{item.desc}</p>
                 </div>
-                <div className="space-y-2">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <h3 className="text-xl font-bold text-charcoal-blue uppercase tracking-wider">{s.name}</h3>
-                    <span className="text-sm font-serif italic text-gray-500">{s.subtitle}</span>
-                  </div>
-                  <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
-                    {s.description}
-                  </p>
-                </div>
-              </div>
+              </RevealItem>
             ))}
+            <RevealItem className="!bg-ink">
+              <Link href="/book" className="group flex h-full min-h-[17rem] flex-col justify-between p-7 text-paper">
+                <span className="meta text-paper/60">Begin here</span>
+                <div>
+                  <p className="font-serif italic text-[1.625rem] leading-[1.1]">
+                    You don&apos;t need to arrive with an answer. You can begin with the question.
+                  </p>
+                  <span className="mt-6 inline-flex items-center gap-2 text-[0.9375rem] font-medium">
+                    Start a Conversation
+                    <Arrow className="h-3.5 w-3.5 transition-transform duration-500 ease-editorial group-hover:translate-x-1" />
+                  </span>
+                </div>
+              </Link>
+            </RevealItem>
+          </RevealGroup>
+        </div>
+      </section>
+
+      {/* 5. HOW IT WORKS: sticky stacking cards */}
+      <section className="border-t border-line bg-paper-2">
+        <div className="page-x py-28 md:py-40">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:items-end">
+            <SectionHead className="md:col-span-7" meta="How it works" title="One conversation can be a beginning" />
+            <Reveal className="md:col-span-4 md:col-start-9">
+              <p className="lede">
+                Second Innings does not begin with a presentation, a questionnaire full of scores or a predetermined solution. It begins with you.
+              </p>
+            </Reveal>
           </div>
+          <div className="mt-16 md:mt-24">
+            <StepStack steps={METHODOLOGY_STEPS} />
+          </div>
+          <Reveal className="mt-10">
+            <Button href="/how-it-works" variant="link">See the full approach</Button>
+          </Reveal>
         </div>
       </section>
 
       {/* 6. MEET DEEPAK */}
-      <section className="py-20 sm:py-28 bg-white border-b border-gray-100">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-center">
-            <div className="md:col-span-5 flex justify-center">
-              <div className="relative w-64 h-80 rounded-3xl overflow-hidden shadow-xl border-4 border-white">
-                <Image
-                  src="/deepaksogani.jpeg"
-                  alt="Deepak Sogani, Founder of Second Innings"
-                  fill
-                  className="object-cover"
-                />
-              </div>
+      <section className="border-t border-line">
+        <div className="page-x grid grid-cols-1 gap-12 py-28 md:grid-cols-12 md:gap-10 md:py-40">
+          <div className="md:col-span-5">
+            <ScalePortrait
+              src="/deepaksogani.jpeg"
+              alt="Deepak Sogani, Founder of Second Innings"
+              className="aspect-[4/5] w-full"
+            />
+            <div className="mt-4 flex items-center justify-between">
+              <span className="meta">Deepak Sogani</span>
+              <span className="meta">Founder, Second Innings</span>
             </div>
+          </div>
 
-            <div className="md:col-span-7 space-y-4">
-              <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold">About Deepak</p>
-              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-charcoal-blue">
-                Meet Deepak Sogani
-              </h2>
-              <p className="text-xs uppercase tracking-wider text-golden-pollen font-bold">
-                Founder, Second Innings
+          <div className="md:col-span-6 md:col-start-7 flex flex-col justify-center">
+            <SectionHead meta="About Deepak" title="Meet Deepak Sogani" />
+            <RevealGroup className="mt-8 space-y-5">
+              <RevealItem as="p" className="lede">
+                Deepak Sogani brings over 35 years of experience across the corporate world, entrepreneurship and higher education, giving him the opportunity to work with people across different ages, backgrounds and stages of life.
+              </RevealItem>
+              <RevealItem as="p" className="lede">
+                His experience in higher education brought him particularly close to young people: not only through formal responsibilities, but through countless conversations about their aspirations, choices, opportunities, challenges and life beyond the classroom.
+              </RevealItem>
+              <RevealItem as="p" className="lede">
+                Over time, he discovered that what he valued most was not telling young people what to do, but helping them think, bringing a different perspective to the conversation and opening their minds to possibilities they may not have considered.
+              </RevealItem>
+            </RevealGroup>
+            <Reveal as="blockquote" className="mt-12 border-t border-line pt-10">
+              <p className="font-serif text-[clamp(1.5rem,2.4vw,2.125rem)] leading-[1.2] tracking-[-0.01em] text-ink">
+                &ldquo;I am not here to decide a young person&apos;s future. I want to help them understand themselves, see possibilities and make choices they can own.&rdquo;
               </p>
-              
-              <div className="prose text-gray-600 space-y-3 leading-relaxed text-sm sm:text-base">
-                <p>
-                  Deepak Sogani brings over 35 years of experience across the corporate world, entrepreneurship and higher education, giving him the opportunity to work with people across different ages, backgrounds and stages of life.
-                </p>
-                <p>
-                  His experience in higher education brought him particularly close to young people: not only through formal responsibilities, but through countless conversations about their aspirations, choices, opportunities, challenges and life beyond the classroom.
-                </p>
-                <p>
-                  Over time, he discovered that what he valued most was not telling young people what to do, but helping them think, bringing a different perspective to the conversation and opening their minds to possibilities they may not have considered.
-                </p>
-              </div>
-
-              <blockquote className="p-4 rounded-xl bg-slate-50 border-l-4 border-golden-pollen italic text-charcoal-blue font-serif text-base mt-4">
-                "I am not here to decide a young person's future. I want to help them understand themselves, see possibilities and make choices they can own."
-                <footer className="text-xs font-sans not-italic text-gray-500 mt-2 font-semibold">
-                  Deepak Sogani
-                </footer>
-              </blockquote>
-            </div>
+              <footer className="meta mt-6">Deepak Sogani</footer>
+            </Reveal>
+            <Reveal className="mt-10">
+              <Button href="/about" variant="link">Read Deepak&apos;s story</Button>
+            </Reveal>
           </div>
         </div>
       </section>
 
-      {/* 7. IN THEIR WORDS: STUDENT VOICES */}
-      <section className="py-20 sm:py-28 bg-slate-50">
-        <div className="container mx-auto px-4 max-w-5xl">
-          <div className="text-center mb-14">
-            <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">In Their Words</p>
-            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-charcoal-blue mb-4">
-              Student Voices
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto text-sm sm:text-base">
-              Long before Second Innings took shape, young people were already describing the value they found in their interactions with Deepak. These reflections, shared voluntarily by students and alumni on LinkedIn, offer a glimpse of the approach that now informs Second Innings.
-            </p>
+      {/* 7. STUDENT VOICES: masonry */}
+      <section className="border-t border-line bg-paper-2">
+        <div className="page-x py-28 md:py-40">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:items-end">
+            <SectionHead className="md:col-span-6" meta="In their words" title="Student voices" />
+            <Reveal className="md:col-span-5 md:col-start-8">
+              <p className="lede">
+                Long before Second Innings took shape, young people were already describing the value they found in their interactions with Deepak. These reflections, shared voluntarily by students and alumni on LinkedIn, offer a glimpse of the approach that now informs Second Innings.
+              </p>
+            </Reveal>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {STUDENT_VOICES.map((t, idx) => (
-              <div 
-                key={idx}
-                className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-all"
-              >
-                <div className="space-y-3">
-                  <div className="inline-block px-2.5 py-1 rounded bg-tea-green/25 text-[11px] font-bold text-charcoal-blue uppercase tracking-wider">
-                    {t.category}
-                  </div>
-                  <p className="text-gray-700 italic text-sm leading-relaxed">
-                    "{t.quote}"
-                  </p>
-                </div>
-                <div className="pt-4 mt-4 border-t border-gray-100">
-                  <p className="font-bold text-charcoal-blue text-sm">{t.name}</p>
-                  <p className="text-xs text-gray-500">{t.role}</p>
-                </div>
-              </div>
+          <div className="mt-16 columns-1 gap-5 md:columns-2 lg:columns-3 [column-fill:_balance]">
+            {STUDENT_VOICES.map((t, i) => (
+              <Reveal key={t.name} delay={(i % 3) * 0.06} className="mb-5 break-inside-avoid">
+                <figure className="rounded-[1.5rem] border border-line bg-paper p-7 md:p-8">
+                  <p className="meta mb-6 text-signal">{t.category}</p>
+                  <blockquote className={`font-serif leading-[1.3] text-ink ${i % 3 === 0 ? 'text-[1.5rem]' : 'text-[1.25rem]'}`}>
+                    &ldquo;{t.quote}&rdquo;
+                  </blockquote>
+                  <figcaption className="mt-8 border-t border-line pt-5">
+                    <p className="text-[0.9375rem] font-medium text-ink">{t.name}</p>
+                    <p className="text-[0.8125rem] text-muted">{t.role}</p>
+                    <div className="mt-3 flex items-center justify-between text-[0.75rem] text-muted">
+                      <span>Former Student</span>
+                      <a
+                        href="https://www.linkedin.com/in/deepaksogani"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-ink transition-colors"
+                      >
+                        Source: LinkedIn ↗
+                      </a>
+                    </div>
+                  </figcaption>
+                </figure>
+              </Reveal>
             ))}
           </div>
 
-          <p className="text-center text-xs text-gray-500 mt-8 font-light">
-            These voices come from different experiences, but a common thread runs through them: perspective, confidence, ownership and readiness for life beyond the classroom.
-          </p>
+          <Reveal className="mt-12 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <p className="max-w-[60ch] text-[0.9375rem] text-muted">
+              These voices come from different experiences, but a common thread runs through them: perspective, confidence, ownership and readiness for life beyond the classroom.
+            </p>
+            <Button href="https://www.linkedin.com/in/deepaksogani" variant="link" arrow="up-right">
+              More reflections on LinkedIn
+            </Button>
+          </Reveal>
         </div>
       </section>
 
-      {/* 8. WHAT SECOND INNINGS IS — AND ISN'T */}
-      <section className="py-20 sm:py-28 bg-white border-b border-gray-100">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="text-center mb-14">
-            <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">Clarity & Expectations</p>
-            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-charcoal-blue mb-4">
-              What Second Innings Is - And Isn't
-            </h2>
-          </div>
+      {/* 8. IS / ISN'T: Swiss table */}
+      <section className="border-t border-line">
+        <div className="page-x py-28 md:py-40">
+          <SectionHead meta="Clarity and expectations" title="What Second Innings is, and isn't" />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            <div className="space-y-3">
-              <h3 className="text-sm uppercase tracking-wider font-bold text-emerald-800 bg-emerald-50 px-4 py-2 rounded-xl text-center">
-                Second Innings IS
-              </h3>
-              {WHAT_IT_IS_AND_ISNT.map((item, idx) => (
-                <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3 text-sm text-gray-800">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                  <span>{item.is}</span>
-                </div>
-              ))}
+          <div className="mt-16 border-t border-ink">
+            <div className="grid grid-cols-2 border-b border-line py-4">
+              <p className="meta text-ink">Second Innings is</p>
+              <p className="meta pl-4 md:pl-8">Second Innings is not</p>
             </div>
-
-            <div className="space-y-3">
-              <h3 className="text-sm uppercase tracking-wider font-bold text-rose-800 bg-rose-50 px-4 py-2 rounded-xl text-center">
-                Second Innings IS NOT
-              </h3>
-              {WHAT_IT_IS_AND_ISNT.map((item, idx) => (
-                <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3 text-sm text-gray-700">
-                  <XCircle className="w-5 h-5 text-rose-500 flex-shrink-0" />
-                  <span>{item.isNot}</span>
-                </div>
+            <RevealGroup>
+              {WHAT_IT_IS_AND_ISNT.map((row) => (
+                <RevealItem key={row.is} className="grid grid-cols-2 border-b border-line">
+                  <p className="py-6 pr-4 font-serif text-[clamp(1.25rem,2.2vw,1.875rem)] leading-[1.15] text-ink md:py-8">
+                    {row.is}
+                  </p>
+                  <p className="border-l border-line py-6 pl-4 text-[0.9375rem] leading-[1.5] text-muted md:py-8 md:pl-8 md:text-[1.0625rem]">
+                    <span className="strike-signal">{row.isNot}</span>
+                  </p>
+                </RevealItem>
               ))}
-            </div>
+            </RevealGroup>
           </div>
         </div>
       </section>
 
       {/* 9. FOR PARENTS */}
-      <section className="py-20 sm:py-28 bg-slate-50">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="p-8 sm:p-12 rounded-3xl bg-white border border-gray-200 shadow-sm space-y-6">
-            <div className="flex items-center gap-2 text-golden-pollen font-bold text-xs uppercase tracking-wider">
-              <HeartHandshake size={18} />
-              <span>For Parents</span>
-            </div>
-
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-charcoal-blue leading-snug">
-              Every parent wants their child to make thoughtful choices and build a meaningful future.
-            </h2>
-
-            <div className="space-y-4 text-gray-700 leading-relaxed text-sm sm:text-base">
-              <p>
+      <section className="border-t border-line bg-paper-2">
+        <div className="page-x grid grid-cols-1 gap-12 py-28 md:grid-cols-12 md:py-40">
+          <div className="md:col-span-6">
+            <SectionHead
+              meta="For parents"
+              title="Every parent wants their child to make thoughtful choices and build a meaningful future."
+              titleClassName="max-w-[20ch]"
+            />
+          </div>
+          <div className="md:col-span-5 md:col-start-8 flex flex-col justify-end">
+            <RevealGroup className="space-y-5">
+              <RevealItem as="p" className="lede">
                 But as young people grow, they also need opportunities to question, explore and gradually take ownership of their decisions.
-              </p>
-              <p>
+              </RevealItem>
+              <RevealItem as="p" className="lede">
                 Second Innings seeks to complement, not replace, the role of parents, teachers, educational institutions or qualified professionals.
-              </p>
-              <p>
-                The objective is not to decide a young person's future for them. It is to provide an additional space for thoughtful conversation, broader perspective and exploration: helping young people become more confident in making choices they understand and own.
-              </p>
-              <p className="text-xs text-gray-500 pt-2">
-                Where appropriate, parents may also become part of the broader conversation while respecting the young person's privacy and independence.
-              </p>
-            </div>
-
-            <div className="pt-2">
-              <Link
-                href="/for-parents"
-                className="inline-flex items-center text-primary font-bold hover:text-secondary transition-colors text-sm"
-              >
-                Know More For Parents <ArrowRight size={14} className="ml-1" />
-              </Link>
-            </div>
+              </RevealItem>
+              <RevealItem as="p" className="lede">
+                The objective is not to decide a young person&apos;s future for them. It is to provide an additional space for thoughtful conversation, broader perspective and exploration: helping young people become more confident in making choices they understand and own.
+              </RevealItem>
+              <RevealItem as="p" className="text-[0.875rem] leading-[1.6] text-muted">
+                Where appropriate, parents may also become part of the broader conversation while respecting the young person&apos;s privacy and independence.
+              </RevealItem>
+            </RevealGroup>
+            <Reveal className="mt-10">
+              <Button href="/for-parents" variant="secondary">Know more for parents</Button>
+            </Reveal>
           </div>
         </div>
       </section>
 
-      {/* 10. FINAL INVITATION / START A CONVERSATION */}
-      <section className="py-20 sm:py-28 bg-gradient-to-br from-charcoal-blue via-[#263747] to-midnight-violet text-white text-center px-6">
-        <div className="container mx-auto max-w-3xl space-y-6">
-          <p className="text-xs uppercase tracking-widest text-tea-green font-semibold">
-            Your First Step
-          </p>
-          <h2 className="text-3xl sm:text-5xl font-serif font-bold tracking-tight">
-            Your first step doesn't have to be a big one.
-          </h2>
-          <p className="text-lg sm:text-xl text-gray-200 font-light max-w-xl mx-auto">
-            Sometimes, it can simply be a conversation. No commitment, no pressure, just perspective.
-          </p>
-
-          <div className="pt-4">
-            <Link
-              href="/book"
-              className="inline-flex items-center bg-golden-pollen text-charcoal-blue font-bold px-10 py-4 rounded-full hover:bg-secondary-hover shadow-xl hover:shadow-2xl transition-all text-base sm:text-lg uppercase tracking-wider"
-            >
-              Start a Conversation <ArrowRight size={18} className="ml-2" />
-            </Link>
-          </div>
-
-          <div className="pt-8 flex items-center justify-center gap-2 text-xs text-gray-300">
-            <ShieldCheck size={16} className="text-tea-green" />
-            <Link href="/privacy-boundaries" className="hover:underline">
-              Read our Privacy, Safety & Professional Boundaries
-            </Link>
-          </div>
+      {/* 10. FINAL INVITATION */}
+      <section className="border-t border-line">
+        <div className="page-x py-32 md:py-48">
+          <RevealGroup className="max-w-[60rem]">
+            <RevealItem as="p" className="meta mb-8">Your first step</RevealItem>
+            <RevealItem as="h2" className="font-serif text-[clamp(2.75rem,6vw,6rem)] leading-[0.95] tracking-[-0.025em] text-ink">
+              Your first step doesn&apos;t have to be a big one.
+            </RevealItem>
+            <RevealItem as="p" className="lede mt-8 text-[1.1875rem]">
+              Sometimes, it can simply be a conversation. No commitment, no pressure, just perspective.
+            </RevealItem>
+            <RevealItem className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-4">
+              <Button href="/book">Start a Conversation</Button>
+              <Link href="/privacy-boundaries" className="text-[0.875rem] text-muted underline decoration-ink/20 underline-offset-4 hover:text-ink">
+                Read our Privacy, Safety &amp; Professional Boundaries
+              </Link>
+            </RevealItem>
+          </RevealGroup>
         </div>
       </section>
     </div>

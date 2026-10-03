@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import Button from '../../components/ui/Button';
+import PageHero from '../../components/ui/PageHero';
 
 export const metadata = {
   title: 'Privacy, Safety & Professional Boundaries | Second Innings',
@@ -7,81 +9,88 @@ export const metadata = {
 
 export default function PrivacyBoundariesPage() {
   return (
-    <div className="bg-white py-16 sm:py-24">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
-        {/* Header */}
-        <div className="mb-12 border-b border-gray-100 pb-8">
-          <p className="text-xs uppercase tracking-widest text-primary/70 font-semibold mb-2">Second Innings</p>
-          <h1 className="text-3xl sm:text-5xl font-serif font-bold text-primary tracking-tight mb-4">
-            Privacy, Safety & Professional Boundaries
-          </h1>
-          <p className="text-lg text-gray-600">
-            A respectful, responsible and non-judgmental environment for young people.
-          </p>
-        </div>
+    <div className="w-full">
+      <PageHero
+        meta={['Safeguarding & Boundaries', 'Duty of Care', 'Professional Scope']}
+        title="Privacy, safety &amp; professional boundaries."
+        lede="A respectful, responsible, and non-judgmental environment for young people aged 16 to 25."
+      />
 
-        {/* Content Body */}
-        <div className="prose prose-lg max-w-none text-gray-700 space-y-8">
-          <section className="bg-gray-50 rounded-2xl p-6 sm:p-8 border border-gray-100">
-            <h2 className="text-xl font-serif font-bold text-primary mb-3">Our Core Commitment</h2>
-            <p>
-              Second Innings is committed to providing a respectful, responsible and non-judgmental environment for young people.
-              Information shared during conversations is treated with discretion and respect for privacy.
+      <div className="page-x py-16 md:py-24 max-w-[76rem]">
+        <div className="max-w-[68ch] space-y-16 text-[1.0625rem] leading-[1.75] text-ink-2">
+          {/* Section 1 */}
+          <section className="rounded-[1.75rem] border border-line bg-paper-2 p-8 md:p-12 space-y-3">
+            <span className="meta text-signal block">Ethical Anchor</span>
+            <h2 className="font-serif text-[1.75rem] text-ink leading-snug">
+              Our Core Commitment
+            </h2>
+            <p className="text-muted leading-relaxed">
+              Second Innings is committed to providing a respectful, responsible and non-judgmental environment for young people. Information shared during conversations is treated with discretion and respect for privacy.
             </p>
           </section>
 
+          {/* Section 2 */}
           <section className="space-y-4">
-            <h2 className="text-2xl font-serif font-bold text-primary">Confidentiality and Safety</h2>
+            <h2 className="font-serif text-[2rem] text-ink leading-snug">
+              Confidentiality and Safety
+            </h2>
             <p>
               While personal conversations are kept confidential, confidentiality cannot be absolute.
             </p>
-            <p>
+            <p className="text-muted leading-relaxed">
               Where there is a reasonable concern involving risk of serious harm, personal safety, abuse, harassment or another situation requiring responsible intervention, appropriate steps may need to be taken. Depending on the circumstances, this could include encouraging or involving a parent/guardian, educational institution, qualified professional or other appropriate support.
             </p>
           </section>
 
+          {/* Section 3 */}
           <section className="space-y-4">
-            <h2 className="text-2xl font-serif font-bold text-primary">Professional Scope</h2>
+            <h2 className="font-serif text-[2rem] text-ink leading-snug">
+              Professional Scope
+            </h2>
             <p>
               Second Innings is not a medical, psychological, psychiatric, legal or emergency service.
             </p>
-            <p>
+            <p className="text-muted leading-relaxed">
               Conversations through Second Innings should not be considered a substitute for qualified mental-health counselling, therapy, medical care or other specialist professional services.
             </p>
-            <p>
+            <p className="text-muted leading-relaxed">
               Where a matter falls outside the scope of Second Innings, the young person will always be encouraged and supported to seek appropriate professional support.
             </p>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-serif font-bold text-primary">Participants Below Age 18</h2>
-            <p>
-              For participants below the age of 18, appropriate parental/guardian consent and safeguarding requirements will apply.
+          {/* Section 4 */}
+          <section className="rounded-[1.75rem] border border-signal/30 bg-signal-soft/40 p-8 space-y-3">
+            <span className="meta text-signal block">Youth Safeguarding</span>
+            <h2 className="font-serif text-[1.75rem] text-ink leading-snug">
+              Participants Below Age 18
+            </h2>
+            <p className="leading-relaxed text-ink-2">
+              For participants below the age of 18, appropriate parental/guardian consent and safeguarding requirements will always apply.
             </p>
           </section>
 
-          <section className="bg-primary/5 rounded-2xl p-6 sm:p-8 border border-primary/10">
-            <h2 className="text-xl font-serif font-bold text-primary mb-2">Why These Boundaries Exist</h2>
-            <p className="text-gray-700">
+          {/* Section 5 */}
+          <section className="space-y-4">
+            <h2 className="font-serif text-[2rem] text-ink leading-snug">
+              Why These Boundaries Exist
+            </h2>
+            <p className="text-muted leading-relaxed">
               The purpose of these boundaries is not to restrict conversation, but to ensure that Second Innings remains a safe, responsible and professionally appropriate space.
             </p>
           </section>
-        </div>
 
-        {/* CTA */}
-        <div className="mt-14 pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <Link
-            href="/"
-            className="text-sm font-medium text-primary hover:text-secondary transition-colors"
-          >
-            ← Back to Home
-          </Link>
-          <Link
-            href="/book"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-secondary text-white font-medium hover:bg-secondary/90 transition-colors text-sm shadow-md"
-          >
-            Start a Conversation
-          </Link>
+          {/* Footer Navigation */}
+          <div className="border-t border-line pt-8 flex flex-wrap items-center justify-between gap-4">
+            <Link href="/" className="meta text-muted hover:text-ink">
+              ← Return to Home
+            </Link>
+            <div className="flex items-center gap-6">
+              <Link href="/privacy-policy" className="meta text-muted hover:text-ink">
+                Privacy Policy (DPDP) →
+              </Link>
+              <Button href="/book">Start a Conversation</Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -1,14 +1,24 @@
 import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Clock, Calendar, User } from 'lucide-react';
+import Button from '../../../components/ui/Button';
+import Arrow from '../../../components/ui/Arrow';
 import { getResourceBySlug } from '../../../lib/api';
+import { getCuratedArticleBySlug } from '../../../lib/curatedArticles';
 
-// This makes the route dynamic in App Router
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }) {
-  const resource = await getResourceBySlug(params.slug);
+  let resource = null;
+  try {
+    resource = await getResourceBySlug(params.slug);
+  } catch (e) {
+    // ignore
+  }
+  if (!resource) {
+    resource = getCuratedArticleBySlug(params.slug);
+  }
+
   if (!resource) {
     return { title: 'Resource Not Found | Second Innings' };
   }
@@ -19,68 +29,80 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function ResourceDetailPage({ params }) {
-  const resource = await getResourceBySlug(params.slug);
+  let resource = null;
+  try {
+    resource = await getResourceBySlug(params.slug);
+  } catch (e) {
+    // fallback
+  }
+
+  if (!resource) {
+    resource = getCuratedArticleBySlug(params.slug);
+  }
 
   if (!resource) {
     notFound();
   }
 
   return (
-    <div className="min-h-screen bg-white font-sans">
-      <article className="max-w-3xl mx-auto px-6 py-16 md:py-24">
+    <div className="w-full">
+      <article className="page-x pt-36 md:pt-48 pb-20 md:pb-28">
         {/* Back Link */}
-        <Link href="/resources" className="inline-flex items-center text-charcoal-blue font-semibold hover:text-midnight-violet mb-10 transition-colors group">
-          <ArrowLeft className="w-4 h-4 mr-2 text-golden-pollen group-hover:-translate-x-1 transition-transform" />
-          Back to Resources
-        </Link>
+        <div className="mb-12">
+          <Link 
+            href="/resources" 
+            className="group inline-flex items-center gap-2 meta text-ink hover:text-signal transition-colors"
+          >
+            <span className="transition-transform duration-300 group-hover:-translate-x-1">←</span>
+            <span>Back to Resources</span>
+          </Link>
+        </div>
 
         {/* Header */}
-        <header className="mb-12">
-          <div className="mb-6 flex flex-wrap items-center gap-3">
-            <span className="text-xs font-bold text-charcoal-blue bg-tea-green/35 border border-tea-green/40 px-3 py-1 rounded-full uppercase tracking-wider">
+        <header className="max-w-[76rem]">
+          <div className="mb-6 flex flex-wrap items-center gap-4">
+            <span className="meta text-signal">
               {resource.category?.replace(/-/g, ' ')}
             </span>
-            {(resource.readingTime || resource.readTime) && (
-              <span className="flex items-center text-gray-500 text-xs font-medium">
-                <Clock className="w-3.5 h-3.5 mr-1 text-charcoal-blue" />
-                {resource.readingTime || resource.readTime} min read
-              </span>
+            <span aria-hidden="true" className="h-px w-6 bg-line" />
+            <span className="meta">
+              {resource.readingTime || resource.readTime || 5} min read
+            </span>
+            {resource.createdAt && (
+              <>
+                <span aria-hidden="true" className="h-px w-6 bg-line" />
+                <span className="meta">
+                  {new Date(resource.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </span>
+              </>
             )}
           </div>
           
-          <h1 className="text-3xl md:text-5xl font-bold font-serif text-charcoal-blue mb-8 leading-tight">
+          <h1 className="font-serif text-[clamp(2.5rem,5vw,4.5rem)] leading-[1] tracking-[-0.02em] text-ink mb-8">
             {resource.title}
           </h1>
 
-          <div className="flex items-center border-t border-b border-slate-100 py-4 text-xs md:text-sm text-gray-600 gap-6">
-            {resource.author && (
-              <div className="flex items-center">
-                <User className="w-4 h-4 mr-2 text-charcoal-blue" />
-                <span className="font-semibold text-charcoal-blue">{resource.author}</span>
-              </div>
-            )}
-            {resource.createdAt && (
-              <div className="flex items-center">
-                <Calendar className="w-4 h-4 mr-2 text-charcoal-blue" />
-                <span>{new Date(resource.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-              </div>
-            )}
+          <div className="flex items-center border-t border-b border-line py-4 text-xs font-mono uppercase tracking-wider text-muted">
+            <span>By {resource.author || 'Deepak Sogani'}</span>
           </div>
         </header>
 
-        {/* Content */}
+        {/* Article Body */}
         <div 
-          className="prose prose-lg max-w-none text-gray-700 leading-relaxed space-y-6"
+          className="mt-12 md:mt-16 max-w-[68ch] space-y-6 text-[1.125rem] leading-[1.75] text-ink-2 font-sans [&>p]:leading-relaxed [&>h2]:font-serif [&>h2]:text-[2rem] [&>h2]:text-ink [&>h2]:mt-12 [&>h2]:mb-4 [&>h3]:font-serif [&>h3]:text-[1.5rem] [&>h3]:text-ink [&>h3]:mt-8 [&>h3]:mb-3 [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:space-y-2 [&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:space-y-2 [&>blockquote]:border-l-2 [&>blockquote]:border-signal [&>blockquote]:pl-6 [&>blockquote]:italic [&>blockquote]:my-8 [&>blockquote]:text-ink"
           dangerouslySetInnerHTML={{ __html: resource.content }}
         />
 
         {/* Footer CTA */}
-        <div className="mt-20 p-8 md:p-10 bg-gradient-to-r from-tea-green/20 via-golden-pollen/15 to-white rounded-3xl border border-tea-green/50 text-center shadow-sm">
-          <h3 className="text-2xl font-bold font-serif text-charcoal-blue mb-3">Want to Discuss This Perspective?</h3>
-          <p className="text-gray-600 text-sm mb-6 max-w-md mx-auto">Let's talk about how these concepts apply to your specific situation and next steps.</p>
-          <Link href="/book" className="inline-block bg-golden-pollen text-charcoal-blue font-bold py-3.5 px-8 rounded-full shadow-md hover:bg-secondary-hover transition-all text-base">
-            Start a Conversation →
-          </Link>
+        <div className="mt-24 rounded-[1.75rem] border border-line bg-paper-2 p-8 md:p-14 max-w-[76rem]">
+          <span className="meta text-signal mb-3 block">Perspective &amp; Action</span>
+          <h3 className="font-serif text-[clamp(1.75rem,3vw,2.5rem)] text-ink mb-4">
+            Want to discuss this perspective?
+          </h3>
+          <p className="text-[1.0625rem] text-muted max-w-[55ch] leading-relaxed mb-8">
+            Let&apos;s talk about how these concepts apply to your specific situation, choices, and next steps.
+          </p>
+          <Button href="/book">Start a Conversation</Button>
         </div>
       </article>
     </div>

@@ -2,7 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Calendar, MapPin, ExternalLink, ArrowRight, Info, AlertCircle, Sparkles, CheckCircle2 } from 'lucide-react';
+import Button from '../../components/ui/Button';
+import Arrow from '../../components/ui/Arrow';
+import PageHero from '../../components/ui/PageHero';
+import SectionHead from '../../components/ui/SectionHead';
+import { Reveal, RevealGroup, RevealItem } from '../../components/ui/Reveal';
 import { getOpportunities } from '../../lib/api';
 
 const categories = [
@@ -11,59 +15,243 @@ const categories = [
   "Social Impact", "Professional Exposure"
 ];
 
+const CURATED_OPPORTUNITIES = [
+  {
+    _id: "curated-1",
+    name: "LAMP Fellowship (PRS Legislative Research)",
+    category: "fellowships",
+    bestFor: "Graduates & young professionals interested in law, governance, and public policy",
+    eligibility: "Undergraduate degree in any discipline, age 25 or below",
+    whatItOffers: "11-month intensive mentorship attached to a Member of Parliament in New Delhi, real-time legislative research, and ₹20,000/month stipend.",
+    locationMode: "physical",
+    location: "New Delhi",
+    costFunding: "Stipend (Paid)",
+    officialSource: "https://prsindia.org/lamp",
+    whyUseful: "Unmatched direct exposure to national policymaking, bill drafting, parliamentary debates, and a lifelong alumni network.",
+    suggestedNextStep: "Prepare a 500-word statement on a recent public policy debate and review past fellows' backgrounds.",
+    isFeatured: true
+  },
+  {
+    _id: "curated-2",
+    name: "Tata Trusts Scholarships",
+    category: "scholarships",
+    bestFor: "Students pursuing undergraduate and postgraduate studies across India",
+    eligibility: "Meritorious students across medical, engineering, design, and humanities streams with demonstrated need",
+    whatItOffers: "Comprehensive financial assistance covering tuition fees, academic resources, and living expenses.",
+    locationMode: "physical",
+    location: "Pan-India",
+    costFunding: "Scholarship",
+    officialSource: "https://www.tatatrusts.org/our-work/individual-grants-programme/education-grants",
+    whyUseful: "Alleviates financial burdens and connects scholars to one of India's most respected philanthropic networks.",
+    suggestedNextStep: "Gather academic marksheets from the last two years and family income verification.",
+    isFeatured: true
+  },
+  {
+    _id: "curated-3",
+    name: "Young India Fellowship (Ashoka University)",
+    category: "higher-education",
+    bestFor: "Recent graduates and young professionals seeking multidisciplinary perspectives",
+    eligibility: "Recognized undergraduate degree in any field, open to all disciplines",
+    whatItOffers: "1-year residential postgraduate diploma in Liberal Studies taught by world-class global faculty with substantial need-based scholarships.",
+    locationMode: "physical",
+    location: "Sonipat, NCR",
+    costFunding: "Paid (Need-based Scholarships)",
+    officialSource: "https://www.ashoka.edu.in/yif",
+    whyUseful: "Breaks academic silos, teaches critical thinking, communication, and builds a powerful alumni network across corporates, NGOs, and academia.",
+    suggestedNextStep: "Draft answers for the YIF reflective essay questions focusing on what drives your intellectual curiosity.",
+    isFeatured: true
+  },
+  {
+    _id: "curated-4",
+    name: "NITI Aayog Internship Scheme",
+    category: "internships",
+    bestFor: "College and university students interested in governance, economics, and national strategy",
+    eligibility: "Undergraduate/Postgraduate students scoring 85%+ in Class 12, currently enrolled in recognized universities",
+    whatItOffers: "Unpaid 6-week to 6-month placement embedded within specialized verticals of India's premier policy think tank.",
+    locationMode: "physical",
+    location: "New Delhi",
+    costFunding: "Unpaid / Official Certificate",
+    officialSource: "https://niti.gov.in/internship",
+    whyUseful: "Firsthand understanding of state-level policy formulation, flagship schemes execution, and national data analysis.",
+    suggestedNextStep: "Applications open strictly on the 1st to 10th of every month. Align your vertical choice with your degree.",
+    isFeatured: false
+  },
+  {
+    _id: "curated-5",
+    name: "Ashoka Young Changemakers",
+    category: "social-impact",
+    bestFor: "Teenagers and school students who have initiated real-world community solutions",
+    eligibility: "Under 20 years of age with a demonstrated track record of leading a social initiative or community project",
+    whatItOffers: "Global community membership, media exposure, peer mentorship, and scaling support from seasoned entrepreneurs.",
+    locationMode: "hybrid",
+    location: "Global / India",
+    costFunding: "Free",
+    officialSource: "https://www.ashoka.org/en-in/program/ashoka-young-changemakers",
+    whyUseful: "Validates young leadership at a global level and builds lifelong agency and empathy.",
+    suggestedNextStep: "Document the quantifiable community impact of your initiative and gather recommendations.",
+    isFeatured: true
+  },
+  {
+    _id: "curated-6",
+    name: "Teach For India Fellowship",
+    category: "fellowships",
+    bestFor: "Graduates and young professionals wanting to develop frontline leadership skills",
+    eligibility: "Bachelor's degree completed by start of fellowship, strong English proficiency",
+    whatItOffers: "2-year full-time fellowship teaching in under-resourced schools, monthly stipend (~₹23,000/mo), and housing allowance.",
+    locationMode: "physical",
+    location: "Multiple Indian Cities",
+    costFunding: "Stipend (Paid)",
+    officialSource: "https://www.teachforindia.org/fellowship",
+    whyUseful: "Develops deep emotional intelligence, grit, stakeholder management, and direct social understanding.",
+    suggestedNextStep: "Review the multi-stage selection process and prepare for the 30-minute telephonic interview.",
+    isFeatured: true
+  },
+  {
+    _id: "curated-7",
+    name: "Narotam Sekhsaria Post-Graduate Scholarships",
+    category: "scholarships",
+    bestFor: "Students pursuing Master's and Doctorate degrees at top global and Indian universities",
+    eligibility: "Indian nationals graduating with top academic honors, aged below 30",
+    whatItOffers: "Interest-free loan scholarship up to ₹20 lakhs with continuous mentoring throughout the degree.",
+    locationMode: "hybrid",
+    location: "Global / India",
+    costFunding: "Interest-Free Loan Scholarship",
+    officialSource: "https://pg.nsfoundation.co.in/",
+    whyUseful: "Provides essential funding for high-cost top-tier global Master's programs without burdensome bank interest.",
+    suggestedNextStep: "Confirm your target university admissions cycle and prepare a concise SOP on your academic vision.",
+    isFeatured: false
+  },
+  {
+    _id: "curated-8",
+    name: "Startup India Seed Fund Scheme (SISFS)",
+    category: "entrepreneurship",
+    bestFor: "Early-stage student, graduate, and faculty innovators with proof of concept",
+    eligibility: "DPIIT-recognized startup incorporated within the last 2 years with viable market application",
+    whatItOffers: "Up to ₹20 lakhs in grants for validation and proof of concept; up to ₹50 lakhs in convertible debentures.",
+    locationMode: "online",
+    location: "Pan-India",
+    costFunding: "Govt Grant & Seed Funding",
+    officialSource: "https://seedfund.startupindia.gov.in/",
+    whyUseful: "Crucial non-dilutive early capital that allows young founders to build prototypes without giving away equity prematurely.",
+    suggestedNextStep: "Register your startup on Startup India and apply through an approved university business incubator.",
+    isFeatured: false
+  },
+  {
+    _id: "curated-9",
+    name: "SBI Youth for India Fellowship",
+    category: "social-impact",
+    bestFor: "Young minds seeking grounded perspective on rural India before MBA, UPSC, or social enterprise",
+    eligibility: "Bachelor's degree holder aged 21–32, citizen of India or Overseas Citizen",
+    whatItOffers: "13-month rural placement with trusted NGOs, living allowance (₹16,000/mo), health insurance, and completion bonus.",
+    locationMode: "physical",
+    location: "Rural India",
+    costFunding: "Stipend + Completion Bonus",
+    officialSource: "https://youthforindia.org/",
+    whyUseful: "A life-altering perspective on ground realities that shapes authentic leadership, empathy, and problem solving.",
+    suggestedNextStep: "Explore past fellow project reports across water, education, and women's self-help groups.",
+    isFeatured: true
+  },
+  {
+    _id: "curated-10",
+    name: "CII Young Indians (Yi)",
+    category: "professional-exposure",
+    bestFor: "Young professionals, corporate executives, and young family business successors (age 21–40)",
+    eligibility: "Professional engagement or enterprise ownership, commitment to nation-building initiatives",
+    whatItOffers: "Active participation in national industry committees, youth summits, bilateral international delegations.",
+    locationMode: "hybrid",
+    location: "All Major Indian Cities",
+    costFunding: "Annual Membership",
+    officialSource: "https://youngindians.net/",
+    whyUseful: "Builds senior corporate relationships, peer learning, and civic engagement across Indian industry leaders.",
+    suggestedNextStep: "Connect with the local city chapter (e.g. Jaipur, Delhi, Bengaluru) for an introductory mixer.",
+    isFeatured: false
+  },
+  {
+    _id: "curated-11",
+    name: "Prime Minister's Research Fellowship (PMRF)",
+    category: "scholarships",
+    bestFor: "High-performing STEM undergraduates aspiring for direct PhD entry",
+    eligibility: "Top 20% in B.Tech/M.Sc from IITs, IISc, NITs, or qualifying GATE score with 8.0+ CGPA",
+    whatItOffers: "Monthly stipend of ₹70,000–₹80,000 plus an annual research grant of ₹2 lakhs for 5 years.",
+    locationMode: "physical",
+    location: "IITs / IISc / IISERs",
+    costFunding: "Prestige Fellowship",
+    officialSource: "https://www.pmrf.in/",
+    whyUseful: "The premier research fellowship in India, enabling students to pursue cutting-edge research without leaving the country.",
+    suggestedNextStep: "Identify research professors whose papers align with your undergraduate thesis.",
+    isFeatured: false
+  },
+  {
+    _id: "curated-12",
+    name: "IIM Bangalore Online Management Series (IIMBx)",
+    category: "courses",
+    bestFor: "Students from engineering, sciences, and arts wanting foundational commercial and business acumen",
+    eligibility: "Open to all students and working professionals",
+    whatItOffers: "Self-paced high-rigor video courses on Strategy, Marketing, Accounting, and Entrepreneurship with IIMB certification.",
+    locationMode: "online",
+    location: "Online",
+    costFunding: "Affordable / Audit Free",
+    officialSource: "https://iimbx.edu.in/",
+    whyUseful: "Builds practical business vocabulary and managerial perspective to supplement technical degrees.",
+    suggestedNextStep: "Start with 'Do Your Venture: Entrepreneurship for Everyone' to test practical business concepts.",
+    isFeatured: false
+  }
+];
+
 export default function OpportunitiesPage() {
   const [activeCategory, setActiveCategory] = useState('All');
-  const [opportunities, setOpportunities] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [opportunities, setOpportunities] = useState(CURATED_OPPORTUNITIES);
   const [expandedId, setExpandedId] = useState(null);
 
   useEffect(() => {
     async function fetchOpps() {
-      setLoading(true);
       try {
         const catQuery = activeCategory === 'All' ? undefined : activeCategory.toLowerCase().replace(/ /g, '-');
         const data = await getOpportunities({ category: catQuery });
-        setOpportunities(Array.isArray(data) ? data : []);
+        if (Array.isArray(data) && data.length > 0) {
+          setOpportunities(data);
+        } else {
+          if (activeCategory === 'All') {
+            setOpportunities(CURATED_OPPORTUNITIES);
+          } else {
+            const slug = activeCategory.toLowerCase().replace(/ /g, '-');
+            const filtered = CURATED_OPPORTUNITIES.filter(o => o.category === slug);
+            setOpportunities(filtered.length > 0 ? filtered : CURATED_OPPORTUNITIES);
+          }
+        }
       } catch (error) {
-        console.error("Failed to fetch opportunities", error);
-        setOpportunities([]);
-      } finally {
-        setLoading(false);
+        if (activeCategory === 'All') {
+          setOpportunities(CURATED_OPPORTUNITIES);
+        } else {
+          const slug = activeCategory.toLowerCase().replace(/ /g, '-');
+          setOpportunities(CURATED_OPPORTUNITIES.filter(o => o.category === slug));
+        }
       }
     }
     fetchOpps();
   }, [activeCategory]);
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans pb-20">
-      {/* S1: Hero */}
-      <section className="bg-gradient-to-br from-charcoal-blue via-[#263747] to-midnight-violet text-white py-20 px-6 md:px-12 text-center relative overflow-hidden">
-        <div className="absolute top-0 right-1/4 w-80 h-80 bg-tea-green/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="max-w-4xl mx-auto relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-tea-green text-xs font-semibold uppercase tracking-wider mb-6">
-            <Sparkles size={14} className="text-golden-pollen" />
-            Curated Knowledge Bank
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 font-serif">Curated Opportunities. Not Random Links.</h1>
-          <p className="text-xl text-gray-200 font-light max-w-3xl mx-auto">
-            Every opportunity here is hand-selected for relevance to your mentoring journey. We help you understand fit, eligibility, and the practical next step.
-          </p>
-        </div>
-      </section>
+    <div className="w-full">
+      <PageHero
+        meta={['Curated Knowledge Bank', 'Hand-Selected', 'Verified Pathways']}
+        title="Curated opportunities. Not random links."
+        lede="Every opportunity here is hand-selected for relevance to your mentoring journey. We help you understand fit, eligibility, and the practical next step."
+      />
 
-      {/* S2: Category Filter Bar */}
-      <section className="sticky top-[72px] z-20 bg-white border-b border-slate-200 shadow-sm py-4 px-4 overflow-x-auto">
-        <div className="max-w-7xl mx-auto flex space-x-2 w-max md:w-auto md:flex-wrap md:justify-center">
+      {/* S2: Filter Chips */}
+      <section className="sticky top-20 z-30 border-b border-line bg-paper/90 backdrop-blur-md py-4">
+        <div className="page-x flex items-center gap-2 overflow-x-auto no-scrollbar">
           {categories.map((cat) => {
             const isSelected = activeCategory === cat;
             return (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-2 rounded-full text-xs md:text-sm font-semibold transition-all mb-1 whitespace-nowrap ${
+                className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-mono uppercase tracking-wider transition-colors duration-300 ${
                   isSelected
-                    ? 'bg-charcoal-blue text-golden-pollen shadow-sm ring-2 ring-golden-pollen/50'
-                    : 'bg-slate-100 text-charcoal-blue/80 hover:bg-slate-200'
+                    ? 'bg-ink text-paper'
+                    : 'border border-line bg-paper text-ink hover:border-ink'
                 }`}
               >
                 {cat}
@@ -73,149 +261,117 @@ export default function OpportunitiesPage() {
         </div>
       </section>
 
-      {/* S4: How to Use This (Callout) */}
-      <section className="px-6 mt-10 mb-8">
-        <div className="max-w-5xl mx-auto bg-gradient-to-r from-tea-green/20 via-golden-pollen/15 to-white border border-tea-green/50 rounded-2xl p-6 flex items-start shadow-sm">
-          <Info className="w-6 h-6 text-charcoal-blue mr-4 flex-shrink-0 mt-0.5" />
-          <p className="text-charcoal-blue font-medium text-sm md:text-base leading-relaxed">
-            These opportunities support your 7-Day Next Step. If you would like help understanding which pathway matches your strengths and goals, <Link href="/book" className="text-charcoal-blue font-bold underline decoration-golden-pollen decoration-2 underline-offset-2 hover:text-midnight-violet">start a conversation</Link>.
+      {/* S3: Callout Notice */}
+      <section className="page-x pt-12 pb-6">
+        <div className="rounded-[1.75rem] border border-line bg-paper-2 p-6 md:p-8">
+          <p className="meta text-signal mb-2">How to use this bank</p>
+          <p className="text-[1.0625rem] text-ink leading-relaxed">
+            These opportunities support your 7-Day Next Step. If you would like help understanding which pathway matches your strengths and goals, <Link href="/book" className="underline decoration-ink/40 underline-offset-4 hover:decoration-signal font-medium">start a conversation</Link>.
           </p>
         </div>
       </section>
 
-      {/* S3: Opportunity Cards Grid */}
-      <section className="px-6 md:px-12 max-w-7xl mx-auto min-h-[50vh]">
-        {loading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map(n => (
-              <div key={n} className="bg-white rounded-2xl h-64 animate-pulse shadow-sm p-6 border border-slate-100">
-                <div className="h-4 bg-slate-200 w-1/3 rounded mb-4"></div>
-                <div className="h-6 bg-slate-200 w-3/4 rounded mb-2"></div>
-                <div className="h-4 bg-slate-200 w-1/2 rounded mb-8"></div>
-                <div className="h-4 bg-slate-200 w-full rounded mb-2"></div>
-              </div>
-            ))}
-          </div>
-        ) : opportunities.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 max-w-xl mx-auto shadow-sm">
-            <AlertCircle className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-charcoal-blue mb-2 font-serif">No opportunities in this category yet</h3>
-            <p className="text-gray-500 text-sm">Deepak Sir continuously curates high-impact openings. Check back soon or request a specific category.</p>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {opportunities.map((opp) => {
-              const oppId = opp._id || opp.id;
-              const isExpanded = expandedId === oppId;
-              const fundingText = opp.costOrFunding || opp.costFunding || opp.funding;
-
-              return (
-                <div key={oppId} className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col hover:border-tea-green hover:shadow-md transition-all">
-                  <div className="p-6 md:p-7 flex-grow">
-                    <div className="flex justify-between items-start gap-2 mb-4">
-                      <span className="inline-block px-3 py-1 bg-tea-green/35 text-charcoal-blue text-xs font-bold uppercase tracking-wider rounded-full border border-tea-green/40">
-                        {opp.category?.replace(/-/g, ' ')}
+      {/* S4: Opportunity Cards (Hairline Grid) */}
+      <section className="page-x py-12 md:py-20 min-h-[50vh]">
+        <div className="hairline-grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          {opportunities.map((opp, idx) => {
+            const isExpanded = expandedId === opp._id;
+            return (
+              <div 
+                key={opp._id || idx} 
+                className="group flex flex-col justify-between p-8 transition-colors duration-500 ease-editorial hover:bg-paper-2"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="meta text-signal">
+                      {opp.category}
+                    </span>
+                    {opp.costFunding && (
+                      <span className="meta">
+                        {opp.costFunding}
                       </span>
-                      {fundingText && (
-                        <span className="inline-block px-3 py-1 bg-golden-pollen/25 text-[#734A00] border border-golden-pollen/50 text-xs font-bold rounded-full">
-                          {fundingText}
-                        </span>
-                      )}
-                    </div>
-
-                    <h3 className="text-xl font-bold text-charcoal-blue mb-2 font-serif leading-snug">
-                      {opp.name || opp.title}
-                    </h3>
-                    
-                    {opp.bestFor && (
-                      <p className="text-xs font-bold text-midnight-violet uppercase tracking-wide mb-3">
-                        Best For: <span className="font-medium capitalize text-gray-700">{opp.bestFor}</span>
-                      </p>
                     )}
-
-                    <p className="text-gray-600 text-sm mb-6 leading-relaxed line-clamp-3">
-                      {opp.whatItOffers || opp.description}
-                    </p>
-                    
-                    <div className="space-y-2 pt-2 border-t border-slate-100 text-xs text-gray-500">
-                      {(opp.location || opp.locationMode) && (
-                        <div className="flex items-center gap-2">
-                          <MapPin size={14} className="text-charcoal-blue" />
-                          <span className="capitalize">{opp.locationMode} {opp.location ? `• ${opp.location}` : ''}</span>
-                        </div>
-                      )}
-                      {opp.deadline && (
-                        <div className="flex items-center gap-2 text-[#734A00] font-semibold">
-                          <Calendar size={14} />
-                          <span>Deadline: {new Date(opp.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                        </div>
-                      )}
-                    </div>
                   </div>
 
-                  {/* Expandable Section */}
-                  <div className="border-t border-slate-100 bg-slate-50/70 p-5 pt-3">
-                    {isExpanded && (
-                      <div className="pt-2 pb-4 text-xs text-gray-700 space-y-3">
-                        {opp.eligibility && (
-                          <div>
-                            <strong className="text-charcoal-blue block mb-0.5">Eligibility:</strong>
-                            <p className="leading-relaxed text-gray-600">{opp.eligibility}</p>
-                          </div>
-                        )}
-                        {opp.whyUseful && (
-                          <div>
-                            <strong className="text-charcoal-blue block mb-0.5">Why It's Useful:</strong>
-                            <p className="leading-relaxed text-gray-600">{opp.whyUseful}</p>
-                          </div>
-                        )}
-                        {opp.suggestedNextStep && (
-                          <div className="bg-golden-pollen/15 p-2.5 rounded-xl border border-golden-pollen/40">
-                            <strong className="text-[#734A00] block mb-0.5">Suggested Next Step:</strong>
-                            <p className="leading-relaxed text-charcoal-blue">{opp.suggestedNextStep}</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                  <h3 className="font-serif text-[1.5rem] leading-snug text-ink mb-2">
+                    {opp.name}
+                  </h3>
 
-                    <div className="flex items-center justify-between pt-1">
-                      <button
-                        onClick={() => setExpandedId(isExpanded ? null : oppId)}
-                        className="text-xs font-bold text-charcoal-blue hover:text-midnight-violet"
-                      >
-                        {isExpanded ? 'Show Less ↑' : 'Learn More ↓'}
-                      </button>
+                  <p className="meta text-muted mb-4 normal-case tracking-normal text-xs font-sans">
+                    <span className="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-muted block mb-1">Best for</span>
+                    {opp.bestFor}
+                  </p>
 
-                      {opp.officialSource && (
-                        <a
-                          href={opp.officialSource}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center text-xs font-bold text-charcoal-blue hover:text-midnight-violet gap-1"
-                        >
-                          Official Source <ExternalLink size={12} className="text-golden-pollen" />
-                        </a>
+                  <p className="text-[0.9375rem] text-muted line-clamp-3 mb-6 leading-relaxed">
+                    {opp.whatItOffers}
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t border-line">
+                  {isExpanded && (
+                    <div className="space-y-4 mb-6 text-xs text-muted">
+                      {opp.eligibility && (
+                        <div>
+                          <p className="meta mb-1 text-ink">Eligibility</p>
+                          <p className="leading-relaxed">{opp.eligibility}</p>
+                        </div>
+                      )}
+                      {opp.whyUseful && (
+                        <div>
+                          <p className="meta mb-1 text-ink">Why it matters</p>
+                          <p className="leading-relaxed">{opp.whyUseful}</p>
+                        </div>
+                      )}
+                      {opp.suggestedNextStep && (
+                        <div className="border border-line bg-paper-3 p-3 rounded-xl">
+                          <p className="meta mb-1 text-signal">Suggested next step</p>
+                          <p className="text-ink leading-relaxed">{opp.suggestedNextStep}</p>
+                        </div>
                       )}
                     </div>
+                  )}
+
+                  <div className="flex items-center justify-between">
+                    <button
+                      onClick={() => setExpandedId(isExpanded ? null : opp._id)}
+                      className="meta text-ink hover:text-signal transition-colors"
+                    >
+                      {isExpanded ? '− Less' : '+ Details'}
+                    </button>
+
+                    {opp.officialSource && (
+                      <a
+                        href={opp.officialSource}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="meta text-ink underline decoration-ink/20 underline-offset-4 hover:decoration-signal"
+                      >
+                        Official site ↗
+                      </a>
+                    )}
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       {/* S5: Bottom CTA */}
-      <section className="mt-20 py-16 bg-white border-t border-slate-200 text-center px-6">
-        <div className="max-w-2xl mx-auto">
-          <h3 className="text-2xl font-bold font-serif text-charcoal-blue mb-3">Unsure Which Opportunity Fits Your Path?</h3>
-          <p className="text-gray-600 text-sm mb-6">Let's look at your interests, timeline, and strengths together in a 30-minute mentoring conversation.</p>
-          <Link
-            href="/book"
-            className="inline-block bg-golden-pollen text-charcoal-blue font-bold px-8 py-3.5 rounded-full hover:bg-secondary-hover shadow-md transition-all text-base"
-          >
-            Start a Conversation
-          </Link>
+      <section className="border-t border-line bg-paper-2">
+        <div className="page-x py-32 md:py-44">
+          <RevealGroup className="max-w-[56rem]">
+            <RevealItem as="p" className="meta mb-6">Personal evaluation</RevealItem>
+            <RevealItem as="h2" className="font-serif text-[clamp(2.5rem,5.5vw,5rem)] leading-[0.95] text-ink">
+              Unsure which opportunity fits you best?
+            </RevealItem>
+            <RevealItem as="p" className="lede mt-6 text-[1.125rem]">
+              We don&apos;t simply forward links. In a mentoring conversation, we help you evaluate fit, timing, and personal readiness.
+            </RevealItem>
+            <RevealItem className="mt-10">
+              <Button href="/book">Start a Conversation</Button>
+            </RevealItem>
+          </RevealGroup>
         </div>
       </section>
     </div>

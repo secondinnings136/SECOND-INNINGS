@@ -50,7 +50,7 @@ Second Innings is built as a modular architecture ready for two-part Vercel depl
 
 Deepak Sir can manage all platform data without touching any code:
 - **URL:** `/admin/login`
-- **Default Superadmin:** `deepaksogani18@gmail.com`
+- **Default Superadmin:** `deepak@second-innings.in`
 - **Password:** `SecondInnings@2026`
 
 Features:

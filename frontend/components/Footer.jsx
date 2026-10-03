@@ -1,138 +1,133 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { subscribeNewsletter } from '../lib/api';
+import Arrow from './ui/Arrow';
+
+const columns = [
+  {
+    title: 'Who it is for',
+    links: [
+      { name: 'For Students (16 to 25)', href: '/for-students' },
+      { name: 'For Parents', href: '/for-parents' },
+      { name: 'For Institutions', href: '/for-institutions' },
+    ],
+  },
+  {
+    title: 'Explore',
+    links: [
+      { name: 'How It Works', href: '/how-it-works' },
+      { name: 'About Deepak', href: '/about' },
+      { name: 'Opportunities', href: '/opportunities' },
+      { name: 'Resources', href: '/resources' },
+      { name: 'Contact', href: '/contact' },
+    ],
+  },
+  {
+    title: 'Policies',
+    links: [
+      { name: 'Privacy Policy (DPDP)', href: '/privacy-policy' },
+      { name: 'Mentoring Boundaries', href: '/privacy-boundaries' },
+    ],
+  },
+];
 
 export default function Footer() {
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState({ loading: false, success: null, error: null });
-
-  const handleSubscribe = async (e) => {
-    e.preventDefault();
-    if (!email) return;
-
-    setStatus({ loading: true, success: null, error: null });
-
-    try {
-      await subscribeNewsletter({ email });
-      setStatus({ loading: false, success: 'Thank you for subscribing!', error: null });
-      setEmail('');
-    } catch (err) {
-      console.error('Newsletter error:', err);
-      setStatus({ 
-        loading: false, 
-        success: null, 
-        error: err.message?.includes('already subscribed') 
-          ? 'You are already subscribed!' 
-          : 'Subscription failed. Please try again.' 
-      });
+  const replayIntro = () => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('si_intro_seen');
+      window.location.reload();
     }
   };
 
   return (
-    <footer className="bg-primary text-white pt-16 pb-8">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
-          {/* Brand & Newsletter */}
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-serif font-bold text-white tracking-tight mb-1">SECOND INNINGS</h2>
-              <p className="text-secondary text-sm font-medium tracking-wide">Young Minds. New Perspectives. Wider Possibilities.</p>
-            </div>
-            
-            <form onSubmit={handleSubscribe} className="space-y-3 pt-2">
-              <p className="text-sm text-gray-300">Subscribe to our newsletter</p>
-              <div className="flex">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Email address"
-                  required
-                  className="bg-white/10 text-white placeholder-gray-400 px-4 py-2 rounded-l-md w-full focus:outline-none focus:ring-1 focus:ring-secondary text-sm"
-                />
-                <button
-                  type="submit"
-                  disabled={status.loading}
-                  className="bg-secondary text-white px-4 py-2 rounded-r-md font-medium hover:bg-secondary/90 transition-colors disabled:opacity-50 text-sm whitespace-nowrap"
-                >
-                  {status.loading ? '...' : 'Join'}
-                </button>
-              </div>
-              {status.success && (
-                <p className="text-xs text-green-400 font-medium">{status.success}</p>
-              )}
-              {status.error && (
-                <p className="text-xs text-amber-300 font-medium">{status.error}</p>
-              )}
-            </form>
+    <footer className="relative mt-16 border-t border-line bg-paper-2">
+      <div className="page-x pt-20 md:pt-28">
+        {/* Invitation row */}
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-12 md:gap-6">
+          <div className="md:col-span-7">
+            <p className="meta mb-6">Jaipur, Rajasthan, India</p>
+            <p className="max-w-[18ch] font-serif text-[clamp(2.25rem,4.4vw,4rem)] leading-[1] tracking-[-0.02em] text-ink">
+              Your first step can simply be a conversation.
+            </p>
+            <Link
+              href="/book"
+              className="group mt-10 inline-flex items-center gap-3 rounded-full bg-ink pl-6 pr-1.5 py-1.5 font-medium text-paper transition-[transform,background-color] duration-500 ease-editorial hover:bg-ink-2 active:scale-[0.98]"
+            >
+              Start a Conversation
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-paper/10 transition-transform duration-500 ease-editorial group-hover:translate-x-0.5">
+                <Arrow className="h-3.5 w-3.5" />
+              </span>
+            </Link>
           </div>
 
-          {/* Navigate */}
-          <div>
-            <h3 className="text-secondary font-semibold mb-4 uppercase text-sm tracking-wider">Navigate</h3>
-            <ul className="space-y-3">
-              <li><Link href="/" className="text-gray-300 hover:text-white transition-colors">Home</Link></li>
-              <li><Link href="/how-it-works" className="text-gray-300 hover:text-white transition-colors">How It Works</Link></li>
-              <li><Link href="/about" className="text-gray-300 hover:text-white transition-colors">About Deepak</Link></li>
-              <li><Link href="/for-parents" className="text-gray-300 hover:text-white transition-colors">For Parents</Link></li>
-              <li><Link href="/privacy-boundaries" className="text-gray-300 hover:text-white transition-colors">Privacy & Boundaries</Link></li>
-              <li><Link href="/opportunities" className="text-gray-300 hover:text-white transition-colors">Opportunities</Link></li>
-              <li><Link href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</Link></li>
-            </ul>
-          </div>
-
-          {/* For You */}
-          <div>
-            <h3 className="text-secondary font-semibold mb-4 uppercase text-sm tracking-wider">For You</h3>
-            <ul className="space-y-3">
-              <li><Link href="/for-students" className="text-gray-300 hover:text-white transition-colors">For Students</Link></li>
-              <li><Link href="/for-parents" className="text-gray-300 hover:text-white transition-colors">For Parents</Link></li>
-              <li><Link href="/for-institutions" className="text-gray-300 hover:text-white transition-colors">For Institutions</Link></li>
-              <li><Link href="/resources" className="text-gray-300 hover:text-white transition-colors">Resources</Link></li>
-            </ul>
-          </div>
-
-          {/* Connect & Follow */}
-          <div>
-            <h3 className="text-golden-pollen font-semibold mb-4 uppercase text-sm tracking-wider">Connect</h3>
-            <ul className="space-y-3 text-gray-300">
-              <li><a href="mailto:deepaksogani18@gmail.com" className="hover:text-white transition-colors">deepaksogani18@gmail.com</a></li>
-              <li><a href="https://wa.me/919314072153" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">WhatsApp: +91 9314072153</a></li>
-              <li><a href="tel:+919314072153" className="hover:text-white transition-colors">Phone: +91 9314072153</a></li>
-              <li className="pt-2">
-                <a href="https://linkedin.com/in/deepak-sogani" target="_blank" rel="noopener noreferrer" className="text-golden-pollen hover:text-white transition-colors font-medium">
-                  Follow on LinkedIn
+          <div className="md:col-span-5 md:pl-10 md:border-l md:border-line">
+            <p className="meta mb-6">Write or call</p>
+            <ul className="space-y-4 text-[0.9375rem]">
+              <li>
+                <a href="mailto:deepak@second-innings.in" className="group flex flex-col">
+                  <span className="text-muted text-[0.8125rem]">Primary</span>
+                  <span className="text-ink underline decoration-ink/20 underline-offset-4 group-hover:decoration-signal">
+                    deepak@second-innings.in
+                  </span>
+                </a>
+              </li>
+              <li>
+                <a href="mailto:connect@second-innings.in" className="group flex flex-col">
+                  <span className="text-muted text-[0.8125rem]">General</span>
+                  <span className="text-ink underline decoration-ink/20 underline-offset-4 group-hover:decoration-signal">
+                    connect@second-innings.in
+                  </span>
+                </a>
+              </li>
+              <li className="flex flex-wrap gap-x-6 gap-y-2 pt-1">
+                <a href="https://wa.me/919314072153" target="_blank" rel="noopener noreferrer" className="text-ink hover:text-signal transition-colors">
+                  WhatsApp ↗
+                </a>
+                <a href="tel:+919314072153" className="text-ink hover:text-signal transition-colors font-mono text-[0.8125rem] tracking-tight">
+                  +91 93140 72153
+                </a>
+                <a href="https://www.linkedin.com/in/deepaksogani" target="_blank" rel="noopener noreferrer" className="text-ink hover:text-signal transition-colors">
+                  LinkedIn ↗
                 </a>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="flex justify-center my-10">
-          <Link
-            href="/book"
-            className="bg-golden-pollen text-charcoal-blue px-8 py-3.5 rounded-full font-bold hover:bg-secondary-hover transition-all text-lg shadow-xl hover:shadow-2xl"
-          >
-            Start a Conversation
-          </Link>
+        {/* Link columns on a hairline grid */}
+        <div className="hairline-grid mt-20 grid-cols-1 sm:grid-cols-3 [&>*]:bg-paper-2">
+          {columns.map((col) => (
+            <div key={col.title} className="p-6 md:p-8">
+              <p className="meta mb-5">{col.title}</p>
+              <ul className="space-y-2.5">
+                {col.links.map((l) => (
+                  <li key={l.href}>
+                    <Link href={l.href} className="text-[0.9375rem] text-ink-2 hover:text-ink transition-colors">
+                      {l.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
-        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between text-sm text-gray-400">
-          <p>© 2026 Second Innings. All rights reserved.</p>
-          <button 
-            onClick={() => {
-              if (typeof window !== 'undefined') {
-                sessionStorage.removeItem('si_intro_seen');
-                window.location.reload();
-              }
-            }}
-            className="text-xs text-[#BDD9BF] hover:text-[#FFC857] transition-colors py-1 px-3 rounded-full bg-white/5 border border-white/10 mt-2 md:mt-0 inline-flex items-center gap-1.5"
+        {/* Wordmark */}
+        <div aria-hidden="true" className="select-none overflow-hidden pt-16 md:pt-20">
+          <p className="whitespace-nowrap font-serif text-[clamp(4rem,15.5vw,15rem)] leading-[0.8] tracking-[-0.04em] text-ink">
+            Second Innings<span className="text-signal">.</span>
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-4 border-t border-line py-6 text-[0.8125rem] text-muted md:flex-row md:items-center md:justify-between">
+          <p>© 2026 Second Innings. Young Minds. New Perspectives. Wider Possibilities.</p>
+          <button
+            type="button"
+            onClick={replayIntro}
+            className="self-start md:self-auto meta hover:text-ink transition-colors"
           >
-            <span>↺</span> Replay Opening Intro
+            ↺ Replay intro
           </button>
-          <p className="mt-2 md:mt-0">Jaipur, Rajasthan, India</p>
         </div>
       </div>
     </footer>

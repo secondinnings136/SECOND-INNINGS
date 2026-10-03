@@ -210,7 +210,7 @@ export default function FluidBlurIntro({ onComplete }) {
                     ease: [0.4, 0, 0.2, 1],
                   },
                 }}
-                className="absolute inset-0 flex items-center justify-center font-serif font-bold text-5xl sm:text-7xl md:text-8xl lg:text-9xl text-neutral-950 text-center tracking-tight"
+                className="absolute inset-0 flex items-center justify-center font-serif font-normal text-5xl sm:text-7xl md:text-8xl lg:text-9xl text-neutral-950 text-center tracking-[-0.03em]"
               >
                 {WORDS[currentIndex]}
               </motion.h1>

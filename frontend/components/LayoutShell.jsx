@@ -15,7 +15,7 @@ export default function LayoutShell({ children }) {
   }
 
   return (
-    <div className="flex flex-col min-h-screen pt-[72px]">
+    <div className="flex min-h-[100dvh] flex-col">
       <FluidBlurIntro />
       <Navbar />
       <main className="flex-grow">

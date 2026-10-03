@@ -1,16 +1,24 @@
-import { Inter, Playfair_Display } from 'next/font/google';
+import { Instrument_Serif, Hanken_Grotesk, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import LayoutShell from '../components/LayoutShell';
 
-const inter = Inter({ 
+const serif = Instrument_Serif({
   subsets: ['latin'],
-  variable: '--font-inter',
+  weight: '400',
+  style: ['normal', 'italic'],
+  variable: '--font-serif',
   display: 'swap',
 });
 
-const playfair = Playfair_Display({ 
+const sans = Hanken_Grotesk({
   subsets: ['latin'],
-  variable: '--font-playfair',
+  variable: '--font-sans',
+  display: 'swap',
+});
+
+const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
   display: 'swap',
 });
 
@@ -29,8 +37,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
-      <body className="font-sans antialiased text-gray-800 bg-white min-h-screen">
+    <html lang="en" className={`${serif.variable} ${sans.variable} ${mono.variable}`}>
+      <body className="grain font-sans antialiased bg-paper text-ink min-h-[100dvh]">
         <LayoutShell>{children}</LayoutShell>
       </body>
     </html>

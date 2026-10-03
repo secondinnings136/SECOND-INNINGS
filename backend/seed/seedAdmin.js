@@ -10,15 +10,24 @@ const seedAdmin = async () => {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('MongoDB Connected');
 
-    const adminEmail = 'deepaksogani18@gmail.com';
-    const existingAdmin = await Admin.findOne({ email: adminEmail });
+    const adminEmail = 'deepak@second-innings.in';
+    let admin = await Admin.findOne({ email: adminEmail });
 
-    if (existingAdmin) {
-      console.log('Admin already exists');
+    if (admin) {
+      console.log('Admin already exists:', adminEmail);
       process.exit(0);
     }
 
-    const admin = new Admin({
+    // Also check if old gmail admin exists, update or create new
+    const oldAdmin = await Admin.findOne({ email: 'deepaksogani18@gmail.com' });
+    if (oldAdmin) {
+      oldAdmin.email = adminEmail;
+      await oldAdmin.save();
+      console.log(`Updated existing admin to professional email: ${adminEmail}`);
+      process.exit(0);
+    }
+
+    admin = new Admin({
       name: 'Deepak Sogani',
       email: adminEmail,
       password: 'SecondInnings@2026',
