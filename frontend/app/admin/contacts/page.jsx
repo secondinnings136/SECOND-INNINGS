@@ -81,8 +81,10 @@ export default function ContactsPage() {
         title="Contact Message Details"
         actions={
           <>
-            <button onClick={() => setSelectedContact(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium">Cancel</button>
-            <button onClick={handleSave} disabled={saving} className="px-5 py-2 bg-[#FFC857] hover:bg-[#ffbe3b] text-[#2E4052] font-bold rounded-lg transition-all shadow-sm text-sm">
+            <button onClick={() => setSelectedContact(null)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-sm font-medium transition-colors">
+              Close
+            </button>
+            <button onClick={handleSave} disabled={saving} className="px-5 py-2 bg-linear-to-r from-[#D97724] to-[#E07A28] hover:opacity-95 text-white font-semibold rounded-xl transition-all shadow-xs text-sm disabled:opacity-50">
               {saving ? 'Saving...' : 'Save Status'}
             </button>
           </>
@@ -90,37 +92,46 @@ export default function ContactsPage() {
       >
         {selectedContact && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded-lg">
-              <div><span className="text-gray-500 block">Name:</span> <span className="font-medium text-[#2E4052]">{selectedContact.name}</span></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm bg-slate-50/70 border border-slate-100 p-4 rounded-xl">
               <div>
-                <span className="text-gray-500 block">Email:</span> 
-                <a href={`mailto:${selectedContact.email}`} className="font-semibold text-[#2E4052] flex items-center gap-1 hover:underline">
-                  {selectedContact.email} <ExternalLink size={14} />
+                <span className="text-slate-500 text-xs uppercase tracking-wider block mb-1">Name</span> 
+                <span className="font-semibold text-slate-900">{selectedContact.name}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 text-xs uppercase tracking-wider block mb-1">Email</span> 
+                <a href={`mailto:${selectedContact.email}`} className="font-semibold text-[#D97724] flex items-center gap-1 hover:underline">
+                  {selectedContact.email} <ExternalLink size={13} />
                 </a>
               </div>
-              <div><span className="text-gray-500 block">Phone:</span> <span className="font-medium">{selectedContact.phone || 'N/A'}</span></div>
-              <div><span className="text-gray-500 block">Date:</span> <span className="font-medium">{new Date(selectedContact.createdAt).toLocaleString()}</span></div>
+              <div>
+                <span className="text-slate-500 text-xs uppercase tracking-wider block mb-1">Phone</span> 
+                <span className="font-medium text-slate-800">{selectedContact.phone || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 text-xs uppercase tracking-wider block mb-1">Received Date</span> 
+                <span className="font-medium text-slate-800">{new Date(selectedContact.createdAt).toLocaleString()}</span>
+              </div>
               
-              <div className="col-span-1 sm:col-span-2 mt-2">
-                <span className="text-gray-500 block">Subject:</span> 
-                <span className="font-semibold text-lg text-[#2E4052]">{selectedContact.subject}</span>
+              <div className="col-span-1 sm:col-span-2 pt-2 border-t border-slate-200/60">
+                <span className="text-slate-500 text-xs uppercase tracking-wider block mb-1">Subject</span> 
+                <span className="font-bold text-base text-slate-900">{selectedContact.subject}</span>
               </div>
               
               <div className="col-span-1 sm:col-span-2">
-                <span className="text-gray-500 block mb-1">Message:</span> 
-                <div className="bg-white p-4 border border-gray-200 rounded-md whitespace-pre-wrap text-gray-800">
+                <span className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5">Message</span> 
+                <div className="bg-white p-4 border border-slate-200 rounded-xl whitespace-pre-wrap text-slate-700 leading-relaxed text-sm">
                   {selectedContact.message}
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-4 items-end">
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Update Status</label>
+            <div className="flex flex-col sm:flex-row gap-4 sm:items-end justify-between pt-2">
+              <div className="flex-1 max-w-xs">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Update Status</label>
                 <select 
                   value={statusForm} 
                   onChange={(e) => setStatusForm(e.target.value)}
-                  className="w-full border-gray-300 rounded-md shadow-sm p-2 border focus:border-[#2E4052] outline-none"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D97724]/20 focus:border-[#D97724] transition-all"
                 >
                   <option value="new">New</option>
                   <option value="read">Read</option>
@@ -131,9 +142,9 @@ export default function ContactsPage() {
               
               <a 
                 href={`mailto:${selectedContact.email}?subject=Re: ${encodeURIComponent(selectedContact.subject)}`}
-                className="flex items-center gap-2 px-5 py-2 bg-[#2E4052] hover:bg-[#243342] text-white font-medium rounded-lg transition-all shadow-sm h-10 text-sm"
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#111720] hover:bg-[#1E293B] text-white font-medium rounded-xl transition-all shadow-xs text-sm"
               >
-                <Mail size={18} /> Reply via Email
+                <Mail size={16} /> Reply via Email
               </a>
             </div>
           </div>

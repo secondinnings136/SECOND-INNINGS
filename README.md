@@ -2,7 +2,7 @@
 
 > **"Mentoring Young Minds. Preparing Them for Life Beyond the Classroom."**
 
-A human-led mentoring and perspective platform founded by **Deepak Sogani** (former Head of Student Affairs at JK Lakshmipat University, 35+ years corporate and entrepreneurial leadership).
+A human-led mentoring and perspective platform founded by **Mr. Deepak Sogani** (former Head of Student Affairs at JK Lakshmipat University, 35+ years corporate and entrepreneurial leadership).
 
 ---
 
@@ -11,36 +11,38 @@ A human-led mentoring and perspective platform founded by **Deepak Sogani** (for
 Second Innings is built as a modular architecture ready for two-part Vercel deployment:
 
 - **Frontend:** Next.js 14 (App Router), Tailwind CSS, Framer Motion, Lucide Icons.
-- **Backend:** Express.js API, MongoDB Atlas (Mongoose ODM), JWT Authentication, Helmet, Morgan, Serverless Vercel handler.
+- **Backend:** Express.js API, MongoDB Atlas (Mongoose ODM), Cashfree PG SDK, JWT Authentication, Helmet, Morgan.
 
 ---
 
-## 🎨 Brand Color Palette
+## 🎨 Brand Design System
 
-- **Tea Green (`#BDD9BF`):** Soft growth indicators, outcome pills, verified badges.
-- **Charcoal Blue (`#2E4052`):** Primary brand authority, headers, dark cards.
-- **Golden Pollen (`#FFC857`):** Primary action CTAs, highlights, active step indicators.
-- **White (`#FFFFFF`):** Clean surfaces and readable backgrounds.
-- **Midnight Violet (`#412234`):** Gradient terminals and deep quote accents.
+- **Dark Slate / Carbon Ink (`#111720`):** Primary brand authority, navigation, headers, dark surfaces.
+- **Warm Saffron / Amber (`#D97724`):** Primary action CTAs, highlights, active step indicators, logo accent.
+- **Warm Paper (`#FAF7F0`):** Clean editorial canvas and readable background surfaces.
+- **Emerald Accent (`#10B981`):** Verified states, confirmed bookings, active indicators.
 
 ---
 
 ## 🚀 Two-Part Vercel Deployment Guide
 
 ### Part 1: Deploy Backend on Vercel
-1. On Vercel, click **Add New Project** → Import `SECOND-INNINGS` repo.
+1. On Vercel, click **Add New Project** → Import repository.
 2. In **Project Settings**, set **Root Directory** to `backend`.
-3. Add the following **Environment Variables**:
-   - `MONGODB_URI`: `mongodb+srv://secondinnings136_db_user:6JZENbgNXijXTlQC@secondinnings.wmknvwb.mongodb.net/secondinnings?retryWrites=true&w=majority`
+3. Configure the following **Environment Variables** in the Vercel Dashboard (never commit secret values to Git):
+   - `MONGODB_URI`: `<your-mongodb-atlas-connection-string>`
    - `NODE_ENV`: `production`
-   - `JWT_SECRET`: `secondinnings_jwt_secret_key_2026_s3cur3`
-   - `FRONTEND_URL`: `https://<your-frontend-domain>.vercel.app` (or `*`)
-4. Click **Deploy**. Copy your backend URL (e.g., `https://second-innings-backend.vercel.app`).
+   - `JWT_SECRET`: `<generate-a-secure-random-secret>`
+   - `FRONTEND_URL`: `https://<your-frontend-domain>.vercel.app`
+   - `CASHFREE_APP_ID`: `<your-cashfree-app-id>`
+   - `CASHFREE_SECRET_KEY`: `<your-cashfree-secret-key>`
+   - `CASHFREE_ENVIRONMENT`: `PRODUCTION`
+4. Click **Deploy**. Copy your backend URL (e.g., `https://api.second-innings.in` or `https://second-innings-backend.vercel.app`).
 
 ### Part 2: Deploy Frontend on Vercel
-1. On Vercel, click **Add New Project** → Import `SECOND-INNINGS` repo again.
+1. On Vercel, click **Add New Project** → Import repository again.
 2. In **Project Settings**, set **Root Directory** to `frontend`.
-3. Add the following **Environment Variable**:
+3. Configure the following **Environment Variable**:
    - `NEXT_PUBLIC_API_URL`: `https://<your-backend-domain>.vercel.app/api`
 4. Click **Deploy**.
 
@@ -48,34 +50,42 @@ Second Innings is built as a modular architecture ready for two-part Vercel depl
 
 ## 🛡️ Admin Portal
 
-Deepak Sir can manage all platform data without touching any code:
+Platform management portal for Second Innings:
 - **URL:** `/admin/login`
-- **Default Superadmin:** `deepak@second-innings.in`
-- **Password:** `SecondInnings@2026`
+- Access is restricted to authorized platform administrators.
 
-Features:
-- Bookings management with 7-Day Follow-Up scheduling
-- Curated Opportunities Knowledge Bank CRUD
-- Mentoring Resources & Articles editor
-- Testimonials approvals and reordering
-- Newsletter subscriber management with CSV Export
+### Core Features:
+- **Payment & Fee Switch:** Turn mentoring consultation fees ON/OFF dynamically with 1-click.
+- **Bookings Management:** Track mentee session requests and 7-day follow-up actions.
+- **Curated Opportunities Bank:** Add, edit, feature, and categorize internships, scholarships, and fellowships.
+- **Resources & Frameworks:** Publish guidance articles for students and parents.
+- **Student & Parent Testimonials:** Review and feature mentee testimonials on the live site.
+- **Inquiries & Contacts:** Unified hub for student, parent, and institutional inquiries.
+- **Newsletter Subscribers:** View and export subscriber lists.
 
 ---
 
 ## 💻 Local Development
 
-### 1. Backend
-```bash
-cd backend
-npm install
-npm run dev
-# Running on http://localhost:5000
-```
+### 1. Backend Setup
+1. Copy `.env.example` to `.env`:
+   ```bash
+   cd backend
+   cp .env.example .env
+   ```
+2. Fill in your local/cloud database URI and secrets in `.env`.
+3. Install dependencies and start server:
+   ```bash
+   npm install
+   npm run dev
+   # Running on http://localhost:5000
+   ```
 
-### 2. Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-# Running on http://localhost:3000
-```
+### 2. Frontend Setup
+1. Install dependencies and start client:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   # Running on http://localhost:3000
+   ```

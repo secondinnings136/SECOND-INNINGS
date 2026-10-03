@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Button from '../../components/ui/Button';
 import Arrow from '../../components/ui/Arrow';
 import { submitBooking } from '../../lib/api';
+import { launchCashfreeCheckout } from '../../lib/cashfreeClient';
 
 export default function Book() {
   const [formData, setFormData] = useState({
@@ -25,8 +26,27 @@ export default function Book() {
     referredBy: '',
   });
 
+  const [paymentConfig, setPaymentConfig] = useState({
+    paymentsEnabled: false,
+    sessionFee: 0,
+    currency: 'INR',
+    feeNotice: '',
+    environment: 'PRODUCTION'
+  });
+
   const [status, setStatus] = useState({ type: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/payment/config`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setPaymentConfig(data);
+        }
+      })
+      .catch(err => console.error('Failed to load payment config:', err));
+  }, []);
 
   // Compute if applicant is a minor based on typed age or manual toggle
   const numericAge = parseInt(formData.age, 10);
@@ -84,17 +104,78 @@ export default function Book() {
     setIsSubmitting(true);
 
     try {
-      await submitBooking({
-        ...formData,
-        isUnder18: isMinor,
-        concern: formData.topic,
-        userType: 'student',
-      });
+      if (paymentConfig.paymentsEnabled && paymentConfig.sessionFee > 0) {
+        // Step 1: Create booking & Cashfree payment order
+        const orderRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/payment/create-order`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...formData,
+            isUnder18: isMinor,
+            concern: formData.topic,
+            userType: 'student'
+          })
+        });
 
-      setStatus({
-        type: 'success',
-        message: 'Thank you. We have received your details and will get in touch with you shortly to schedule our conversation.'
-      });
+        const orderData = await orderRes.json();
+        if (!orderData.success) {
+          throw new Error(orderData.message || 'Payment initiation failed. Please try again.');
+        }
+
+        // Step 2: Launch Cashfree Modal Checkout
+        const cfResult = await launchCashfreeCheckout({
+          paymentSessionId: orderData.paymentSessionId,
+          mode: paymentConfig.environment || 'production',
+          redirectTarget: '_modal'
+        });
+
+        if (cfResult?.error) {
+          setStatus({
+            type: 'error',
+            message: 'Payment was not completed. You can try again or connect with us directly on WhatsApp.'
+          });
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Step 3: Verify payment with backend
+        const verifyRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/payment/verify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: orderData.orderId,
+            bookingId: orderData.bookingId
+          })
+        });
+
+        const verifyData = await verifyRes.json();
+
+        if (verifyData.paid) {
+          setStatus({
+            type: 'success',
+            message: `Payment of ₹${paymentConfig.sessionFee} received successfully! Your session booking is confirmed. We will reach out to schedule your conversation.`
+          });
+        } else {
+          setStatus({
+            type: 'success',
+            message: 'Booking details received. We will verify your transaction and get in touch with you shortly.'
+          });
+        }
+      } else {
+        // Standard Complimentary Booking (Fees OFF)
+        await submitBooking({
+          ...formData,
+          isUnder18: isMinor,
+          concern: formData.topic,
+          userType: 'student',
+        });
+
+        setStatus({
+          type: 'success',
+          message: 'Thank you. We have received your details and will get in touch with you shortly to schedule our conversation.'
+        });
+      }
+
       setFormData({
         name: '',
         age: '',
@@ -116,7 +197,7 @@ export default function Book() {
       console.error('Booking submission error:', error);
       setStatus({
         type: 'error',
-        message: 'Something went wrong while submitting. Please feel free to reach out directly via WhatsApp or phone.'
+        message: error.message || 'Something went wrong while submitting. Please feel free to reach out directly via WhatsApp or phone.'
       });
     } finally {
       setIsSubmitting(false);
@@ -451,10 +532,36 @@ export default function Book() {
                     </div>
                   </div>
 
+                  {/* Fee Status Card */}
+                  {paymentConfig.paymentsEnabled && paymentConfig.sessionFee > 0 ? (
+                    <div className="p-4 bg-amber/10 rounded-xl border border-amber/30 text-xs space-y-1.5">
+                      <div className="flex items-center justify-between font-semibold text-ink text-sm">
+                        <span className="flex items-center gap-1.5">
+                          <span className="h-2 w-2 rounded-full bg-amber animate-pulse" />
+                          <span>Mentoring Consultation Fee</span>
+                        </span>
+                        <span className="font-serif text-lg font-bold text-coral">₹{paymentConfig.sessionFee}</span>
+                      </div>
+                      <p className="text-muted text-[11px] leading-relaxed">
+                        {paymentConfig.feeNotice || 'Secure checkout powered by Cashfree Payments (UPI, GooglePay, PhonePe, Cards, NetBanking).'}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="p-3.5 bg-paper-2 rounded-xl border border-line flex items-center justify-between text-xs text-muted">
+                      <span className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span><strong>Consultation Fee:</strong> Complimentary (Fee Waived)</span>
+                      </span>
+                      <span className="font-mono text-ink font-semibold">₹0</span>
+                    </div>
+                  )}
+
                   {/* Submit CTA */}
                   <div className="pt-2">
                     <Button type="submit" disabled={isSubmitting} className="w-full justify-center">
-                      {isSubmitting ? 'Submitting...' : 'Start a Conversation'}
+                      {isSubmitting 
+                        ? (paymentConfig.paymentsEnabled && paymentConfig.sessionFee > 0 ? 'Connecting to Cashfree...' : 'Submitting...')
+                        : (paymentConfig.paymentsEnabled && paymentConfig.sessionFee > 0 ? `Proceed to Pay ₹${paymentConfig.sessionFee} & Book` : 'Start a Conversation')}
                     </Button>
                     <p className="meta text-center text-muted mt-4">
                       No commitment, no pressure. Just perspective.

@@ -97,4 +97,6 @@ export const getSupportTicket = async (id) => {
 export const updateSupportTicket = (id, data) => adminFetch(`/support/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
 export const deleteSupportTicket = (id) => adminFetch(`/support/${id}`, { method: 'DELETE' });
 
-
+// Payments & Fees (Cashfree PG)
+export const getAdminPaymentSettings = () => adminFetch('/payment/admin/settings');
+export const updateAdminPaymentSettings = (data) => adminFetch('/payment/admin/settings', { method: 'PUT', body: JSON.stringify(data) });

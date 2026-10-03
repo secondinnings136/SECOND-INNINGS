@@ -76,8 +76,10 @@ export default function InstitutionsPage() {
         title="Institution Enquiry Details"
         actions={
           <>
-            <button onClick={() => setSelectedItem(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium">Cancel</button>
-            <button onClick={handleSave} disabled={saving} className="px-5 py-2 bg-[#FFC857] hover:bg-[#ffbe3b] text-[#2E4052] font-bold rounded-lg transition-all shadow-sm text-sm">
+            <button onClick={() => setSelectedItem(null)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl text-sm font-medium transition-colors">
+              Cancel
+            </button>
+            <button onClick={handleSave} disabled={saving} className="px-5 py-2 bg-linear-to-r from-[#D97724] to-[#E07A28] hover:opacity-95 text-white font-semibold rounded-xl transition-all shadow-xs text-sm disabled:opacity-50">
               {saving ? 'Saving...' : 'Save Changes'}
             </button>
           </>
@@ -85,40 +87,58 @@ export default function InstitutionsPage() {
       >
         {selectedItem && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded-lg">
-              <div><span className="text-gray-500 block">Institution:</span> <span className="font-semibold text-lg text-[#2E4052]">{selectedItem.institutionName}</span></div>
-              <div><span className="text-gray-500 block">Type:</span> <span className="font-medium capitalize">{selectedItem.institutionType}</span></div>
-              <div><span className="text-gray-500 block">Contact Person:</span> <span className="font-medium">{selectedItem.contactPerson}</span></div>
-              <div><span className="text-gray-500 block">Role/Designation:</span> <span className="font-medium">{selectedItem.designation || 'N/A'}</span></div>
-              <div><span className="text-gray-500 block">Email:</span> <a href={`mailto:${selectedItem.email}`} className="font-semibold text-[#2E4052] hover:underline">{selectedItem.email}</a></div>
-              <div><span className="text-gray-500 block">Phone:</span> <span className="font-medium">{selectedItem.phone}</span></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm bg-slate-50/70 border border-slate-100 p-4 rounded-xl">
+              <div>
+                <span className="text-slate-500 text-xs uppercase tracking-wider block mb-1">Institution</span> 
+                <span className="font-bold text-lg text-slate-900">{selectedItem.institutionName}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 text-xs uppercase tracking-wider block mb-1">Type</span> 
+                <span className="font-semibold text-slate-800 capitalize">{selectedItem.institutionType}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 text-xs uppercase tracking-wider block mb-1">Contact Person</span> 
+                <span className="font-medium text-slate-800">{selectedItem.contactPerson}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 text-xs uppercase tracking-wider block mb-1">Role / Designation</span> 
+                <span className="font-medium text-slate-800">{selectedItem.designation || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 text-xs uppercase tracking-wider block mb-1">Email</span> 
+                <a href={`mailto:${selectedItem.email}`} className="font-semibold text-[#D97724] hover:underline">{selectedItem.email}</a>
+              </div>
+              <div>
+                <span className="text-slate-500 text-xs uppercase tracking-wider block mb-1">Phone</span> 
+                <span className="font-medium text-slate-800">{selectedItem.phone}</span>
+              </div>
               
-              <div className="col-span-1 sm:col-span-2 mt-2">
-                <span className="text-gray-500 block mb-2">Interested In:</span> 
+              <div className="col-span-1 sm:col-span-2 pt-2 border-t border-slate-200/60">
+                <span className="text-slate-500 text-xs uppercase tracking-wider block mb-2">Interested In Programs</span> 
                 <div className="flex flex-wrap gap-2">
                   {selectedItem.interestedIn?.map(interest => (
-                    <span key={interest} className="px-3 py-1 bg-[#BDD9BF]/30 border border-[#BDD9BF] rounded-full text-xs font-semibold text-[#2E4052]">
+                    <span key={interest} className="px-3 py-1 bg-amber-50 border border-amber-200/60 rounded-full text-xs font-semibold text-amber-900 capitalize">
                       {interest.replace('-', ' ')}
                     </span>
-                  )) || <span className="text-gray-400">None specified</span>}
+                  )) || <span className="text-slate-400">None specified</span>}
                 </div>
               </div>
               
               <div className="col-span-1 sm:col-span-2">
-                <span className="text-gray-500 block mb-1">Additional Message:</span> 
-                <div className="bg-white p-3 border border-gray-200 rounded-md whitespace-pre-wrap text-gray-800">
-                  {selectedItem.message || <span className="text-gray-400 italic">No message provided</span>}
+                <span className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5">Additional Message</span> 
+                <div className="bg-white p-3.5 border border-slate-200 rounded-xl whitespace-pre-wrap text-slate-700 text-sm leading-relaxed">
+                  {selectedItem.message || <span className="text-slate-400 italic">No message provided</span>}
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Enquiry Status</label>
                 <select 
                   value={editForm.status} 
                   onChange={(e) => setEditForm({...editForm, status: e.target.value})}
-                  className="w-full border-gray-300 rounded-md shadow-sm p-2 border focus:border-[#2E4052] outline-none"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D97724]/20 focus:border-[#D97724] transition-all"
                 >
                   <option value="new">New</option>
                   <option value="contacted">Contacted</option>
@@ -130,12 +150,13 @@ export default function InstitutionsPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Internal Notes</label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Internal Notes & Action Items</label>
                 <textarea 
                   value={editForm.notes} 
                   onChange={(e) => setEditForm({...editForm, notes: e.target.value})}
-                  className="w-full border-gray-300 rounded-md shadow-sm p-2 border focus:border-[#2E4052] outline-none" rows="4"
-                  placeholder="Keep track of meetings, proposals, etc."
+                  className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D97724]/20 focus:border-[#D97724] transition-all" 
+                  rows="3"
+                  placeholder="Keep track of discovery call discussions, proposals, and pilot dates..."
                 />
               </div>
             </div>

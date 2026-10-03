@@ -66,9 +66,9 @@ export default function OpportunitiesPage() {
       key: 'isActive', 
       label: 'Status', 
       render: (val, row) => (
-        <button onClick={(e) => { e.stopPropagation(); handleToggleActive(row._id, val); }} className="flex items-center gap-1">
-          {val ? <CheckCircle size={16} className="text-green-500" /> : <XCircle size={16} className="text-gray-400" />}
-          <span className={val ? 'text-green-700 text-xs' : 'text-gray-500 text-xs'}>{val ? 'Active' : 'Inactive'}</span>
+        <button onClick={(e) => { e.stopPropagation(); handleToggleActive(row._id, val); }} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors">
+          {val ? <CheckCircle size={14} className="text-emerald-600" /> : <XCircle size={14} className="text-slate-400" />}
+          <span className={val ? 'text-emerald-700 text-xs font-semibold' : 'text-slate-500 text-xs font-medium'}>{val ? 'Active' : 'Draft'}</span>
         </button>
       )
     },
@@ -76,8 +76,8 @@ export default function OpportunitiesPage() {
       key: 'isFeatured', 
       label: 'Featured', 
       render: (val, row) => (
-        <button onClick={(e) => { e.stopPropagation(); handleToggleFeatured(row._id, val); }} className="p-1 rounded-full hover:bg-gray-100">
-          <Star size={18} className={val ? 'text-[#FFC857] fill-[#FFC857]' : 'text-gray-300'} />
+        <button onClick={(e) => { e.stopPropagation(); handleToggleFeatured(row._id, val); }} className="p-1 rounded-full hover:bg-slate-100 transition-colors">
+          <Star size={18} className={val ? 'text-amber-400 fill-amber-400' : 'text-slate-300'} />
         </button>
       )
     },
@@ -85,17 +85,17 @@ export default function OpportunitiesPage() {
       key: 'actions',
       label: 'Actions',
       render: (_, row) => (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button 
             onClick={(e) => { e.stopPropagation(); router.push(`/admin/opportunities/${row._id}/edit`); }}
-            className="text-blue-600 hover:text-blue-800 p-1"
+            className="text-slate-500 hover:text-slate-900 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
             title="Edit"
           >
             <Edit2 size={16} />
           </button>
           <button 
             onClick={(e) => { e.stopPropagation(); handleDelete(row._id); }}
-            className="text-red-500 hover:text-red-700 p-1"
+            className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors"
             title="Delete"
           >
             <Trash2 size={16} />
@@ -107,13 +107,16 @@ export default function OpportunitiesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <p className="text-gray-600 text-sm">Manage opportunities available to users.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-bold text-slate-900">Opportunities Directory</h2>
+          <p className="text-slate-500 text-xs mt-0.5">Manage curated fellowships, internships, and scholarships for mentees.</p>
+        </div>
         <button 
           onClick={() => router.push('/admin/opportunities/new')}
-          className="flex items-center gap-2 bg-[#FFC857] hover:bg-[#ffbe3b] text-[#2E4052] px-4 py-2 rounded-xl font-bold transition-all shadow-sm hover:shadow-md text-sm"
+          className="inline-flex items-center gap-2 bg-linear-to-r from-[#D97724] to-[#E07A28] hover:opacity-95 text-white px-4 py-2.5 rounded-xl font-semibold transition-all shadow-xs text-xs self-start sm:self-auto"
         >
-          <Plus size={18} /> Add New Opportunity
+          <Plus size={16} /> Add New Opportunity
         </button>
       </div>
 

@@ -28,7 +28,17 @@ const bookingSchema = new mongoose.Schema({
   actionStatus: { type: String, enum: ['pending', 'in-progress', 'completed', 'not-started'], default: 'not-started' },
   feedback: { type: String },
   source: { type: String }, // How did you hear about Second Innings?
-  referredBy: { type: String } // Were you referred by someone?
+  referredBy: { type: String }, // Were you referred by someone?
+  // Payment Integration (Cashfree PG)
+  paymentRequired: { type: Boolean, default: false },
+  paymentStatus: { type: String, enum: ['not_required', 'pending', 'paid', 'failed', 'refunded'], default: 'not_required' },
+  paymentAmount: { type: Number, default: 0 },
+  paymentCurrency: { type: String, default: 'INR' },
+  cashfreeOrderId: { type: String },
+  cashfreePaymentSessionId: { type: String },
+  cashfreePaymentId: { type: String },
+  paymentMode: { type: String },
+  paymentTime: { type: Date },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Booking', bookingSchema);

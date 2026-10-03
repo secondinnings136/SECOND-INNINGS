@@ -66,13 +66,16 @@ export default function ResourcesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <p className="text-gray-600 text-sm">Manage articles and resources.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-bold text-slate-900">Articles & Resource Guides</h2>
+          <p className="text-slate-500 text-xs mt-0.5">Manage published insights, frameworks, and student guidance pieces.</p>
+        </div>
         <button 
           onClick={() => router.push('/admin/resources/new')}
-          className="flex items-center gap-2 bg-[#FFC857] hover:bg-[#ffbe3b] text-[#2E4052] font-bold px-4 py-2 rounded-xl transition-all shadow-sm text-sm"
+          className="inline-flex items-center gap-2 bg-linear-to-r from-[#D97724] to-[#E07A28] hover:opacity-95 text-white font-semibold px-4 py-2.5 rounded-xl transition-all shadow-xs text-xs self-start sm:self-auto"
         >
-          <Plus size={18} /> Add New
+          <Plus size={16} /> Add New Resource
         </button>
       </div>
 

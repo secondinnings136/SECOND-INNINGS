@@ -69,6 +69,15 @@ export default function BookingsPage() {
     { key: 'phone', label: 'Phone' },
     { key: 'type', label: 'Type', render: (val) => <span className="capitalize">{val}</span> },
     { key: 'concern', label: 'Concern', render: (val) => <span className="truncate max-w-[150px] block">{val}</span> },
+    { key: 'paymentStatus', label: 'Payment', render: (val, row) => (
+      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${
+        val === 'paid' ? 'bg-green-100 text-green-800' :
+        val === 'pending' ? 'bg-amber-100 text-amber-800' :
+        'bg-gray-100 text-gray-700'
+      }`}>
+        {val === 'paid' ? `₹${row.paymentAmount || 0} Paid` : val === 'pending' ? 'Payment Due' : 'Complimentary'}
+      </span>
+    ) },
     { key: 'status', label: 'Status', render: (val) => <StatusBadge status={val} /> },
     { key: 'createdAt', label: 'Date', render: (val) => new Date(val).toLocaleDateString() },
   ];
@@ -116,8 +125,10 @@ export default function BookingsPage() {
               <div><span className="text-gray-500 block">Name:</span> <span className="font-medium">{selectedBooking.name}</span></div>
               <div><span className="text-gray-500 block">Phone:</span> <span className="font-medium">{selectedBooking.phone}</span></div>
               <div><span className="text-gray-500 block">Email:</span> <span className="font-medium">{selectedBooking.email || 'N/A'}</span></div>
-              <div><span className="text-gray-500 block">Type:</span> <span className="font-medium capitalize">{selectedBooking.type}</span></div>
-              <div className="col-span-2"><span className="text-gray-500 block">Concern:</span> <p className="mt-1 bg-white p-3 border rounded-md">{selectedBooking.concern}</p></div>
+              <div><span className="text-gray-500 block">Type:</span> <span className="font-medium capitalize">{selectedBooking.type || selectedBooking.userType}</span></div>
+              <div><span className="text-gray-500 block">Payment:</span> <span className="font-semibold text-emerald-700 capitalize">{selectedBooking.paymentStatus === 'paid' ? `₹${selectedBooking.paymentAmount} Paid` : selectedBooking.paymentStatus === 'pending' ? 'Payment Due' : 'Complimentary'}</span></div>
+              <div><span className="text-gray-500 block">Order ID:</span> <span className="font-mono text-xs text-gray-700">{selectedBooking.cashfreeOrderId || 'N/A'}</span></div>
+              <div className="col-span-2"><span className="text-gray-500 block">Concern:</span> <p className="mt-1 bg-white p-3 border rounded-md">{selectedBooking.concern || selectedBooking.topic}</p></div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

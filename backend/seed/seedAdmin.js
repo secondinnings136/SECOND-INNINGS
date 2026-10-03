@@ -27,10 +27,12 @@ const seedAdmin = async () => {
       process.exit(0);
     }
 
+    const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD || 'SecondInnings@2026';
+
     admin = new Admin({
       name: 'Deepak Sogani',
       email: adminEmail,
-      password: 'SecondInnings@2026',
+      password: adminPassword,
       role: 'superadmin'
     });
 
@@ -38,7 +40,7 @@ const seedAdmin = async () => {
 
     console.log('Superadmin user created successfully!');
     console.log(`Email: ${adminEmail}`);
-    console.log('Password: SecondInnings@2026');
+    console.log('Password has been securely configured.');
     
     process.exit(0);
   } catch (error) {

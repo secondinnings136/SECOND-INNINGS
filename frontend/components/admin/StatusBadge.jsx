@@ -11,26 +11,31 @@ export default function StatusBadge({ status }) {
       case 'active':
       case 'approved':
       case 'published':
-        return 'bg-[#BDD9BF]/40 text-[#2E4052] border-[#BDD9BF] font-semibold';
+      case 'paid':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200 font-semibold';
       case 'pending':
-        return 'bg-[#FFC857]/25 text-[#2E4052] border-[#FFC857]/50 font-semibold';
+        return 'bg-amber-50 text-amber-800 border-amber-200 font-semibold';
       case 'featured':
-        return 'bg-[#FFC857] text-[#2E4052] border-[#FFC857] font-bold shadow-xs';
+        return 'bg-[#FFF6E9] text-[#D97724] border-[#FBD8AF] font-bold';
       case 'confirmed':
+        return 'bg-blue-50 text-blue-700 border-blue-200 font-semibold';
       case 'new':
-        return 'bg-[#2E4052]/10 text-[#2E4052] border-[#2E4052]/30 font-semibold';
+        return 'bg-indigo-50 text-indigo-700 border-indigo-200 font-semibold';
       case 'cancelled':
-        return 'bg-red-100 text-red-800 border-red-200';
+      case 'failed':
+        return 'bg-rose-50 text-rose-700 border-rose-200 font-medium';
+      case 'free':
+        return 'bg-slate-100 text-slate-700 border-slate-200 font-medium';
       case 'read':
       case 'closed':
       case 'draft':
       default:
-        return 'bg-gray-100 text-gray-700 border-gray-200';
+        return 'bg-slate-100 text-slate-600 border-slate-200 font-medium';
     }
   };
 
   return (
-    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border capitalize ${getStatusStyles(status)}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs border tracking-tight capitalize ${getStatusStyles(status)}`}>
       {status}
     </span>
   );

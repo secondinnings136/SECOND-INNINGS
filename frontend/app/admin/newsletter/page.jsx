@@ -52,59 +52,61 @@ export default function NewsletterPage() {
   return (
     <div className="space-y-6">
       {/* Header & Stats */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
-          <h1 className="text-2xl font-bold font-serif text-[#2E4052] flex items-center gap-2">
-            <Users className="text-[#2E4052]" size={28} />
+          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#D97724]/10 text-[#D97724] flex items-center justify-center font-bold">
+              <Users size={18} />
+            </div>
             Newsletter Subscribers
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Manage your audience and export subscriber lists for outreach.
+          <p className="text-xs text-slate-500 mt-1">
+            Manage subscribed audience and export subscriber lists for mentorship newsletters.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <button
             onClick={fetchSubscribers}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 shadow-2xs transition-colors"
             title="Refresh list"
           >
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
             Refresh
           </button>
           <button
             onClick={exportToCSV}
             disabled={!subscribers.length}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#2E4052] bg-[#FFC857] hover:bg-[#ffbe3b] rounded-xl shadow-sm hover:shadow-md transition-all disabled:opacity-50"
+            className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-linear-to-r from-[#D97724] to-[#E07A28] hover:opacity-95 rounded-xl shadow-xs transition-all disabled:opacity-50"
           >
-            <Download size={16} />
+            <Download size={14} />
             Export CSV
           </button>
         </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">Total Subscribers</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">{subscribers.length}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Subscribers</p>
+          <p className="text-2xl font-bold text-slate-900 mt-1">{subscribers.length}</p>
         </div>
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">Active Subscribers</p>
-          <p className="text-3xl font-bold text-green-600 mt-1">{activeCount}</p>
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Active Audience</p>
+          <p className="text-2xl font-bold text-emerald-600 mt-1">{activeCount}</p>
         </div>
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">Unsubscribed</p>
-          <p className="text-3xl font-bold text-gray-500 mt-1">{subscribers.length - activeCount}</p>
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Unsubscribed</p>
+          <p className="text-2xl font-bold text-slate-400 mt-1">{subscribers.length - activeCount}</p>
         </div>
       </div>
 
       {/* Data Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         {loading ? (
           <div className="p-12 text-center">
-            <div className="w-10 h-10 border-4 border-[#2E4052] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-            <p className="text-gray-500 text-sm">Loading subscribers...</p>
+            <div className="w-8 h-8 border-3 border-[#D97724] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-slate-500 text-xs">Loading subscribers...</p>
           </div>
         ) : error ? (
           <div className="p-8 text-center text-red-600">

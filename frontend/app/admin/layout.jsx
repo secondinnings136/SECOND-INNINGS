@@ -43,8 +43,9 @@ export default function AdminLayout({ children }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-[#2E4052] border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-[#111720] flex flex-col items-center justify-center">
+        <div className="w-10 h-10 border-3 border-white/10 border-t-amber rounded-full animate-spin mb-3"></div>
+        <p className="text-xs font-mono uppercase tracking-widest text-gray-400">Loading Founder Portal...</p>
       </div>
     );
   }
@@ -55,18 +56,30 @@ export default function AdminLayout({ children }) {
 
   // Map path to title
   const getPageTitle = () => {
-    const path = pathname.split('/').filter(Boolean);
-    if (path.length <= 1) return 'Dashboard';
-    
-    // e.g. /admin/opportunities/new -> 'Add Opportunity'
-    if (path[2] === 'new') return `Add ${path[1].slice(0,-1)}`;
-    if (path[3] === 'edit') return `Edit ${path[1].slice(0,-1)}`;
-    
-    return path[1].charAt(0).toUpperCase() + path[1].slice(1);
+    const segments = pathname.split('/').filter(Boolean);
+    if (segments.length <= 1) return 'Executive Dashboard';
+
+    const pathMap = {
+      'payments': 'Payment Gateway & Fees',
+      'bookings': 'Mentoring Bookings',
+      'contacts': 'Mentoring Inquiries',
+      'institutions': 'Institutional Inquiries',
+      'support': 'Support & Bug Tracker',
+      'opportunities': 'Curated Opportunities',
+      'resources': 'Framework Articles',
+      'testimonials': 'Testimonials',
+      'newsletter': 'Newsletter Subscribers',
+      'settings': 'Settings & Security',
+    };
+
+    if (segments[2] === 'new') return `Add ${segments[1].slice(0, -1)}`;
+    if (segments[3] === 'edit') return `Edit ${segments[1].slice(0, -1)}`;
+
+    return pathMap[segments[1]] || (segments[1].charAt(0).toUpperCase() + segments[1].slice(1));
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-[#F7F9FB]">
       <AdminSidebar admin={admin} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       
       <div className="flex-1 flex flex-col overflow-hidden">
