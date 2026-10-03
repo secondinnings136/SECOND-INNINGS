@@ -101,6 +101,11 @@ router.post('/create-order', async (req, res) => {
     // Generate unique Cashfree order ID (alphanumeric + underscore/hyphen, max 50 chars)
     const orderId = `SI_${booking._id.toString().slice(-8)}_${Date.now().toString().slice(-6)}`;
 
+    // Determine dynamic return base URL from request origin/headers or environment
+    const requestOrigin = req.headers.origin || (req.headers.referer ? new URL(req.headers.referer).origin : null);
+    const frontendBase = requestOrigin || process.env.FRONTEND_URL || 'https://www.second-innings.in';
+    const returnUrl = `${frontendBase}/book/status?order_id=${orderId}&booking_id=${booking._id}`;
+
     // Create Cashfree order
     const cfOrder = await cashfreeService.createPaymentOrder({
       orderId,
@@ -109,7 +114,7 @@ router.post('/create-order', async (req, res) => {
       customerName: booking.name,
       customerEmail: booking.email,
       customerPhone: booking.phone,
-      returnUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/book/status?order_id=${orderId}&booking_id=${booking._id}`
+      returnUrl
     });
 
     // Save Cashfree order details to booking

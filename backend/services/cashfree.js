@@ -62,6 +62,24 @@ async function createPaymentOrder({
     ? customerEmail.trim() 
     : 'care@second-innings.in';
 
+  const orderMeta = {
+    return_url: returnUrl || `${process.env.FRONTEND_URL || 'https://www.second-innings.in'}/book/status?order_id={order_id}`,
+    payment_methods: 'cc,dc,upi,nb,app'
+  };
+
+  // Cashfree in PRODUCTION strictly requires notify_url to be an HTTPS URL.
+  // Only include notify_url if it is a valid https URL.
+  let resolvedNotify = notifyUrl;
+  if (!resolvedNotify && process.env.BACKEND_URL && process.env.BACKEND_URL.startsWith('https://')) {
+    resolvedNotify = `${process.env.BACKEND_URL}/api/payment/webhook`;
+  } else if (!resolvedNotify) {
+    resolvedNotify = 'https://second-innings-eight.vercel.app/api/payment/webhook';
+  }
+
+  if (resolvedNotify && resolvedNotify.startsWith('https://')) {
+    orderMeta.notify_url = resolvedNotify;
+  }
+
   const orderRequest = {
     order_id: String(orderId),
     order_amount: Number(orderAmount),
@@ -72,11 +90,7 @@ async function createPaymentOrder({
       customer_email: cleanEmail,
       customer_phone: cleanPhone
     },
-    order_meta: {
-      return_url: returnUrl || `${process.env.FRONTEND_URL || 'http://localhost:3000'}/book/status?order_id={order_id}`,
-      notify_url: notifyUrl || `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/payment/webhook`,
-      payment_methods: 'cc,dc,upi,nb,app'
-    },
+    order_meta: orderMeta,
     order_note: 'Second Innings Mentoring Session'
   };
 
