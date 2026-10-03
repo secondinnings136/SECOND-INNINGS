@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, Briefcase, FileText, Mail, Building2, MessageSquareQuote, Users, Clock } from 'lucide-react';
+import { Calendar, Briefcase, FileText, Mail, Building2, MessageSquareQuote, Users, Clock, AlertCircle } from 'lucide-react';
 import { getDashboard } from '../../lib/adminApi';
 import StatsCard from '../../components/admin/StatsCard';
 import StatusBadge from '../../components/admin/StatusBadge';
@@ -48,7 +48,8 @@ export default function AdminDashboard() {
   // Use provided stats or fallback to 0
   const stats = data?.stats || {
     totalBookings: 0, pendingBookings: 0, activeOpportunities: 0, publishedResources: 0,
-    totalContacts: 0, institutionalEnquiries: 0, approvedTestimonials: 0, newsletterSubscribers: 0
+    totalContacts: 0, institutionalEnquiries: 0, approvedTestimonials: 0, newsletterSubscribers: 0,
+    totalSupport: 0, openSupport: 0
   };
 
   return (
@@ -57,16 +58,16 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard icon={Calendar} title="Total Bookings" value={stats.totalBookings || 0} variant="navy" />
         <StatsCard icon={Clock} title="Pending Bookings" value={stats.pendingBookings || 0} variant="amber" />
+        <StatsCard icon={AlertCircle} title="Open Support / Bugs" value={stats.openSupport || stats.totalSupport || 0} variant="amber" />
         <StatsCard icon={Briefcase} title="Active Opportunities" value={stats.activeOpportunities || 0} variant="teal" />
-        <StatsCard icon={FileText} title="Published Resources" value={stats.publishedResources || 0} variant="white" />
       </div>
 
       {/* Second Stats Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatsCard icon={Mail} title="Total Contacts" value={stats.totalContacts || 0} variant="white" />
+        <StatsCard icon={Mail} title="Consulting Contacts" value={stats.totalContacts || 0} variant="white" />
         <StatsCard icon={Building2} title="Institution Enquiries" value={stats.institutionalEnquiries || 0} variant="white" />
+        <StatsCard icon={FileText} title="Published Resources" value={stats.publishedResources || 0} variant="white" />
         <StatsCard icon={MessageSquareQuote} title="Approved Testimonials" value={stats.approvedTestimonials || 0} variant="white" />
-        <StatsCard icon={Users} title="Newsletter Subs" value={stats.newsletterSubscribers || 0} variant="white" />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
