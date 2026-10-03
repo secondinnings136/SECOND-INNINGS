@@ -17,12 +17,53 @@ const app = express();
 // Middleware
 app.use(helmet());
 
-// Flexible CORS for Vercel serverless and local dev
-const allowedOrigin = process.env.FRONTEND_URL;
-app.use(cors({
-  origin: allowedOrigin ? (allowedOrigin.includes(',') ? allowedOrigin.split(',').map(s => s.trim()) : allowedOrigin) : '*',
-  credentials: true
-}));
+// Comprehensive CORS configuration supporting apex domain, www subdomain, vercel previews, and local dev
+const allowedOrigins = [
+  'https://second-innings.in',
+  'https://www.second-innings.in',
+  'http://localhost:3000',
+  'http://localhost:3001',
+];
+
+if (process.env.FRONTEND_URL) {
+  process.env.FRONTEND_URL.split(',').forEach(o => {
+    const trimmed = o.trim();
+    if (trimmed && !allowedOrigins.includes(trimmed)) {
+      allowedOrigins.push(trimmed);
+    }
+  });
+}
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow non-browser requests (Postman, server-to-server, curl)
+    if (!origin) return callback(null, true);
+
+    const isExplicitlyAllowed = allowedOrigins.includes(origin);
+    const isDomainMatch = /^https:\/\/([a-zA-Z0-9-]+\.)?second-innings\.in$/.test(origin);
+    const isVercelPreview = /^https:\/\/second-innings[a-zA-Z0-9-]*\.vercel\.app$/.test(origin);
+    const isLocalhost = /^http:\/\/localhost:\d+$/.test(origin);
+
+    if (isExplicitlyAllowed || isDomainMatch || isVercelPreview || isLocalhost) {
+      return callback(null, true);
+    }
+
+    // If FRONTEND_URL is set to wildcard
+    if (process.env.FRONTEND_URL === '*') {
+      return callback(null, true);
+    }
+
+    console.warn(`[CORS] Denied request from origin: ${origin}`);
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  optionsSuccessStatus: 200 // For legacy browsers
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
 if (process.env.NODE_ENV === 'development') {
