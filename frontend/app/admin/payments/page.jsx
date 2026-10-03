@@ -293,7 +293,7 @@ export default function AdminPaymentsPage() {
                 <input
                   type="number"
                   min="0"
-                  step="50"
+                  step="1"
                   value={sessionFee}
                   onChange={(e) => setSessionFee(e.target.value)}
                   placeholder="e.g. 999"
