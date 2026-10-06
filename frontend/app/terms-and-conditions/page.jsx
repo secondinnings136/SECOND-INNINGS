@@ -1,9 +1,19 @@
 import Link from 'next/link';
 import Button from '../../components/ui/Button';
+import Breadcrumbs from '../../components/ui/Breadcrumbs';
 
 export const metadata = {
   title: 'Terms & Conditions | Second Innings',
-  description: 'Terms of service and mentoring agreements for Second Innings youth mentoring platform.',
+  description:
+    'Terms of service and mentoring agreements for Second Innings youth mentoring platform. Transparent principles governing private conversations.',
+  alternates: {
+    canonical: 'https://second-innings.in/terms-and-conditions',
+  },
+  openGraph: {
+    title: 'Terms & Conditions — Second Innings',
+    description: 'Terms of service and mentoring agreements for Second Innings youth mentoring platform.',
+    url: 'https://second-innings.in/terms-and-conditions',
+  },
 };
 
 const TOC = [
@@ -22,9 +32,10 @@ const TOC = [
 export default function TermsAndConditionsPage() {
   return (
     <div className="w-full">
-      <div className="page-x pt-36 md:pt-48 pb-28 md:pb-40">
+      <div className="page-x pt-28 md:pt-36 pb-28 md:pb-40">
+        <Breadcrumbs items={[{ name: 'Terms & Conditions', href: '/terms-and-conditions' }]} />
         {/* Header */}
-        <div className="border-b border-line pb-12 mb-16">
+        <div className="border-b border-line pb-12 mb-16 mt-8">
           <span className="meta text-signal mb-4 block">Legal Agreement</span>
           <h1 className="font-serif text-[clamp(2.5rem,5.5vw,5rem)] leading-[0.95] tracking-[-0.02em] text-ink mb-6">
             Terms &amp; Conditions
@@ -193,7 +204,7 @@ export default function TermsAndConditionsPage() {
               <div className="text-xs sm:text-sm text-ink-2 font-mono space-y-1.5 pt-2">
                 <p><strong>Entity:</strong> Second Innings</p>
                 <p><strong>Founder:</strong> Mr. Deepak Sogani</p>
-                <p><strong>Primary Email:</strong> <a href="mailto:deepak@second-innings.in" className="underline hover:text-signal">deepak@second-innings.in</a></p>
+                <p><strong>Primary Email:</strong> <a href="mailto:secondinnings136@gmail.com" className="underline hover:text-signal">secondinnings136@gmail.com</a></p>
                 <p><strong>Helpline / WhatsApp:</strong> +91 77372 20724</p>
                 <p><strong>Headquarters:</strong> Jaipur, Rajasthan, India</p>
               </div>

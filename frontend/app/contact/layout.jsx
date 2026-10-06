@@ -1,7 +1,7 @@
 export const metadata = {
-  title: 'Get in Touch | Contact & Partnerships — Second Innings',
+  title: 'Contact | Get in Touch — Second Innings',
   description:
-    'Reach out to Second Innings and Deepak Sogani. Direct inquiries for students, parent conversations, and institutional engagements for schools and universities.',
+    'Reach Deepak Sogani at Second Innings. Email: secondinnings136@gmail.com | WhatsApp: +91 77372 20724. Based in Jaipur, Rajasthan, serving young people pan-India.',
   keywords: [
     'contact Second Innings',
     'Deepak Sogani contact',
@@ -14,7 +14,7 @@ export const metadata = {
     canonical: 'https://second-innings.in/contact',
   },
   openGraph: {
-    title: 'Get in Touch | Second Innings',
+    title: 'Contact — Second Innings',
     description:
       'We welcome inquiries from students, parents, schools, and colleges. Start a conversation with us.',
     url: 'https://second-innings.in/contact',
@@ -22,5 +22,32 @@ export const metadata = {
 };
 
 export default function ContactLayout({ children }) {
-  return children;
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: 'https://second-innings.in',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Contact',
+        item: 'https://second-innings.in/contact',
+      },
+    ],
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      {children}
+    </>
+  );
 }

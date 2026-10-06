@@ -1,15 +1,30 @@
 import Link from 'next/link';
 import Button from '../../components/ui/Button';
 import PageHero from '../../components/ui/PageHero';
+import Breadcrumbs from '../../components/ui/Breadcrumbs';
 
 export const metadata = {
   title: 'Privacy, Safety & Professional Boundaries | Second Innings',
-  description: 'Second Innings is committed to providing a respectful, responsible and non-judgmental environment for young people.',
+  description:
+    'Our commitment to privacy, discretion, and safeguarding. Understand how private conversations work and our ethical boundaries for participants under and over 18.',
+  alternates: {
+    canonical: 'https://second-innings.in/privacy-boundaries',
+  },
+  openGraph: {
+    title: 'Privacy, Safety & Professional Boundaries — Second Innings',
+    description:
+      'A respectful, responsible, and non-judgmental environment for young people aged 16 to 25.',
+    url: 'https://second-innings.in/privacy-boundaries',
+  },
 };
 
 export default function PrivacyBoundariesPage() {
   return (
     <div className="w-full">
+      <div className="page-x pt-28 md:pt-36">
+        <Breadcrumbs items={[{ name: 'Privacy & Boundaries', href: '/privacy-boundaries' }]} />
+      </div>
+
       <PageHero
         meta={['Safeguarding & Boundaries', 'Duty of Care', 'Professional Scope']}
         title="Privacy, safety &amp; professional boundaries."

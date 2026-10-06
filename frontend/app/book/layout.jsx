@@ -1,27 +1,53 @@
 export const metadata = {
-  title: 'Start a Conversation | Book a 1-on-1 Mentoring Session — Second Innings',
+  title: 'Start a Conversation | Second Innings — Deepak Sogani',
   description:
-    'Book a dedicated 30-minute perspective mentoring conversation with Deepak Sogani. Safe, confidential space to discuss career confusion, college decisions, and next steps with clarity.',
+    'Start a conversation with Deepak Sogani. No preparation needed. Tell us what is on your mind. Your first introductory conversation is complimentary.',
   keywords: [
-    'book mentoring session',
-    'student mentor appointment',
+    'start a conversation',
+    'youth mentor conversation',
     'career guidance conversation',
     'talk to youth mentor',
-    '1 on 1 mentoring session',
-    'Deepak Sogani session booking',
-    'career confusion consultation',
+    'private one to one conversation',
+    'Deepak Sogani conversation',
   ],
   alternates: {
     canonical: 'https://second-innings.in/book',
   },
   openGraph: {
-    title: 'Start a Conversation | Second Innings Mentoring',
+    title: 'Start a Conversation — Second Innings',
     description:
-      'No selling, no pressure — just a thoughtful 30-minute conversation to understand where you are and explore what comes next.',
+      'No ready-made answers. No predetermined path. Just a quiet, private conversation to explore what comes next.',
     url: 'https://second-innings.in/book',
   },
 };
 
 export default function BookLayout({ children }) {
-  return children;
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: 'https://second-innings.in',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Start a Conversation',
+        item: 'https://second-innings.in/book',
+      },
+    ],
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      {children}
+    </>
+  );
 }

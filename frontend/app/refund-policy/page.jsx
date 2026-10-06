@@ -1,18 +1,29 @@
 import Link from 'next/link';
 import Button from '../../components/ui/Button';
+import Breadcrumbs from '../../components/ui/Breadcrumbs';
 
 export const metadata = {
   title: 'Refund & Engagement Policy | Second Innings',
-  description: 'Engagement policy for Second Innings. Introductory conversations are currently complimentary.',
+  description:
+    'Engagement and refund policy for Second Innings. Introductory conversations are currently complimentary with full fee transparency.',
+  alternates: {
+    canonical: 'https://second-innings.in/refund-policy',
+  },
+  openGraph: {
+    title: 'Refund & Engagement Policy — Second Innings',
+    description: 'Engagement policy for Second Innings. Introductory conversations are currently complimentary.',
+    url: 'https://second-innings.in/refund-policy',
+  },
 };
 
 export default function RefundPolicyPage() {
   return (
     <div className="w-full">
-      <div className="page-x pt-36 md:pt-48 pb-28 md:pb-40">
+      <div className="page-x pt-28 md:pt-36 pb-28 md:pb-40">
         <div className="max-w-3xl mx-auto">
+          <Breadcrumbs items={[{ name: 'Refund Policy', href: '/refund-policy' }]} />
           {/* Header */}
-          <div className="border-b border-line pb-10 mb-12">
+          <div className="border-b border-line pb-10 mb-12 mt-8">
             <span className="meta text-signal mb-4 block">Fair Practice Notice</span>
             <h1 className="font-serif text-[clamp(2.5rem,5.5vw,4.5rem)] leading-[0.95] tracking-[-0.02em] text-ink mb-6">
               Engagement &amp; Refund Policy
@@ -36,7 +47,7 @@ export default function RefundPolicyPage() {
             <div className="pt-4 border-t border-line flex flex-wrap items-center justify-between gap-4">
               <Button href="/book">Start a Conversation</Button>
               <Link href="/contact" className="meta text-ink underline decoration-ink/20 hover:decoration-signal">
-                Have a question? Write to deepak@second-innings.in →
+                Have a question? Write to secondinnings136@gmail.com →
               </Link>
             </div>
           </div>

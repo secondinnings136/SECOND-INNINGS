@@ -5,52 +5,33 @@ export default function robots() {
         userAgent: '*',
         allow: '/',
         disallow: [
+          '/admin',
           '/admin/',
-          '/admin/*',
+          '/api',
           '/api/',
-          '/api/*',
           '/book/status',
         ],
       },
-      // Google Crawler Specific Rule
       {
         userAgent: 'Googlebot',
         allow: '/',
         disallow: [
+          '/admin',
           '/admin/',
-          '/admin/*',
+          '/api',
           '/api/',
+          '/book/status',
         ],
       },
-      // Microsoft Bing Crawler Specific Rule
       {
-        userAgent: 'bingbot',
+        userAgent: 'Bingbot',
         allow: '/',
         disallow: [
+          '/admin',
           '/admin/',
-          '/admin/*',
+          '/api',
           '/api/',
-        ],
-        crawlDelay: 1,
-      },
-      // MSN / Bing Media Crawler
-      {
-        userAgent: 'msnbot',
-        allow: '/',
-        disallow: [
-          '/admin/',
-          '/admin/*',
-          '/api/',
-        ],
-      },
-      // DuckDuckGo Crawler
-      {
-        userAgent: 'DuckDuckBot',
-        allow: '/',
-        disallow: [
-          '/admin/',
-          '/admin/*',
-          '/api/',
+          '/book/status',
         ],
       },
     ],

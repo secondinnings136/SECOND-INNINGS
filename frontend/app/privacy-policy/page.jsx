@@ -1,9 +1,19 @@
 import Link from 'next/link';
 import Button from '../../components/ui/Button';
+import Breadcrumbs from '../../components/ui/Breadcrumbs';
 
 export const metadata = {
   title: 'Privacy Policy | Second Innings',
-  description: 'Privacy Policy for Second Innings outlining how personal information is collected, used, and protected.',
+  description:
+    'Privacy Policy for Second Innings outlining how personal data is collected, used, protected, and respected under DPDP Act.',
+  alternates: {
+    canonical: 'https://second-innings.in/privacy-policy',
+  },
+  openGraph: {
+    title: 'Privacy Policy — Second Innings',
+    description: 'Privacy Policy for Second Innings outlining how personal data is collected, used, and safeguarded.',
+    url: 'https://second-innings.in/privacy-policy',
+  },
 };
 
 const TOC = [
@@ -19,9 +29,10 @@ const TOC = [
 export default function PrivacyPolicyPage() {
   return (
     <div className="w-full">
-      <div className="page-x pt-36 md:pt-48 pb-28 md:pb-40">
+      <div className="page-x pt-28 md:pt-36 pb-28 md:pb-40">
+        <Breadcrumbs items={[{ name: 'Privacy Policy', href: '/privacy-policy' }]} />
         {/* Header */}
-        <div className="border-b border-line pb-12 mb-16">
+        <div className="border-b border-line pb-12 mb-16 mt-8">
           <span className="meta text-signal mb-4 block">Data Protection Notice</span>
           <h1 className="font-serif text-[clamp(2.5rem,5.5vw,5rem)] leading-[0.95] tracking-[-0.02em] text-ink mb-6">
             Privacy Policy
@@ -177,8 +188,8 @@ export default function PrivacyPolicyPage() {
               </div>
               <p className="text-sm text-muted pt-2">
                 To exercise any of these rights, email us at{' '}
-                <a href="mailto:deepak@second-innings.in" className="text-ink underline decoration-ink/20 hover:decoration-signal font-medium">
-                  deepak@second-innings.in
+                <a href="mailto:secondinnings136@gmail.com" className="text-ink underline decoration-ink/20 hover:decoration-signal font-medium">
+                  secondinnings136@gmail.com
                 </a>{' '}
                 with the subject line &ldquo;Data Request&rdquo;. We respond within 7 business days.
               </p>
@@ -196,7 +207,7 @@ export default function PrivacyPolicyPage() {
               <div className="text-xs sm:text-sm text-ink-2 font-mono space-y-1.5 pt-2">
                 <p><strong>Contact:</strong> Deepak Sogani</p>
                 <p><strong>Designation:</strong> Founder, Second Innings</p>
-                <p><strong>Email:</strong> <a href="mailto:deepak@second-innings.in" className="underline hover:text-signal">deepak@second-innings.in</a></p>
+                <p><strong>Email:</strong> <a href="mailto:secondinnings136@gmail.com" className="underline hover:text-signal">secondinnings136@gmail.com</a></p>
                 <p><strong>Location:</strong> Jaipur, Rajasthan, India</p>
               </div>
             </section>

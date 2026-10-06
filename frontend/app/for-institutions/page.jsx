@@ -5,11 +5,12 @@ import Arrow from '../../components/ui/Arrow';
 import PageHero from '../../components/ui/PageHero';
 import SectionHead from '../../components/ui/SectionHead';
 import { Reveal, RevealGroup, RevealItem } from '../../components/ui/Reveal';
+import Breadcrumbs from '../../components/ui/Breadcrumbs';
 
 export const metadata = {
   title: 'For Institutions | Schools, Colleges & Universities — Second Innings',
   description:
-    'Second Innings works alongside existing student-support systems to create an additional space for conversations around choices, transitions, exposure, confidence and life beyond the classroom.',
+    'Complementing academic systems with thoughtful student conversations on choices, transitions, confidence, and real-world exposure for schools and colleges.',
   keywords: [
     'student development schools colleges',
     'student transition workshops',
@@ -50,6 +51,10 @@ const FORMATS = [
 export default function ForInstitutionsPage() {
   return (
     <div className="w-full">
+      <div className="page-x pt-28 md:pt-36">
+        <Breadcrumbs items={[{ name: 'For Institutions', href: '/for-institutions' }]} />
+      </div>
+
       <PageHero
         meta={['For Schools, Colleges & Universities', 'Campus Collaboration', 'Student Support']}
         title="An additional space for perspective alongside existing academic systems."
@@ -131,8 +136,8 @@ export default function ForInstitutionsPage() {
             </RevealItem>
             <RevealItem className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-4">
               <Button href="/contact">Talk to Us About Your Institution</Button>
-              <Link href="mailto:deepak@second-innings.in" className="meta text-ink underline decoration-ink/20 hover:decoration-signal">
-                Write directly to deepak@second-innings.in →
+              <Link href="mailto:secondinnings136@gmail.com" className="meta text-ink underline decoration-ink/20 hover:decoration-signal">
+                Write directly to secondinnings136@gmail.com →
               </Link>
             </RevealItem>
           </RevealGroup>

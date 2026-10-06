@@ -5,11 +5,12 @@ import Arrow from '../../components/ui/Arrow';
 import PageHero from '../../components/ui/PageHero';
 import SectionHead from '../../components/ui/SectionHead';
 import { Reveal, RevealGroup, RevealItem } from '../../components/ui/Reveal';
+import Breadcrumbs from '../../components/ui/Breadcrumbs';
 
 export const metadata = {
   title: 'Guidance for Parents | Supporting Young Adults Without Pressure — Second Innings',
   description:
-    'The world has changed, and so has the nature of careers. Second Innings helps parents and children build mutual trust, bridge communication gaps, and explore new-age pathways together.',
+    'Constructive guidance for parents supporting young adults through modern career choices and transitions. Complementing family trust with independent perspective.',
   keywords: [
     'how to support child career choice',
     'how to talk to teenager about future without arguing',
@@ -63,11 +64,48 @@ const concerns = [
   "Is my child genuinely ready for university life or adulthood?"
 ];
 
+const PARENT_FAQS = [
+  {
+    q: 'How does Second Innings support parents?',
+    a: 'Second Innings provides an independent, trusted space that helps bridge generational communication. We help young people explore their aspirations clearly while helping parents understand new-age opportunities with calm and confidence.'
+  },
+  {
+    q: 'Does Second Innings replace parents, teachers, or professional counsellors?',
+    a: 'No. Second Innings seeks to complement, not replace, the role of parents, educators, educational institutions, or qualified medical/mental health professionals.'
+  },
+  {
+    q: 'Can parents start a conversation about their child?',
+    a: 'Yes. Parents can reach out to discuss their child’s transitions, explore guiding principles, or arrange a private conversation for their child. For young people under 18, parental consent is always mandatory.'
+  }
+];
+
 export default function ForParentsPage() {
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: PARENT_FAQS.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.a,
+      },
+    })),
+  };
+
   return (
     <div className="w-full">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+
+      <div className="page-x pt-28 md:pt-36">
+        <Breadcrumbs items={[{ name: 'For Parents', href: '/for-parents' }]} />
+      </div>
+
       <PageHero
-        meta={['For Parents', 'Family & Mentorship', 'Intergenerational Dialogue']}
+        meta={['For Parents', 'Family & Perspective', 'Intergenerational Dialogue']}
         title="Every parent wants their child to make thoughtful choices and build a meaningful future."
         lede="Second Innings seeks to complement, not replace, the role of parents, teachers, educational institutions or qualified professionals."
       >
@@ -175,8 +213,33 @@ export default function ForParentsPage() {
         </div>
       </section>
 
-      {/* Confidentiality & Safeguarding */}
+      {/* Parent FAQs Section */}
       <section className="border-t border-line">
+        <div className="page-x py-24 md:py-36">
+          <SectionHead
+            meta="Parent inquiries"
+            title="Questions Parents Frequently Ask"
+            lede="Reassurance and clarity on how we collaborate with families."
+          />
+
+          <div className="mt-16 max-w-4xl mx-auto space-y-6">
+            <RevealGroup>
+              {PARENT_FAQS.map((faq, idx) => (
+                <RevealItem
+                  key={idx}
+                  className="rounded-2xl border border-line bg-paper-2 p-6 md:p-8"
+                >
+                  <h4 className="font-serif text-[1.25rem] text-ink mb-3">{faq.q}</h4>
+                  <p className="text-[0.9375rem] text-muted leading-relaxed">{faq.a}</p>
+                </RevealItem>
+              ))}
+            </RevealGroup>
+          </div>
+        </div>
+      </section>
+
+      {/* Confidentiality & Safeguarding */}
+      <section className="border-t border-line bg-paper-2">
         <div className="page-x py-20 md:py-24">
           <Reveal className="rounded-[1.75rem] border border-line bg-paper p-8 md:p-12 max-w-4xl mx-auto">
             <p className="meta text-signal mb-3">Safeguarding &amp; ethics</p>
@@ -194,7 +257,7 @@ export default function ForParentsPage() {
       </section>
 
       {/* CTA */}
-      <section className="border-t border-line bg-paper-2">
+      <section className="border-t border-line bg-paper">
         <div className="page-x py-32 md:py-44">
           <RevealGroup className="max-w-[56rem]">
             <RevealItem as="p" className="meta mb-6">Partnering together</RevealItem>

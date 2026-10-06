@@ -6,6 +6,7 @@ import Button from '../../components/ui/Button';
 import Arrow from '../../components/ui/Arrow';
 import { submitBooking, updateBookingPreference } from '../../lib/api';
 import { launchCashfreeCheckout } from '../../lib/cashfreeClient';
+import Breadcrumbs from '../../components/ui/Breadcrumbs';
 
 const WHERE_CURRENTLY_OPTIONS = [
   'School',
@@ -247,7 +248,10 @@ export default function Book() {
 
   return (
     <div className="w-full">
-      <div className="page-x pt-36 md:pt-48 pb-28 md:pb-40">
+      <div className="page-x pt-28 md:pt-36">
+        <Breadcrumbs items={[{ name: 'Start a Conversation', href: '/book' }]} />
+      </div>
+      <div className="page-x pt-6 md:pt-10 pb-28 md:pb-40">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
           {/* Left Column: Context & Reassurance */}
           <div className="lg:col-span-5">
@@ -357,10 +361,6 @@ export default function Book() {
                 <div className="border-t border-line pt-6 text-xs text-muted space-y-2">
                   <p>
                     Deepak Sogani will review your information and connect with you directly.
-                  </p>
-                  <p className="text-ink font-medium">
-                    Email: <a href="mailto:deepak@second-innings.in" className="underline hover:text-signal">deepak@second-innings.in</a>
-                    {' '}• WhatsApp: <a href="https://wa.me/917737220724" target="_blank" rel="noopener noreferrer" className="underline hover:text-signal">+91 77372 20724</a>
                   </p>
                 </div>
 

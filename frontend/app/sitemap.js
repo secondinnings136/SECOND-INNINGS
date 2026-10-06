@@ -5,7 +5,7 @@ export default async function sitemap() {
   // Core Static Routes
   const staticRoutes = [
     {
-      url: `${baseUrl}/`,
+      url: baseUrl,
       lastModified: currentDate,
       changeFrequency: 'daily',
       priority: 1.0,

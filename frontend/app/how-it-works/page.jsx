@@ -4,6 +4,7 @@ import Arrow from '../../components/ui/Arrow';
 import PageHero from '../../components/ui/PageHero';
 import SectionHead from '../../components/ui/SectionHead';
 import { Reveal, RevealGroup, RevealItem } from '../../components/ui/Reveal';
+import Breadcrumbs from '../../components/ui/Breadcrumbs';
 
 export const metadata = {
   title: 'How It Works | One Conversation Can Be a Beginning — Second Innings',
@@ -75,9 +76,54 @@ const COMPARISON_ITEMS = [
   { is: "A journey towards greater ownership of one's choices.", isNot: 'A system that tells you what you should become.' },
 ];
 
+const FAQS = [
+  {
+    q: 'How does a conversation with Deepak Sogani work?',
+    a: 'Every conversation follows a five-step path: Talk (sharing your thoughts freely), Understand (uncovering what is behind the question), Explore (discovering perspectives and options), Choose Your Next Step (deciding what you want to try), and Follow Through (reviewing what happened and what comes next).'
+  },
+  {
+    q: 'Do I need to prepare anything before we talk?',
+    a: 'You do not need to prepare anything. There are no tests, presentations, or resumes required. You can begin with a simple thought or question.'
+  },
+  {
+    q: 'Is the introductory conversation free?',
+    a: 'Yes, your first conversation is complimentary. There is no fee, pressure, or commitment.'
+  },
+  {
+    q: 'Is Second Innings a career coaching service or therapy?',
+    a: 'Neither. Second Innings is not psychological therapy, clinical counselling, or commercial coaching. It is a quiet, thoughtful space for perspective, reflection, and life readiness.'
+  },
+  {
+    q: 'What if the participant is below 18 years old?',
+    a: 'For participants under 18, verifiable parent or guardian consent is required before scheduling, in accordance with our safeguarding and privacy policy.'
+  }
+];
+
 export default function HowItWorks() {
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQS.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.a,
+      },
+    })),
+  };
+
   return (
     <div className="w-full">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+
+      <div className="page-x pt-28 md:pt-36">
+        <Breadcrumbs items={[{ name: 'How It Works', href: '/how-it-works' }]} />
+      </div>
+
       <PageHero
         meta={['The Approach', 'Methodology', '5 Stages']}
         title="One conversation can be a beginning."
@@ -181,8 +227,33 @@ export default function HowItWorks() {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* FAQ Accordion Section for SEO and Reader Clarity */}
       <section className="border-t border-line bg-paper-2">
+        <div className="page-x py-24 md:py-36">
+          <SectionHead
+            meta="Frequently Asked Questions"
+            title="Common Questions About Our Conversations"
+            lede="Clear answers to help you understand how Second Innings works before reaching out."
+          />
+
+          <div className="mt-16 max-w-4xl mx-auto space-y-6">
+            <RevealGroup>
+              {FAQS.map((faq, idx) => (
+                <RevealItem
+                  key={idx}
+                  className="rounded-2xl border border-line bg-paper p-6 md:p-8"
+                >
+                  <h4 className="font-serif text-[1.25rem] text-ink mb-3">{faq.q}</h4>
+                  <p className="text-[0.9375rem] text-muted leading-relaxed">{faq.a}</p>
+                </RevealItem>
+              ))}
+            </RevealGroup>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="border-t border-line bg-paper">
         <div className="page-x py-32 md:py-44">
           <RevealGroup className="max-w-[56rem]">
             <RevealItem as="p" className="meta mb-6">Start here</RevealItem>

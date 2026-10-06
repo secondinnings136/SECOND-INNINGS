@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import Link from 'next/link';
 import Button from '../../components/ui/Button';
@@ -8,6 +6,7 @@ import PageHero from '../../components/ui/PageHero';
 import SectionHead from '../../components/ui/SectionHead';
 import ScalePortrait from '../../components/ui/ScalePortrait';
 import { Reveal, RevealGroup, RevealItem } from '../../components/ui/Reveal';
+import Breadcrumbs from '../../components/ui/Breadcrumbs';
 
 const STUDENT_REFLECTIONS = [
   {
@@ -85,6 +84,10 @@ const PRINCIPLES = [
 export default function AboutPage() {
   return (
     <div className="w-full">
+      <div className="page-x pt-28 md:pt-36">
+        <Breadcrumbs items={[{ name: 'About Deepak', href: '/about' }]} />
+      </div>
+
       <PageHero
         meta={['About Deepak', 'Founder, Second Innings', '35+ Years of Experience']}
         title="35+ Years Across Corporate Life, Entrepreneurship & Higher Education."

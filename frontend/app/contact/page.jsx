@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Button from '../../components/ui/Button';
 import Arrow from '../../components/ui/Arrow';
 import PageHero from '../../components/ui/PageHero';
+import Breadcrumbs from '../../components/ui/Breadcrumbs';
 import { submitContact, submitInstitutionalEnquiry } from '../../lib/api';
 
 const INTEREST_OPTIONS = [
@@ -82,6 +83,10 @@ export default function Contact() {
 
   return (
     <div className="w-full">
+      <div className="page-x pt-28 md:pt-36">
+        <Breadcrumbs items={[{ name: 'Contact', href: '/contact' }]} />
+      </div>
+
       <PageHero
         meta={['Get in Touch', 'Direct Channels', 'Jaipur, India']}
         title="Direct, human perspective."
@@ -94,8 +99,8 @@ export default function Contact() {
           <div className="p-8 flex flex-col justify-between min-h-[14rem]">
             <span className="meta">Email</span>
             <div>
-              <a href="mailto:deepak@second-innings.in" className="font-serif text-[1.25rem] text-ink hover:text-signal transition-colors block leading-snug">
-                deepak@second-innings.in
+              <a href="mailto:secondinnings136@gmail.com" className="font-serif text-[1.25rem] text-ink hover:text-signal transition-colors block leading-snug">
+                secondinnings136@gmail.com
               </a>
               <Link href="/support" className="text-xs text-coral mt-2 block hover:underline font-mono">
                 Website Issues &amp; Support →

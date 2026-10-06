@@ -14,13 +14,14 @@ const footerNavLinks = [
   { name: 'Privacy & Boundaries', href: '/privacy-boundaries' },
   { name: 'Privacy Policy', href: '/privacy-policy' },
   { name: 'Terms & Conditions', href: '/terms-and-conditions' },
+  { name: 'Refund Policy', href: '/refund-policy' },
+  { name: 'Support', href: '/support' },
 ];
 
 export default function Footer() {
   const replayIntro = () => {
     if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('si_intro_seen');
-      window.location.reload();
+      window.dispatchEvent(new CustomEvent('replay_si_intro'));
     }
   };
 
@@ -56,10 +57,10 @@ export default function Footer() {
             </div>
             <ul className="space-y-3.5 text-[0.9375rem]">
               <li>
-                <a href="mailto:deepak@second-innings.in" className="group flex flex-col">
+                <a href="mailto:secondinnings136@gmail.com" className="group flex flex-col">
                   <span className="text-muted text-[0.8125rem]">Email</span>
                   <span className="text-ink underline decoration-ink/20 underline-offset-4 group-hover:decoration-signal">
-                    deepak@second-innings.in
+                    secondinnings136@gmail.com
                   </span>
                 </a>
               </li>

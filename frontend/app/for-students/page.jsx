@@ -6,11 +6,12 @@ import PageHero from '../../components/ui/PageHero';
 import SectionHead from '../../components/ui/SectionHead';
 import { Reveal, RevealGroup, RevealItem } from '../../components/ui/Reveal';
 import StudentOutcomesGrid from '../../components/home/StudentOutcomesGrid';
+import Breadcrumbs from '../../components/ui/Breadcrumbs';
 
 export const metadata = {
   title: 'For Students (Ages 16–25) | Perspective, Clarity & Next Steps — Second Innings',
   description:
-    'Feeling unsure about career choices or college transitions? Second Innings provides a respectful space for young people aged 16–25 to talk openly, understand themselves better, and choose their own next step.',
+    'Confused about career choices, college transitions, or what comes next? Private one-to-one conversations for ages 16–25 to think clearly and choose your path.',
   keywords: [
     'career confusion after 12th',
     'what to do after graduation if confused',
@@ -59,9 +60,50 @@ const topics = [
   "Transition from education to adult life",
 ];
 
+const STUDENT_FAQS = [
+  {
+    q: 'What can I talk about in a Second Innings conversation?',
+    a: 'You can talk about anything on your mind: career uncertainty, feeling behind your peers, confidence hesitations, handling parental expectations, seeking exposure beyond college, or figuring out your next step after graduation.'
+  },
+  {
+    q: 'Will Deepak Sir tell me which career to choose?',
+    a: 'No. We do not provide ready-made answers or predetermined roadmaps. Your life and your choices belong to you. We help you think clearly, understand trade-offs, and see wider possibilities so you can make your own decisions with conviction.'
+  },
+  {
+    q: 'Is my first conversation free?',
+    a: 'Yes, your first conversation is complimentary. There is no fee, pressure, or commitment required.'
+  },
+  {
+    q: 'What if I am under 18 years old?',
+    a: 'If you are under 18, verifiable parent or guardian consent is required before we can schedule a conversation, ensuring full transparency and safeguarding.'
+  }
+];
+
 export default function ForStudentsPage() {
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: STUDENT_FAQS.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.a,
+      },
+    })),
+  };
+
   return (
     <div className="w-full">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+
+      <div className="page-x pt-28 md:pt-36">
+        <Breadcrumbs items={[{ name: 'For Students', href: '/for-students' }]} />
+      </div>
+
       <PageHero
         meta={['For Young People', 'Ages 16 to 25', 'Perspective & Possibilities']}
         title="You have the information. What you need is perspective."
@@ -169,8 +211,33 @@ export default function ForStudentsPage() {
         </div>
       </section>
 
-      {/* S7: CTA */}
+      {/* FAQ Section */}
       <section className="border-t border-line bg-paper-2">
+        <div className="page-x py-24 md:py-36">
+          <SectionHead
+            meta="Questions from students"
+            title="Things You Might Wonder"
+            lede="Clear answers to help you feel comfortable before starting a conversation."
+          />
+
+          <div className="mt-16 max-w-4xl mx-auto space-y-6">
+            <RevealGroup>
+              {STUDENT_FAQS.map((faq, idx) => (
+                <RevealItem
+                  key={idx}
+                  className="rounded-2xl border border-line bg-paper p-6 md:p-8"
+                >
+                  <h4 className="font-serif text-[1.25rem] text-ink mb-3">{faq.q}</h4>
+                  <p className="text-[0.9375rem] text-muted leading-relaxed">{faq.a}</p>
+                </RevealItem>
+              ))}
+            </RevealGroup>
+          </div>
+        </div>
+      </section>
+
+      {/* S7: CTA */}
+      <section className="border-t border-line bg-paper">
         <div className="page-x py-32 md:py-44">
           <RevealGroup className="max-w-[56rem]">
             <RevealItem as="p" className="meta mb-6">Take the first step</RevealItem>

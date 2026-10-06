@@ -17,40 +17,35 @@ const FLOATING_BUBBLES = [
 
 export default function FluidBlurIntro({ onComplete }) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isFinished, setIsFinished] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
-    // Check if user already saw the intro in this session
-    const hasSeen = typeof window !== 'undefined' ? sessionStorage.getItem('si_intro_seen') : null;
-    if (hasSeen === 'true') {
-      setIsFinished(true);
-      if (onComplete) onComplete();
-      return;
-    }
-
-    // Sequence through the 3 words with fluid cross-morph
-    const t1 = setTimeout(() => setCurrentIndex(1), 900);
-    const t2 = setTimeout(() => setCurrentIndex(2), 1800);
-    const t3 = setTimeout(() => {
-      handleFinish();
-    }, 2850);
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
+    // Only play if explicitly triggered via custom event (e.g., from footer replay button)
+    const handleTrigger = () => {
+      setIsPlaying(true);
+      setCurrentIndex(0);
+      const t1 = setTimeout(() => setCurrentIndex(1), 900);
+      const t2 = setTimeout(() => setCurrentIndex(2), 1800);
+      const t3 = setTimeout(() => {
+        handleFinish();
+      }, 2850);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+        clearTimeout(t3);
+      };
     };
+
+    window.addEventListener('replay_si_intro', handleTrigger);
+    return () => window.removeEventListener('replay_si_intro', handleTrigger);
   }, []);
 
   const handleFinish = () => {
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('si_intro_seen', 'true');
-    }
-    setIsFinished(true);
+    setIsPlaying(false);
     if (onComplete) onComplete();
   };
 
-  if (isFinished) return null;
+  if (!isPlaying) return null;
 
   return (
     <AnimatePresence>

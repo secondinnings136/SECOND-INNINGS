@@ -128,7 +128,7 @@ export const metadata = {
     type: 'website',
     images: [
       {
-        url: '/og-image.png',
+        url: '/opengraph-image',
         width: 1200,
         height: 630,
         alt: 'Second Innings — Young Minds. New Perspectives. Wider Possibilities.',
@@ -141,7 +141,7 @@ export const metadata = {
     description:
       'Sometimes, you don’t need another answer. You need the right conversation. A space for young people aged 16–25.',
     creator: '@SecondInningsIN',
-    images: ['/og-image.png'],
+    images: ['/opengraph-image'],
   },
   robots: {
     index: true,
@@ -203,7 +203,7 @@ const jsonLd = {
         '@type': 'ContactPoint',
         telephone: '+91 77372 20724',
         contactType: 'customer service',
-        email: 'deepak@second-innings.in',
+        email: 'secondinnings136@gmail.com',
         areaServed: 'IN',
         availableLanguage: ['English', 'Hindi'],
       },

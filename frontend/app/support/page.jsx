@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Button from '../../components/ui/Button';
 import Arrow from '../../components/ui/Arrow';
 import PageHero from '../../components/ui/PageHero';
+import Breadcrumbs from '../../components/ui/Breadcrumbs';
 import { submitSupportTicket } from '../../lib/api';
 
 const CATEGORY_OPTIONS = [
@@ -70,7 +71,7 @@ export default function SupportPage() {
       console.error(err);
       setStatus({
         type: 'error',
-        message: 'Failed to submit support ticket. Please email us directly at deepak@second-innings.in or message us on WhatsApp.',
+        message: 'Failed to submit support ticket. Please email us directly at secondinnings136@gmail.com or message us on WhatsApp.',
         ticketId: null,
       });
     } finally {
@@ -80,6 +81,10 @@ export default function SupportPage() {
 
   return (
     <div className="w-full">
+      <div className="page-x pt-28 md:pt-36">
+        <Breadcrumbs items={[{ name: 'Support', href: '/support' }]} />
+      </div>
+
       <PageHero
         meta={['Helpdesk & Bug Reporting', 'Website Support', 'Jaipur, India']}
         title="Website Support & Technical Helpdesk"
@@ -283,8 +288,8 @@ export default function SupportPage() {
               <div className="space-y-3 pt-2 text-sm">
                 <div>
                   <span className="block text-xs text-muted font-mono uppercase">Direct Support Email</span>
-                  <a href="mailto:deepak@second-innings.in" className="font-medium text-ink hover:text-coral transition-colors underline">
-                    deepak@second-innings.in
+                  <a href="mailto:secondinnings136@gmail.com" className="font-medium text-ink hover:text-coral transition-colors underline">
+                    secondinnings136@gmail.com
                   </a>
                 </div>
                 <div>

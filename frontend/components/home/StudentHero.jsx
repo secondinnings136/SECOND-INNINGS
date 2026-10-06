@@ -102,7 +102,10 @@ export default function StudentHero() {
           <span className="inline-flex items-center align-middle mx-1.5 sm:mx-3 h-[0.72em] w-[2.2em] rounded-full overflow-hidden border border-line bg-paper-2 relative shadow-inner translate-y-[-0.04em]">
             <img
               src="/deepaksogani.jpeg"
-              alt="Deepak Sogani"
+              alt="Deepak Sogani, Founder of Second Innings"
+              width="48"
+              height="48"
+              loading="eager"
               className="w-1/2 h-full object-cover object-top grayscale contrast-125 brightness-95"
             />
             <div className="w-1/2 h-full bg-[#E2DBD0] flex items-center justify-center relative overflow-hidden">
