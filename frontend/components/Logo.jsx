@@ -95,8 +95,8 @@ export default function Logo({
             Second Innings
           </span>
           {showTagline && (
-            <span className="font-mono text-[0.625rem] tracking-[0.15em] uppercase text-muted mt-1">
-              Mentoring Young Minds
+            <span className="font-mono text-[0.625rem] tracking-[0.12em] uppercase text-muted mt-1">
+              Young Minds. New Perspectives. Wider Possibilities.
             </span>
           )}
         </div>

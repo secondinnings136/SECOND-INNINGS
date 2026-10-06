@@ -12,6 +12,10 @@ router.post('/', async (req, res, next) => {
     const bookingData = {
       ...req.body,
       userType: req.body.userType || 'student',
+      currentStage: req.body.currentStage || req.body.whereCurrently || '',
+      whereCurrently: req.body.whereCurrently || req.body.currentStage || '',
+      topic: req.body.topic || req.body.concern || '',
+      concern: req.body.concern || req.body.topic || '',
     };
     const booking = await Booking.create(bookingData);
     res.status(201).json({ success: true, data: booking });

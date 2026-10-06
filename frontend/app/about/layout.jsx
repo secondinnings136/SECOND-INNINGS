@@ -1,7 +1,7 @@
 export const metadata = {
-  title: 'About Deepak Sogani | Founder & Lead Mentor — Second Innings',
+  title: 'About Deepak Sogani | Founder, Second Innings',
   description:
-    'Learn about Deepak Sogani: 35+ years across corporate leadership, entrepreneurship, and 5 years leading Student Affairs at JK Lakshmipat University. Now dedicating his experience to mentoring young minds.',
+    'Learn about Deepak Sogani: 35+ years across corporate life, entrepreneurship, and higher education. Now dedicating his experience to helping young people explore possibilities and choose their own next step.',
   keywords: [
     'Deepak Sogani',
     'Deepak Sogani mentor',
@@ -17,7 +17,7 @@ export const metadata = {
   openGraph: {
     title: 'About Deepak Sogani — Second Innings',
     description:
-      'From corporate leadership to mentoring young minds. 35+ years of real-world perspective dedicated to guiding youth aged 16–25.',
+      '35+ years across corporate life, entrepreneurship and higher education. Dedicated to bringing perspective and possibilities to young people.',
     url: 'https://second-innings.in/about',
     type: 'profile',
   },
@@ -25,7 +25,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'About Deepak Sogani | Second Innings',
     description:
-      'From corporate leadership to mentoring young minds. 35+ years of perspective dedicated to the next generation.',
+      '35+ years across corporate life, entrepreneurship and higher education. Dedicated to bringing perspective to the next generation.',
   },
 };
 

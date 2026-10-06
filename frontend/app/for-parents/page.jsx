@@ -113,7 +113,7 @@ export default function ForParentsPage() {
           <SectionHead
             meta="Guiding principles"
             title="How parents can support"
-            lede="Tested foundations for healthy, constructive parent-child conversations."
+            lede="A few principles that can make parent-child conversations more constructive."
           />
 
           <RevealGroup className="hairline-grid mt-16 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">

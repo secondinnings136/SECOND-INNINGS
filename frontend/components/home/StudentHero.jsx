@@ -16,8 +16,8 @@ const DILEMMAS = [
     border: 'border-sun-border',
     text: 'text-sun',
     question: '“Everyone else seems to have a clear roadmap. Where do I even begin?”',
-    insight: 'Career clarity is rarely found by staring at option lists. It begins by reflecting on what activities energize you, your honest strengths, and testing small, low-risk real-world experiences before locking in.',
-    action: '✦ First step: Identify 2 specific curiosity areas to test for 7 days.'
+    insight: 'Career confusion can come from different places—too many choices, limited exposure, expectations from others, or simply not knowing yourself well enough yet. Understanding where your confusion is coming from can be a useful first step. Perhaps this is where a conversation can begin.',
+    invitation: 'Perhaps this is where a conversation can begin.'
   },
   {
     id: 'confidence',
@@ -28,8 +28,8 @@ const DILEMMAS = [
     border: 'border-coral-border',
     text: 'text-coral',
     question: '“I get good marks, but in interviews or group settings, I freeze.”',
-    insight: 'Exam preparation rewards memorization; adult life rewards self-worth and articulation. Confidence isn’t an inborn trait; it grows when you practice owning your voice in a safe, non-evaluative space.',
-    action: '✦ First step: Practice framing your story around what you learned, not just your score.'
+    insight: 'Academic performance and personal confidence often develop differently. Scoring well is one skill; trusting your voice in unfamiliar rooms is another. Recognizing where the hesitation comes from is often where real self-belief begins to take shape.',
+    invitation: 'A safe, non-judgmental space to understand and build confidence.'
   },
   {
     id: 'parents',
@@ -40,8 +40,8 @@ const DILEMMAS = [
     border: 'border-sky-border',
     text: 'text-sky',
     question: '“How do I pursue my interests without causing conflict at home?”',
-    insight: 'Parental opposition is almost always driven by protection, not control. When you bring structured research, credible mentorship, and realistic milestones to the table, fear turns into support.',
-    action: '✦ First step: Structure your interest into a concrete proposal with timeline and backup.'
+    insight: 'Differences with family often stem from care and concern rather than a desire to control. Finding ways to understand their perspective while clarifying your own can help transform tension into constructive dialogue.',
+    invitation: 'Explore how to bridge expectations with personal clarity.'
   },
   {
     id: 'exposure',
@@ -52,8 +52,8 @@ const DILEMMAS = [
     border: 'border-sprout-border',
     text: 'text-sprout',
     question: '“How do I discover fellowships, startups, and unconventional opportunities?”',
-    insight: 'The most rewarding career journeys happen outside traditional campus recruitment. We connect you with curated Indian fellowships, impact projects, and mentors who show what is possible.',
-    action: '✦ First step: Explore 2 curated opportunities in our verified bank.'
+    insight: 'Most meaningful opportunities and career pathways are rarely discussed inside a standard syllabus. Discovering what exists begins with curiosity, asking better questions, and connecting with people beyond familiar circles.',
+    invitation: 'Open your perspective to opportunities you haven’t yet encountered.'
   },
   {
     id: 'transition',
@@ -64,8 +64,8 @@ const DILEMMAS = [
     border: 'border-coral-border',
     text: 'text-signal-deep',
     question: '“College is ending, and the real world feels overwhelming.”',
-    insight: 'Transition anxiety is completely normal. Instead of trying to plan the next 40 years, we focus on identifying your very next practical, meaningful step that builds momentum.',
-    action: '✦ First step: Agree on one 7-day action that breaks inertia.'
+    insight: 'Reaching the end of university without a definitive roadmap is far more common than people admit. Transition is not about having the next twenty years mapped out—it is about seeing your very next step clearly and taking it with confidence.',
+    invitation: 'One conversation can help bring focus to what comes next.'
   }
 ];
 
@@ -136,7 +136,7 @@ export default function StudentHero() {
             <div className="flex flex-wrap items-center gap-6">
               <Button href="/book">Start a Conversation</Button>
               <Link
-                href="#how-it-works"
+                href="/#how-it-works"
                 onClick={(e) => {
                   const el = document.getElementById('how-it-works');
                   if (el) {
@@ -210,13 +210,13 @@ export default function StudentHero() {
               </p>
               <div className="mt-6 pt-5 border-t border-line/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <span className={`text-xs sm:text-[0.875rem] font-medium ${activeDilemma.text}`}>
-                  {activeDilemma.action}
+                  {activeDilemma.invitation}
                 </span>
                 <Link
                   href="/book"
                   className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-ink hover:text-coral transition-colors shrink-0"
                 >
-                  Discuss this with Mr. Deepak Sogani
+                  Start a conversation with Deepak
                   <Arrow className="h-3 w-3" />
                 </Link>
               </div>
@@ -228,19 +228,19 @@ export default function StudentHero() {
         <div className="mt-14 pt-8 border-t border-line grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           <div>
             <span className="block font-serif text-[1.75rem] text-ink font-normal leading-none mb-1">35+ Years</span>
-            <span className="meta text-muted text-[0.6875rem]">Corporate &amp; Student Mentoring</span>
+            <span className="meta text-muted text-[0.6875rem]">Across Corporate Life, Entrepreneurship &amp; Higher Education</span>
           </div>
           <div>
-            <span className="block font-serif text-[1.75rem] text-ink font-normal leading-none mb-1">1-on-1</span>
-            <span className="meta text-muted text-[0.6875rem]">Confidential Human Dialogue</span>
+            <span className="block font-serif text-[1.75rem] text-ink font-normal leading-none mb-1">One-to-One</span>
+            <span className="meta text-muted text-[0.6875rem]">Private Conversations</span>
           </div>
           <div>
-            <span className="block font-serif text-[1.75rem] text-ink font-normal leading-none mb-1">7-Day</span>
-            <span className="meta text-muted text-[0.6875rem]">Agreed Next Step Action</span>
+            <span className="block font-serif text-[1.75rem] text-ink font-normal leading-none mb-1">Next Step</span>
+            <span className="meta text-muted text-[0.6875rem]">Agreed Action &amp; Follow-Through</span>
           </div>
           <div>
-            <span className="block font-serif text-[1.75rem] text-ink font-normal leading-none mb-1">Zero</span>
-            <span className="meta text-muted text-[0.6875rem]">Coaching or Prescriptions</span>
+            <span className="block font-serif text-[1.75rem] text-ink font-normal leading-none mb-1">No Prescriptions</span>
+            <span className="meta text-muted text-[0.6875rem]">No ready-made answers. No predetermined path.</span>
           </div>
         </div>
       </div>

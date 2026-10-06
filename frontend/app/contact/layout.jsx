@@ -1,14 +1,14 @@
 export const metadata = {
   title: 'Get in Touch | Contact & Partnerships — Second Innings',
   description:
-    'Reach out to Second Innings and Deepak Sogani. Direct inquiries for student mentoring, parent guidance, and institutional partnerships for schools and universities.',
+    'Reach out to Second Innings and Deepak Sogani. Direct inquiries for students, parent conversations, and institutional engagements for schools and universities.',
   keywords: [
     'contact Second Innings',
     'Deepak Sogani contact',
-    'student mentoring inquiries',
+    'student conversation inquiries',
     'institutional partnerships schools colleges',
-    'mentoring Jaipur Rajasthan',
-    'reach out to mentor',
+    'Jaipur Rajasthan',
+    'reach out to Second Innings',
   ],
   alternates: {
     canonical: 'https://second-innings.in/contact',

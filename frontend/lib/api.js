@@ -82,3 +82,10 @@ export async function submitSupportTicket(data) {
   });
 }
 
+export async function updateBookingPreference(id, data) {
+  return fetchAPI(`/bookings/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+

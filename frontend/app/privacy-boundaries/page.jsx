@@ -86,7 +86,7 @@ export default function PrivacyBoundariesPage() {
             </Link>
             <div className="flex items-center gap-6">
               <Link href="/privacy-policy" className="meta text-muted hover:text-ink">
-                Privacy Policy (DPDP) →
+                Privacy Policy →
               </Link>
               <Button href="/book">Start a Conversation</Button>
             </div>

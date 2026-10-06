@@ -25,11 +25,11 @@ const mono = JetBrains_Mono({
 export const metadata = {
   metadataBase: new URL('https://second-innings.in'),
   title: {
-    default: 'Second Innings | Mentoring Young Minds (Ages 16–25) — Deepak Sogani',
+    default: 'Second Innings | Young Minds. New Perspectives. Wider Possibilities.',
     template: '%s | Second Innings',
   },
   description:
-    'Second Innings is a human-led youth mentoring platform founded by Deepak Sogani (former Dean/Head of Student Affairs, JKLU). Guiding young people aged 16–25, parents, and educational institutions with clarity, perspective, and actionable next steps.',
+    'Second Innings is a space for young people aged 16–25 to talk openly, understand themselves better, explore possibilities and find their own way forward. Founded by Deepak Sogani in Jaipur, India.',
   applicationName: 'Second Innings',
   authors: [{ name: 'Deepak Sogani', url: 'https://second-innings.in/about' }],
   generator: 'Next.js',
@@ -119,9 +119,9 @@ export const metadata = {
     },
   },
   openGraph: {
-    title: 'Second Innings | Mentoring Young Minds (Ages 16–25) — Deepak Sogani',
+    title: 'Second Innings | Young Minds. New Perspectives. Wider Possibilities.',
     description:
-      'A human-led mentoring and perspective platform for young people navigating education, career choices, and adult life. Founded by Deepak Sogani.',
+      'Second Innings is a space for young people aged 16–25 to talk openly, understand themselves better, explore possibilities and find their own way forward.',
     url: 'https://second-innings.in',
     siteName: 'Second Innings',
     locale: 'en_IN',
@@ -131,15 +131,15 @@ export const metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Second Innings — Mentoring Young Minds. New Perspectives. Wider Possibilities.',
+        alt: 'Second Innings — Young Minds. New Perspectives. Wider Possibilities.',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Second Innings | Mentoring Young Minds (Ages 16–25)',
+    title: 'Second Innings | Young Minds. New Perspectives. Wider Possibilities.',
     description:
-      'Navigating what comes next with clarity, not confusion. One-on-one perspective mentoring by Deepak Sogani.',
+      'Sometimes, you don’t need another answer. You need the right conversation. A space for young people aged 16–25.',
     creator: '@SecondInningsIN',
     images: ['/og-image.png'],
   },
@@ -184,11 +184,11 @@ const jsonLd = {
       url: 'https://second-innings.in',
       logo: 'https://second-innings.in/logo.png',
       description:
-        'A human-led mentoring and perspective platform for young minds aged 16–25, parents, and educational institutions.',
+        'A space for young minds aged 16–25, parents, and educational institutions to explore perspectives, clarity, and wider possibilities.',
       founder: {
         '@type': 'Person',
         name: 'Deepak Sogani',
-        jobTitle: 'Founder & Lead Mentor',
+        jobTitle: 'Founder, Second Innings',
         alumniOf: 'JK Lakshmipat University',
         url: 'https://second-innings.in/about',
         sameAs: ['https://www.linkedin.com/in/deepak-sogani'],
@@ -201,9 +201,9 @@ const jsonLd = {
       },
       contactPoint: {
         '@type': 'ContactPoint',
-        telephone: '+91-9314072153',
+        telephone: '+91 77372 20724',
         contactType: 'customer service',
-        email: 'secondinnings136@gmail.com',
+        email: 'deepak@second-innings.in',
         areaServed: 'IN',
         availableLanguage: ['English', 'Hindi'],
       },

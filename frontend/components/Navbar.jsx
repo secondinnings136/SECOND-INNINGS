@@ -14,8 +14,6 @@ const navLinks = [
   { name: 'For Institutions', path: '/for-institutions' },
   { name: 'How It Works', path: '/how-it-works' },
   { name: 'About Deepak', path: '/about' },
-  { name: 'Opportunities', path: '/opportunities' },
-  { name: 'Resources', path: '/resources' },
 ];
 
 export default function Navbar() {

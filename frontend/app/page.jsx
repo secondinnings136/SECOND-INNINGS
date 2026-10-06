@@ -11,16 +11,16 @@ import StudentOutcomesGrid from '../components/home/StudentOutcomesGrid';
 import StudentHero from '../components/home/StudentHero';
 
 export const metadata = {
-  title: 'Second Innings | Mentoring Young Minds (Ages 16–25) — Deepak Sogani',
+  title: 'Second Innings | Young Minds. New Perspectives. Wider Possibilities. — Deepak Sogani',
   description:
-    'A human-led youth mentoring platform for students and young adults (16–25) navigating career confusion, college-to-life transitions, and self-belief. Led by Deepak Sogani in Jaipur & Pan-India.',
+    'A human-led space for young people (ages 16–25) navigating career choices, life transitions, and self-belief through thoughtful private conversations. Founded by Deepak Sogani in Jaipur & Pan-India.',
   alternates: {
     canonical: 'https://second-innings.in',
   },
   openGraph: {
-    title: 'Second Innings | Mentoring Young Minds — Deepak Sogani',
+    title: 'Second Innings | Young Minds. New Perspectives. Wider Possibilities. — Deepak Sogani',
     description:
-      'Young Minds. New Perspectives. Wider Possibilities. Thoughtful one-on-one mentoring for education, career, and life decisions.',
+      'Young Minds. New Perspectives. Wider Possibilities. Thoughtful private conversations for education, career, and life decisions.',
     url: 'https://second-innings.in',
   },
 };

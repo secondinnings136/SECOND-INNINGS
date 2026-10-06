@@ -4,35 +4,16 @@ import Link from 'next/link';
 import Arrow from './ui/Arrow';
 import Logo from './Logo';
 
-const columns = [
-  {
-    title: 'Who it is for',
-    links: [
-      { name: 'For Students (16 to 25)', href: '/for-students' },
-      { name: 'For Parents', href: '/for-parents' },
-      { name: 'For Institutions', href: '/for-institutions' },
-    ],
-  },
-  {
-    title: 'Explore',
-    links: [
-      { name: 'How It Works', href: '/how-it-works' },
-      { name: 'About Deepak', href: '/about' },
-      { name: 'Opportunities', href: '/opportunities' },
-      { name: 'Resources', href: '/resources' },
-      { name: 'Contact', href: '/contact' },
-    ],
-  },
-  {
-    title: 'Policies & Support',
-    links: [
-      { name: 'Privacy Policy (DPDP)', href: '/privacy-policy' },
-      { name: 'Terms & Conditions', href: '/terms-and-conditions' },
-      { name: 'Refund Policy', href: '/refund-policy' },
-      { name: 'Website Support & Helpdesk', href: '/support' },
-      { name: 'Mentoring Boundaries', href: '/privacy-boundaries' },
-    ],
-  },
+const footerNavLinks = [
+  { name: 'Start a Conversation', href: '/book' },
+  { name: 'About Deepak', href: '/about' },
+  { name: 'How It Works', href: '/how-it-works' },
+  { name: 'For Students', href: '/for-students' },
+  { name: 'For Parents', href: '/for-parents' },
+  { name: 'For Institutions', href: '/for-institutions' },
+  { name: 'Privacy & Boundaries', href: '/privacy-boundaries' },
+  { name: 'Privacy Policy', href: '/privacy-policy' },
+  { name: 'Terms & Conditions', href: '/terms-and-conditions' },
 ];
 
 export default function Footer() {
@@ -67,26 +48,23 @@ export default function Footer() {
           </div>
 
           <div className="md:col-span-5 md:pl-10 md:border-l md:border-line">
-            <p className="meta mb-6">Write or call</p>
-            <ul className="space-y-4 text-[0.9375rem]">
+            <p className="meta mb-4">Contact &amp; Details</p>
+            <div className="mb-5 text-[0.9375rem] text-ink">
+              <p className="font-semibold text-ink">Deepak Sogani</p>
+              <p className="text-muted text-xs">Founder, Second Innings</p>
+              <p className="text-muted text-xs">Jaipur, Rajasthan, India</p>
+            </div>
+            <ul className="space-y-3.5 text-[0.9375rem]">
               <li>
-                <a href="mailto:secondinnings136@gmail.com" className="group flex flex-col">
-                  <span className="text-muted text-[0.8125rem]">Primary</span>
+                <a href="mailto:deepak@second-innings.in" className="group flex flex-col">
+                  <span className="text-muted text-[0.8125rem]">Email</span>
                   <span className="text-ink underline decoration-ink/20 underline-offset-4 group-hover:decoration-signal">
-                    secondinnings136@gmail.com
+                    deepak@second-innings.in
                   </span>
                 </a>
               </li>
-              <li>
-                <Link href="/support" className="group flex flex-col">
-                  <span className="text-muted text-[0.8125rem]">Website Issues &amp; Support</span>
-                  <span className="text-ink underline decoration-ink/20 underline-offset-4 group-hover:decoration-signal">
-                    Helpdesk &amp; Bug Reporting →
-                  </span>
-                </Link>
-              </li>
-              <li className="flex flex-wrap gap-x-6 gap-y-2 pt-1">
-                <a href="https://wa.me/917737220724" target="_blank" rel="noopener noreferrer" className="text-ink hover:text-signal transition-colors">
+              <li className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-1">
+                <a href="https://wa.me/917737220724" target="_blank" rel="noopener noreferrer" className="text-ink hover:text-signal transition-colors font-medium">
                   WhatsApp ↗
                 </a>
                 <a href="tel:+917737220724" className="text-ink hover:text-signal transition-colors font-mono text-[0.8125rem] tracking-tight">
@@ -100,22 +78,17 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Link columns on a hairline grid */}
-        <div className="hairline-grid mt-20 grid-cols-1 sm:grid-cols-3 [&>*]:bg-paper-2">
-          {columns.map((col) => (
-            <div key={col.title} className="p-6 md:p-8">
-              <p className="meta mb-5">{col.title}</p>
-              <ul className="space-y-2.5">
-                {col.links.map((l) => (
-                  <li key={l.href}>
-                    <Link href={l.href} className="text-[0.9375rem] text-ink-2 hover:text-ink transition-colors">
-                      {l.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+        {/* Quick Links Row */}
+        <div className="mt-16 border-t border-line pt-8">
+          <ul className="flex flex-wrap items-center gap-x-8 gap-y-3 text-[0.875rem]">
+            {footerNavLinks.map((l) => (
+              <li key={l.href}>
+                <Link href={l.href} className="text-muted hover:text-ink transition-colors">
+                  {l.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
 
         {/* Wordmark */}

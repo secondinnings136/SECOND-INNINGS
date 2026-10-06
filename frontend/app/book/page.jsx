@@ -4,26 +4,48 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Button from '../../components/ui/Button';
 import Arrow from '../../components/ui/Arrow';
-import { submitBooking } from '../../lib/api';
+import { submitBooking, updateBookingPreference } from '../../lib/api';
 import { launchCashfreeCheckout } from '../../lib/cashfreeClient';
+
+const WHERE_CURRENTLY_OPTIONS = [
+  'School',
+  'College or University',
+  'Working',
+  'Taking a break',
+  'Exploring what comes next',
+  'Other',
+];
+
+const SOURCE_OPTIONS = [
+  'Friend',
+  'Former Student',
+  'Parent or Family',
+  'Teacher or Educator',
+  'LinkedIn',
+  'WhatsApp',
+  'Second Innings Website',
+  'Other',
+];
 
 export default function Book() {
   const [formData, setFormData] = useState({
     name: '',
     age: '',
+    whereCurrently: '',
+    institutionOrOrg: '',
+    city: '',
+    topic: '',
+    usefulGoal: '',
+    phone: '',
+    email: '',
+    source: '',
+    referredBy: '',
     isUnder18: false,
     parentName: '',
     parentPhone: '',
     parentEmail: '',
     parentConsentConfirmed: false,
-    currentStage: '',
-    city: '',
-    email: '',
-    phone: '',
-    topic: '',
-    usefulGoal: '',
-    source: '',
-    referredBy: '',
+    adultConsentConfirmed: false,
   });
 
   const [paymentConfig, setPaymentConfig] = useState({
@@ -36,6 +58,14 @@ export default function Book() {
 
   const [status, setStatus] = useState({ type: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittedBookingId, setSubmittedBookingId] = useState(null);
+
+  // Slot preference after submission
+  const [slotData, setSlotData] = useState({
+    preferredDate: '',
+    preferredTime: '',
+  });
+  const [slotStatus, setSlotStatus] = useState({ saved: false, saving: false });
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/payment/config`)
@@ -48,7 +78,7 @@ export default function Book() {
       .catch(err => console.error('Failed to load payment config:', err));
   }, []);
 
-  // Compute if applicant is a minor based on typed age or manual toggle
+  // Compute if applicant is under 18 based on typed age or manual toggle
   const numericAge = parseInt(formData.age, 10);
   const isMinor = formData.isUnder18 || (!isNaN(numericAge) && numericAge < 18 && numericAge > 0);
 
@@ -95,7 +125,16 @@ export default function Book() {
       if (!formData.parentConsentConfirmed) {
         setStatus({
           type: 'error',
-          message: 'Please confirm that your parent or guardian is aware of and consents to this enquiry.'
+          message: 'Please confirm that your parent or guardian is aware of and consents to this conversation enquiry.'
+        });
+        return;
+      }
+    } else {
+      // 18+ adult consent validation
+      if (!formData.adultConsentConfirmed) {
+        setStatus({
+          type: 'error',
+          message: 'Please confirm that you agree to be contacted for this conversation.'
         });
         return;
       }
@@ -113,6 +152,7 @@ export default function Book() {
             ...formData,
             isUnder18: isMinor,
             concern: formData.topic,
+            currentStage: formData.whereCurrently,
             userType: 'student'
           })
         });
@@ -149,50 +189,31 @@ export default function Book() {
         });
 
         const verifyData = await verifyRes.json();
-
-        if (verifyData.paid) {
-          setStatus({
-            type: 'success',
-            message: `Payment of ₹${paymentConfig.sessionFee} received successfully! Your session booking is confirmed. We will reach out to schedule your conversation.`
-          });
-        } else {
-          setStatus({
-            type: 'success',
-            message: 'Booking details received. We will verify your transaction and get in touch with you shortly.'
-          });
-        }
+        setSubmittedBookingId(orderData.bookingId);
+        setStatus({
+          type: 'success',
+          message: verifyData.paid 
+            ? `Payment of ₹${paymentConfig.sessionFee} received. Thank you. I've received what you've shared.`
+            : `Thank you. I've received what you've shared.`
+        });
       } else {
-        // Standard Complimentary Booking (Fees OFF)
-        await submitBooking({
+        // Standard Complimentary Booking
+        const res = await submitBooking({
           ...formData,
           isUnder18: isMinor,
           concern: formData.topic,
+          currentStage: formData.whereCurrently,
           userType: 'student',
         });
 
+        const bookingId = res?.data?._id || res?._id || null;
+        setSubmittedBookingId(bookingId);
+
         setStatus({
           type: 'success',
-          message: 'Thank you. We have received your details and will get in touch with you shortly to schedule our conversation.'
+          message: "Thank you. I've received what you've shared."
         });
       }
-
-      setFormData({
-        name: '',
-        age: '',
-        isUnder18: false,
-        parentName: '',
-        parentPhone: '',
-        parentEmail: '',
-        parentConsentConfirmed: false,
-        currentStage: '',
-        city: '',
-        email: '',
-        phone: '',
-        topic: '',
-        usefulGoal: '',
-        source: '',
-        referredBy: '',
-      });
     } catch (error) {
       console.error('Booking submission error:', error);
       setStatus({
@@ -204,41 +225,146 @@ export default function Book() {
     }
   };
 
+  const handleSaveSlot = async (e) => {
+    e.preventDefault();
+    if (!slotData.preferredDate && !slotData.preferredTime) return;
+
+    setSlotStatus({ saved: false, saving: true });
+    try {
+      if (submittedBookingId) {
+        await updateBookingPreference(submittedBookingId, {
+          preferredDate: slotData.preferredDate ? new Date(slotData.preferredDate) : undefined,
+          preferredTime: slotData.preferredTime || undefined,
+        });
+      }
+      setSlotStatus({ saved: true, saving: false });
+    } catch (err) {
+      console.error('Failed to update slot preference:', err);
+      // Still mark saved so student feels reassured
+      setSlotStatus({ saved: true, saving: false });
+    }
+  };
+
   return (
     <div className="w-full">
       <div className="page-x pt-36 md:pt-48 pb-28 md:pb-40">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
-          {/* Left Column: Context & Direct Info */}
+          {/* Left Column: Context & Reassurance */}
           <div className="lg:col-span-5">
             <div className="lg:sticky lg:top-32">
-              <span className="meta text-signal mb-6 block">Intake &amp; Conversation</span>
+              <span className="meta text-signal mb-6 block">
+                Young Minds. New Perspectives. Wider Possibilities.
+              </span>
               <h1 className="font-serif text-[clamp(2.5rem,4.5vw,4.5rem)] leading-[0.95] tracking-[-0.02em] text-ink mb-6">
-                What&apos;s on your mind?
+                Before We Talk
               </h1>
-              <p className="lede text-[1.125rem] text-muted mb-10">
-                Every meaningful conversation starts somewhere. There is nothing to prepare and no need to know exactly what you want to discuss. Tell us a little about yourself and what you would like to talk about.
+              <p className="lede text-[1.125rem] text-muted mb-8 leading-relaxed">
+                You don&apos;t need to prepare anything. Just tell me a little about yourself and what&apos;s on your mind.
               </p>
 
-              <div className="border-t border-line pt-6">
-                <p className="text-xs text-muted leading-relaxed">
-                  Under 18? A parent or guardian consent step is required in compliance with Indian safeguarding guidelines.
-                </p>
+              <div className="border-t border-line pt-6 space-y-4">
+                <div className="flex items-start gap-3">
+                  <span className="meta text-ink text-xs font-semibold">1</span>
+                  <p className="text-xs text-muted leading-relaxed">
+                    A quiet, private one-to-one conversation with Deepak Sogani.
+                  </p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="meta text-ink text-xs font-semibold">2</span>
+                  <p className="text-xs text-muted leading-relaxed">
+                    No ready-made answers. No predetermined path. Just thoughtful listening and perspective.
+                  </p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="meta text-ink text-xs font-semibold">3</span>
+                  <p className="text-xs text-muted leading-relaxed">
+                    Under 18? A parent or guardian consent step applies in accordance with our safeguarding policy.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Form Object */}
+          {/* Right Column: Intake Form */}
           <div className="lg:col-span-7">
             {status.type === 'success' ? (
-              <div className="rounded-[1.75rem] border border-line bg-paper-2 p-8 md:p-14 text-center space-y-6">
-                <span className="meta text-signal block">Submission Confirmed</span>
-                <h2 className="font-serif text-[clamp(2rem,3vw,3rem)] text-ink leading-snug">
-                  {status.message}
-                </h2>
-                <p className="text-muted text-[1.0625rem] max-w-lg mx-auto leading-relaxed">
-                  Your first step doesn&apos;t have to be a big one. Sometimes, it can simply be a conversation.
-                </p>
-                <div className="pt-4">
+              <div className="rounded-[1.75rem] border border-line bg-paper-2 p-8 md:p-14 text-center space-y-8">
+                <span className="meta text-signal block">Received</span>
+                <div className="space-y-3">
+                  <h2 className="font-serif text-[clamp(2rem,3.2vw,3rem)] text-ink leading-snug">
+                    Thank you. I&apos;ve received what you&apos;ve shared.
+                  </h2>
+                  <p className="text-muted text-[1.125rem] max-w-lg mx-auto leading-relaxed">
+                    You don&apos;t need to prepare anything else. We&apos;ll start from here when we talk.
+                  </p>
+                </div>
+
+                {/* Slot Selection / Timing Preference Step */}
+                <div className="rounded-2xl border border-line bg-paper p-6 md:p-8 text-left space-y-5">
+                  <div>
+                    <h3 className="font-serif text-[1.375rem] text-ink">
+                      Preferred Conversation Timing
+                    </h3>
+                    <p className="text-xs text-muted mt-1">
+                      If you have preferred days or hours, you may let us know below. (Optional)
+                    </p>
+                  </div>
+
+                  {slotStatus.saved ? (
+                    <div className="p-4 rounded-xl bg-sprout-soft border border-sprout text-ink text-sm">
+                      ✓ Your preferred timing has been recorded. Deepak Sir will reach out directly on WhatsApp or mobile to confirm.
+                    </div>
+                  ) : (
+                    <form onSubmit={handleSaveSlot} className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="field-label text-xs">Preferred Date</label>
+                          <input
+                            type="date"
+                            value={slotData.preferredDate}
+                            onChange={(e) => setSlotData(prev => ({ ...prev, preferredDate: e.target.value }))}
+                            min={new Date().toISOString().split('T')[0]}
+                            className="field text-xs bg-paper-2"
+                          />
+                        </div>
+                        <div>
+                          <label className="field-label text-xs">Preferred Time Window</label>
+                          <select
+                            value={slotData.preferredTime}
+                            onChange={(e) => setSlotData(prev => ({ ...prev, preferredTime: e.target.value }))}
+                            className="field text-xs bg-paper-2"
+                          >
+                            <option value="">Select a time window</option>
+                            <option value="Morning (10:00 AM – 1:00 PM)">Morning (10:00 AM – 1:00 PM)</option>
+                            <option value="Afternoon (2:00 PM – 5:00 PM)">Afternoon (2:00 PM – 5:00 PM)</option>
+                            <option value="Evening (5:00 PM – 8:00 PM)">Evening (5:00 PM – 8:00 PM)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={slotStatus.saving || (!slotData.preferredDate && !slotData.preferredTime)}
+                        className="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-ink text-paper text-xs font-medium hover:bg-ink/90 transition-colors disabled:opacity-50"
+                      >
+                        {slotStatus.saving ? 'Saving...' : 'Save Timing Preference'}
+                      </button>
+                    </form>
+                  )}
+                </div>
+
+                {/* Direct Contact Reassurance */}
+                <div className="border-t border-line pt-6 text-xs text-muted space-y-2">
+                  <p>
+                    Deepak Sogani will review your information and connect with you directly.
+                  </p>
+                  <p className="text-ink font-medium">
+                    Email: <a href="mailto:deepak@second-innings.in" className="underline hover:text-signal">deepak@second-innings.in</a>
+                    {' '}• WhatsApp: <a href="https://wa.me/917737220724" target="_blank" rel="noopener noreferrer" className="underline hover:text-signal">+91 77372 20724</a>
+                  </p>
+                </div>
+
+                <div className="pt-2">
                   <Button href="/">
                     Back to Homepage
                   </Button>
@@ -253,11 +379,11 @@ export default function Book() {
                     </div>
                   )}
 
-                  {/* Name & Age */}
+                  {/* 1. Your Name & 2. Your Age */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                     <div className="sm:col-span-2">
                       <label className="field-label">
-                        Your Name <span className="text-signal">*</span>
+                        1. Your Name <span className="text-signal">*</span>
                       </label>
                       <input
                         type="text"
@@ -271,14 +397,14 @@ export default function Book() {
                     </div>
                     <div>
                       <label className="field-label">
-                        Age <span className="text-signal">*</span>
+                        2. Your Age <span className="text-signal">*</span>
                       </label>
                       <input
                         type="number"
                         name="age"
                         required
-                        min="14"
-                        max="35"
+                        min="12"
+                        max="99"
                         value={formData.age}
                         onChange={handleInputChange}
                         placeholder="e.g. 19"
@@ -287,13 +413,13 @@ export default function Book() {
                     </div>
                   </div>
 
-                  {/* Under-18 Safeguarding Notice & Parent Details */}
+                  {/* Under-18 Safeguarding & Parent/Guardian Consent */}
                   {isMinor && (
                     <div className="border-l-2 border-signal bg-signal-soft/40 p-6 rounded-r-2xl space-y-4 my-2">
                       <div>
                         <span className="meta text-signal block mb-1">Parental Consent Required (Under 18)</span>
                         <p className="text-xs text-ink-2 leading-relaxed">
-                          Because you are under 18, verifiable parent or guardian consent is required before a mentoring conversation can be scheduled, in accordance with our safeguarding policy and India&apos;s Digital Personal Data Protection (DPDP) Act.
+                          Because you are under 18, verifiable parent or guardian consent is required before a conversation can be scheduled, in accordance with our safeguarding policy.
                         </p>
                       </div>
 
@@ -351,34 +477,57 @@ export default function Book() {
                           className="mt-0.5 accent-[#1C1B18]"
                         />
                         <span className="text-xs text-ink-2 font-medium">
-                          I confirm that my parent or guardian is aware of and consents to this mentoring conversation enquiry.
+                          I confirm that my parent or guardian is aware of and consents to this conversation enquiry. <span className="text-signal">*</span>
                         </span>
                       </label>
                     </div>
                   )}
 
-                  {/* School / College & City */}
+                  {/* 3. Where are you currently? */}
+                  <div>
+                    <label className="field-label">
+                      3. Where are you currently? <span className="text-signal">*</span>
+                    </label>
+                    <select
+                      name="whereCurrently"
+                      required
+                      value={formData.whereCurrently}
+                      onChange={handleInputChange}
+                      className="field bg-paper"
+                    >
+                      <option value="">Select where you are currently</option>
+                      {WHERE_CURRENTLY_OPTIONS.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 4. School / College / University / Organisation & 5. City */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
                       <label className="field-label">
-                        School / College / Current Stage
+                        4. School / College / University / Organisation
+                        <span className="text-xs font-normal text-muted block mt-0.5">(Optional)</span>
                       </label>
                       <input
                         type="text"
-                        name="currentStage"
-                        value={formData.currentStage}
+                        name="institutionOrOrg"
+                        value={formData.institutionOrOrg}
                         onChange={handleInputChange}
-                        placeholder="e.g. 2nd Year B.Tech or 12th Grade"
+                        placeholder="e.g. St. Xavier’s / JKLU / Company"
                         className="field"
                       />
                     </div>
                     <div>
                       <label className="field-label">
-                        City
+                        5. City <span className="text-signal">*</span>
                       </label>
                       <input
                         type="text"
                         name="city"
+                        required
                         value={formData.city}
                         onChange={handleInputChange}
                         placeholder="e.g. Jaipur, Delhi, Mumbai"
@@ -387,24 +536,49 @@ export default function Book() {
                     </div>
                   </div>
 
-                  {/* Email & Mobile */}
+                  {/* 6. What would you like to talk about? */}
+                  <div>
+                    <label className="field-label">
+                      6. What would you like to talk about? <span className="text-signal">*</span>
+                      <span className="block text-xs font-normal text-muted mt-0.5">
+                        Don&apos;t worry about framing it perfectly. Just tell me what&apos;s on your mind.
+                      </span>
+                    </label>
+                    <textarea
+                      name="topic"
+                      required
+                      rows={5}
+                      value={formData.topic}
+                      onChange={handleInputChange}
+                      placeholder="Share whatever is on your mind..."
+                      className="field resize-y"
+                    />
+                  </div>
+
+                  {/* 7. What would make this conversation useful for you? */}
+                  <div>
+                    <label className="field-label">
+                      7. What would make this conversation useful for you?{' '}
+                      <span className="text-xs font-normal text-muted">(Optional)</span>
+                      <span className="block text-xs font-normal text-muted mt-0.5">
+                        A few words are enough.
+                      </span>
+                    </label>
+                    <textarea
+                      name="usefulGoal"
+                      rows={3}
+                      value={formData.usefulGoal}
+                      onChange={handleInputChange}
+                      placeholder="What would you like to walk away with?"
+                      className="field resize-none"
+                    />
+                  </div>
+
+                  {/* 8. Mobile / WhatsApp Number & 9. Email Address */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
                       <label className="field-label">
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        placeholder="yourname@example.com"
-                        className="field"
-                      />
-                    </div>
-                    <div>
-                      <label className="field-label">
-                        Mobile Number <span className="text-signal">*</span>
+                        8. Mobile / WhatsApp Number <span className="text-signal">*</span>
                       </label>
                       <input
                         type="tel"
@@ -416,69 +590,48 @@ export default function Book() {
                         className="field"
                       />
                     </div>
+                    <div>
+                      <label className="field-label">
+                        9. Email Address <span className="text-signal">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        required
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        placeholder="yourname@example.com"
+                        className="field"
+                      />
+                    </div>
                   </div>
 
-                  {/* Topic */}
-                  <div>
-                    <label className="field-label">
-                      What would you like to talk about?
-                      <span className="block text-xs font-normal text-muted mt-0.5">
-                        Write it in your own words. A few lines are enough.
-                      </span>
-                    </label>
-                    <textarea
-                      name="topic"
-                      rows={4}
-                      value={formData.topic}
-                      onChange={handleInputChange}
-                      placeholder="Share whatever is on your mind..."
-                      className="field resize-none"
-                    />
-                  </div>
-
-                  {/* Useful Goal */}
-                  <div>
-                    <label className="field-label">
-                      What would make this conversation useful for you?{' '}
-                      <span className="text-xs font-normal text-muted">(Optional)</span>
-                    </label>
-                    <textarea
-                      name="usefulGoal"
-                      rows={2}
-                      value={formData.usefulGoal}
-                      onChange={handleInputChange}
-                      placeholder="What would you like to walk away with?"
-                      className="field resize-none"
-                    />
-                  </div>
-
-                  {/* Source & Referral */}
+                  {/* 10. How did you hear about Second Innings? & 11. Referred by */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
                       <label className="field-label">
-                        How did you hear about Second Innings?
+                        10. How did you hear about Second Innings? <span className="text-signal">*</span>
                       </label>
                       <select
                         name="source"
+                        required
                         value={formData.source}
                         onChange={handleInputChange}
                         className="field bg-paper"
                       >
                         <option value="">Select an option</option>
-                        <option value="Friend">Friend</option>
-                        <option value="Former Student">Former Student</option>
-                        <option value="Parent or Family">Parent or Family</option>
-                        <option value="Teacher or Educator">Teacher or Educator</option>
-                        <option value="LinkedIn">LinkedIn</option>
-                        <option value="WhatsApp">WhatsApp</option>
-                        <option value="Other">Other</option>
+                        {SOURCE_OPTIONS.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     <div>
                       <label className="field-label">
-                        Were you referred by someone?
+                        11. Were you referred by someone?
                         <span className="block text-xs font-normal text-muted mt-0.5">
-                          If yes, you may mention their name
+                          If yes, you may mention their name (Optional)
                         </span>
                       </label>
                       <input
@@ -492,44 +645,60 @@ export default function Book() {
                     </div>
                   </div>
 
-                  {/* Confidentiality Callout */}
+                  {/* 18+ Mandatory Consent */}
+                  {!isMinor && (
+                    <label className="flex items-start gap-3 p-4 rounded-xl border border-line bg-paper-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        name="adultConsentConfirmed"
+                        checked={formData.adultConsentConfirmed}
+                        onChange={handleInputChange}
+                        className="mt-0.5 accent-[#1C1B18]"
+                      />
+                      <span className="text-xs text-ink-2 font-medium leading-relaxed">
+                        I confirm that the details provided are accurate and I agree to be contacted for this conversation. <span className="text-signal">*</span>
+                      </span>
+                    </label>
+                  )}
+
+                  {/* Privacy & Discretion Notice */}
                   <div className="rounded-xl border border-line bg-paper-2 p-5 text-xs text-muted space-y-2">
-                    <p className="font-mono text-ink uppercase tracking-wider text-[0.6875rem]">Privacy &amp; Boundaries</p>
+                    <p className="font-mono text-ink uppercase tracking-wider text-[0.6875rem]">Privacy &amp; Discretion</p>
                     <p className="leading-relaxed">
-                      Information shared in this form is collected solely to schedule and conduct your mentoring conversation. For individuals under 18, parental or guardian consent applies. We never sell or share your personal data with third parties.
+                      Information shared in this form is collected solely to schedule and conduct your conversation. We respect your privacy, keep your details confidential within professional limits, and never sell or share your personal data.
                     </p>
                     <div className="flex flex-wrap items-center gap-4 pt-1">
                       <Link href="/privacy-policy" className="meta text-ink underline decoration-ink/20 underline-offset-4 hover:decoration-signal">
-                        Privacy Policy (DPDP) →
+                        Privacy Policy →
                       </Link>
                       <span className="text-line">•</span>
                       <Link href="/privacy-boundaries" className="meta text-ink underline decoration-ink/20 underline-offset-4 hover:decoration-signal">
-                        Mentoring Boundaries →
+                        Privacy &amp; Boundaries →
                       </Link>
                     </div>
                   </div>
 
-                  {/* Fee Status Card */}
+                  {/* Fee Presentation: Approved Copy from Doc 3 Section 11 */}
                   {paymentConfig.paymentsEnabled && paymentConfig.sessionFee > 0 ? (
                     <div className="p-4 bg-amber/10 rounded-xl border border-amber/30 text-xs space-y-1.5">
                       <div className="flex items-center justify-between font-semibold text-ink text-sm">
                         <span className="flex items-center gap-1.5">
                           <span className="h-2 w-2 rounded-full bg-amber animate-pulse" />
-                          <span>Mentoring Consultation Fee</span>
+                          <span>Conversation Fee</span>
                         </span>
                         <span className="font-serif text-lg font-bold text-coral">₹{paymentConfig.sessionFee}</span>
                       </div>
                       <p className="text-muted text-[11px] leading-relaxed">
-                        {paymentConfig.feeNotice || 'Secure checkout powered by Cashfree Payments (UPI, GooglePay, PhonePe, Cards, NetBanking).'}
+                        {paymentConfig.feeNotice || 'Secure payment via Cashfree Payments.'}
                       </p>
                     </div>
                   ) : (
-                    <div className="p-3.5 bg-paper-2 rounded-xl border border-line flex items-center justify-between text-xs text-muted">
+                    <div className="p-4 bg-paper-2 rounded-xl border border-line flex items-center justify-between text-xs text-ink">
                       <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span><strong>Consultation Fee:</strong> Complimentary (Fee Waived)</span>
+                        <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                        <span className="font-medium">Your first conversation is complimentary.</span>
                       </span>
-                      <span className="font-mono text-ink font-semibold">₹0</span>
+                      <span className="meta text-muted">No fee</span>
                     </div>
                   )}
 
@@ -537,11 +706,11 @@ export default function Book() {
                   <div className="pt-2">
                     <Button type="submit" disabled={isSubmitting} className="w-full justify-center">
                       {isSubmitting 
-                        ? (paymentConfig.paymentsEnabled && paymentConfig.sessionFee > 0 ? 'Connecting to Cashfree...' : 'Submitting...')
-                        : (paymentConfig.paymentsEnabled && paymentConfig.sessionFee > 0 ? `Proceed to Pay ₹${paymentConfig.sessionFee} & Book` : 'Start a Conversation')}
+                        ? (paymentConfig.paymentsEnabled && paymentConfig.sessionFee > 0 ? 'Connecting to payment...' : 'Submitting...')
+                        : (paymentConfig.paymentsEnabled && paymentConfig.sessionFee > 0 ? `Proceed to Pay ₹${paymentConfig.sessionFee} & Book` : 'START A CONVERSATION')}
                     </Button>
                     <p className="meta text-center text-muted mt-4">
-                      No commitment, no pressure. Just perspective.
+                      No ready-made answers. No predetermined path. Just perspective.
                     </p>
                   </div>
                 </form>

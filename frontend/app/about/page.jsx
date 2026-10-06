@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import Button from '../../components/ui/Button';
 import Arrow from '../../components/ui/Arrow';
@@ -8,9 +8,8 @@ import PageHero from '../../components/ui/PageHero';
 import SectionHead from '../../components/ui/SectionHead';
 import ScalePortrait from '../../components/ui/ScalePortrait';
 import { Reveal, RevealGroup, RevealItem } from '../../components/ui/Reveal';
-import { getFeaturedTestimonials } from '../../lib/api';
 
-const fallbackTestimonials = [
+const STUDENT_REFLECTIONS = [
   {
     category: 'Life preparation',
     quote: 'You never just prepared students for university, you prepared us for life. You taught us to take ownership, stay disciplined, think independently, stand by our decisions, and never compromise on our values.',
@@ -18,8 +17,14 @@ const fallbackTestimonials = [
     role: 'Project Manager | Business Analyst',
   },
   {
+    category: 'Leadership',
+    quote: 'You were the person who saw potential in me before I did... The confidence to take on opportunities, make difficult decisions, and lead people is something I owe to you.',
+    name: 'Bismanpreet Singh',
+    role: 'Startup Ecosystem Professional | Former Student Council President',
+  },
+  {
     category: 'Perspective',
-    quote: 'Whenever I found myself unsure of the next step, your perspective helped me see possibilities I couldn\'t see on my own... every student deserves to have a mentor like you.',
+    quote: "Whenever I found myself unsure of the next step, your perspective helped me see possibilities I couldn't see on my own... every student deserves to have a mentor like you.",
     name: 'Himangi Chaturvedi',
     role: 'Associate Project Manager',
   },
@@ -29,9 +34,40 @@ const fallbackTestimonials = [
     name: 'Omprakash Kumawat',
     role: 'Software Engineer',
   },
+  {
+    category: 'Real-world readiness',
+    quote: "The professional world has made us realize exactly why you pushed us so hard. You didn't just teach us, you built our character and prepared us for reality.",
+    name: 'Jia Soni',
+    role: 'HR Manager | Coaching & Mentoring',
+  },
+  {
+    category: 'Confidence',
+    quote: "You've been more than a mentor, you've been a catalyst... Every conversation with you left me feeling clearer, stronger, and more capable.",
+    name: 'Diya Garg',
+    role: 'Data Science Student',
+  },
 ];
 
-const principles = [
+const WHAT_I_BRING = [
+  {
+    title: 'Perspective from experience',
+    desc: 'More than three decades across different professional worlds.',
+  },
+  {
+    title: 'Experience with young people',
+    desc: 'Working closely with university students and understanding questions beyond academics.',
+  },
+  {
+    title: 'Exposure to possibilities',
+    desc: 'Connecting conversations with people, opportunities and perspectives where relevant.',
+  },
+  {
+    title: 'No predetermined agenda',
+    desc: 'The objective is not to decide a young person’s future, but to help them think and choose with greater ownership.',
+  },
+];
+
+const PRINCIPLES = [
   {
     title: 'Listen before advising',
     desc: 'Young people rarely need another person telling them what to do. They need someone who hears the real story behind the question.',
@@ -47,28 +83,12 @@ const principles = [
 ];
 
 export default function AboutPage() {
-  const [testimonials, setTestimonials] = useState(fallbackTestimonials);
-
-  useEffect(() => {
-    async function loadTestimonials() {
-      try {
-        const data = await getFeaturedTestimonials();
-        if (Array.isArray(data) && data.length > 0) {
-          setTestimonials(data);
-        }
-      } catch (e) {
-        // Fallback already set
-      }
-    }
-    loadTestimonials();
-  }, []);
-
   return (
     <div className="w-full">
       <PageHero
         meta={['About Deepak', 'Founder, Second Innings', '35+ Years of Experience']}
-        title="From corporate leadership to mentoring young minds."
-        lede="Over 35 years across the corporate world, entrepreneurship and higher education, now dedicated to mentoring the next generation."
+        title="35+ Years Across Corporate Life, Entrepreneurship & Higher Education."
+        lede="More than three decades of experience, now dedicated to helping young people explore possibilities, gain perspective, and choose their own next step with confidence."
       >
         <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
           <Button href="/book">Start a Conversation</Button>
@@ -155,8 +175,38 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* S3: Core Principles: Hairline Grid */}
+      {/* S3: What I Bring to the Conversation */}
       <section className="border-t border-line bg-paper-2">
+        <div className="page-x py-28 md:py-40">
+          <SectionHead
+            meta="Core capabilities"
+            title="What I Bring to the Conversation"
+            lede="Grounded perspective, student empathy, and wide exposure without a predetermined agenda."
+          />
+
+          <RevealGroup className="hairline-grid mt-16 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            {WHAT_I_BRING.map((item, idx) => (
+              <RevealItem
+                key={idx}
+                className="group flex min-h-[16rem] flex-col justify-between p-8 transition-colors duration-500 ease-editorial hover:bg-paper"
+              >
+                <span className="meta">{String(idx + 1).padStart(2, '0')}</span>
+                <div>
+                  <h3 className="font-serif text-[1.5rem] text-ink mb-3 leading-snug">
+                    {item.title}
+                  </h3>
+                  <p className="text-[0.9375rem] text-muted leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+              </RevealItem>
+            ))}
+          </RevealGroup>
+        </div>
+      </section>
+
+      {/* S4: Philosophy */}
+      <section className="border-t border-line">
         <div className="page-x py-28 md:py-40">
           <SectionHead
             meta="The philosophy"
@@ -165,10 +215,10 @@ export default function AboutPage() {
           />
 
           <RevealGroup className="hairline-grid mt-16 grid-cols-1 md:grid-cols-3">
-            {principles.map((item, idx) => (
+            {PRINCIPLES.map((item, idx) => (
               <RevealItem
                 key={idx}
-                className="group flex min-h-[16rem] flex-col justify-between p-8 transition-colors duration-500 ease-editorial hover:bg-paper-3"
+                className="group flex min-h-[16rem] flex-col justify-between p-8 transition-colors duration-500 ease-editorial hover:bg-paper-2"
               >
                 <span className="meta">{String(idx + 1).padStart(2, '0')}</span>
                 <div>
@@ -185,15 +235,15 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* S4: Student Reflections */}
-      <section className="border-t border-line">
+      {/* S5: In Their Words – Student Reflections (All 6 Voices) */}
+      <section className="border-t border-line bg-paper-2">
         <div className="page-x py-28 md:py-40">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:items-end mb-16">
             <SectionHead
               className="md:col-span-7"
-              meta="Student reflections"
-              title="In their words"
-              lede="Reflections shared by students and alumni who worked closely with Deepak."
+              meta="In their words"
+              title="Student voices"
+              lede="Reflections shared voluntarily by students and alumni who worked closely with Deepak."
             />
             <Reveal className="md:col-span-5 text-left md:text-right">
               <Button href="https://www.linkedin.com/in/deepak-sogani/" variant="link" arrow="up-right">
@@ -202,9 +252,9 @@ export default function AboutPage() {
             </Reveal>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.slice(0, 3).map((item, idx) => (
-              <Reveal key={idx} delay={idx * 0.08} className="rounded-[1.5rem] border border-line bg-paper p-8 flex flex-col justify-between">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {STUDENT_REFLECTIONS.map((item, idx) => (
+              <Reveal key={idx} delay={idx * 0.06} className="rounded-[1.5rem] border border-line bg-paper p-8 flex flex-col justify-between">
                 <div>
                   <span className="meta text-signal mb-4 block">{item.category}</span>
                   <p className="font-serif italic text-[1.25rem] text-ink leading-snug mb-6">
@@ -229,11 +279,17 @@ export default function AboutPage() {
               </Reveal>
             ))}
           </div>
+
+          <div className="mt-12 text-sm text-muted max-w-2xl">
+            <p>
+              These voices come from different experiences, but a common thread runs through them: perspective, confidence, ownership and readiness for life beyond the classroom.
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* S5: CTA */}
-      <section className="border-t border-line bg-paper-2">
+      {/* S6: CTA */}
+      <section className="border-t border-line">
         <div className="page-x py-32 md:py-44">
           <RevealGroup className="max-w-[56rem]">
             <RevealItem as="p" className="meta mb-6">Connect with Deepak</RevealItem>

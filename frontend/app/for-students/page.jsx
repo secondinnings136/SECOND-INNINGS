@@ -8,9 +8,9 @@ import { Reveal, RevealGroup, RevealItem } from '../../components/ui/Reveal';
 import StudentOutcomesGrid from '../../components/home/StudentOutcomesGrid';
 
 export const metadata = {
-  title: 'Mentoring for Students (Ages 16–25) | Career Clarity & Self-Belief — Second Innings',
+  title: 'For Students (Ages 16–25) | Perspective, Clarity & Next Steps — Second Innings',
   description:
-    'Feeling stuck in career choices or college transitions? Second Innings provides independent, non-judgmental one-on-one mentoring for young people aged 16–25 to think clearly and decide with confidence.',
+    'Feeling unsure about career choices or college transitions? Second Innings provides a respectful space for young people aged 16–25 to talk openly, understand themselves better, and choose their own next step.',
   keywords: [
     'career confusion after 12th',
     'what to do after graduation if confused',
@@ -22,16 +22,16 @@ export const metadata = {
     'finding direction in early 20s',
     'peer pressure and career choices',
     'how to talk to parents about career choice',
-    'youth mentoring platform India',
-    'one on one student mentoring',
+    'youth guidance India',
+    'one on one student conversation',
   ],
   alternates: {
     canonical: 'https://second-innings.in/for-students',
   },
   openGraph: {
-    title: 'Mentoring for Students (16–25) — Second Innings',
+    title: 'For Students (16–25) — Second Innings',
     description:
-      'You have the information. What you need is perspective. One-on-one mentoring to navigate what comes next.',
+      'You have the information. What you need is perspective. A space to talk openly, think clearly, and explore possibilities.',
     url: 'https://second-innings.in/for-students',
   },
 };
@@ -47,7 +47,7 @@ const concerns = [
   "I want to do something meaningful but don't know where to start",
 ];
 
-const areas = [
+const topics = [
   "Career & higher-education uncertainty",
   "Confidence & self-belief",
   "Decision-making & ownership",
@@ -55,29 +55,21 @@ const areas = [
   "Exposure to people, pathways & opportunities",
   "Leadership & participation",
   "Professional & life readiness",
-  "Finding internships, fellowships, scholarships",
+  "Finding internships, fellowships, and scholarships",
   "Transition from education to adult life",
-];
-
-const outcomes = [
-  { title: "Clarity", desc: "Clearer understanding of the next step and the reasons behind it." },
-  { title: "Confidence", desc: "Greater willingness to participate, ask questions, and approach opportunities." },
-  { title: "Exposure", desc: "Interaction with people, pathways, and resources previously unfamiliar." },
-  { title: "Action", desc: "Completion of agreed exploration or self-development action steps." },
-  { title: "Ownership", desc: "Increasingly evidence-based, mature decisions made independently." },
 ];
 
 export default function ForStudentsPage() {
   return (
     <div className="w-full">
       <PageHero
-        meta={['For Young People', 'Ages 16 to 25', 'Student Mentoring']}
+        meta={['For Young People', 'Ages 16 to 25', 'Perspective & Possibilities']}
         title="You have the information. What you need is perspective."
         lede="Career confusion, confidence issues, and 'what next' anxiety are natural parts of growing up. You do not have to figure it all out alone."
       >
         <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
           <Button href="/book">Start a Conversation</Button>
-          <Button href="/opportunities" variant="link" arrow="up-right">Explore Opportunities</Button>
+          <Button href="/how-it-works" variant="link" arrow="down">See How It Works</Button>
         </div>
       </PageHero>
 
@@ -87,7 +79,7 @@ export default function ForStudentsPage() {
           <SectionHead
             meta="Common questions"
             title="Sound familiar?"
-            lede="These are some of the most frequent starting points students bring into our conversations."
+            lede="These are some of the most frequent starting points young people bring into our conversations."
           />
 
           <RevealGroup className="hairline-grid mt-16 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
@@ -106,17 +98,17 @@ export default function ForStudentsPage() {
         </div>
       </section>
 
-      {/* S3: What Mentoring Covers */}
+      {/* S3: What Can We Talk About? */}
       <section className="border-t border-line">
         <div className="page-x py-28 md:py-40">
           <SectionHead
-            meta="Curriculum of conversations"
-            title="What we can explore together"
-            lede="Mentoring spans both professional direction and personal readiness."
+            meta="Exploration areas"
+            title="What Can We Talk About?"
+            lede="Conversations span questions around direction, confidence, choices, and readiness for life."
           />
 
           <RevealGroup className="hairline-grid mt-16 grid-cols-1 md:grid-cols-3">
-            {areas.map((area, idx) => (
+            {topics.map((area, idx) => (
               <RevealItem
                 key={idx}
                 className="p-8 transition-colors duration-500 ease-editorial hover:bg-paper-2"
@@ -139,29 +131,29 @@ export default function ForStudentsPage() {
         </div>
       </section>
 
-      {/* S5: Student Outcomes */}
+      {/* S5: What We Hope These Conversations Can Help You Build */}
       <section className="border-t border-line bg-paper-2">
         <div className="page-x py-28 md:py-40">
           <SectionHead
             meta="Observable growth"
-            title="What students walk away with"
-            lede="Five pillars that develop through sustained, thoughtful conversations."
+            title="What We Hope These Conversations Can Help You Build"
+            lede="Five areas we work towards through sustained, thoughtful conversations."
           />
 
           <StudentOutcomesGrid className="mt-16" />
         </div>
       </section>
 
-      {/* S6: Mini Methodology */}
+      {/* S6: Simple Public Journey */}
       <section className="border-t border-line">
         <div className="page-x py-24 md:py-32 text-center">
           <RevealGroup className="max-w-3xl mx-auto">
-            <RevealItem as="p" className="meta mb-4">Our approach</RevealItem>
+            <RevealItem as="p" className="meta mb-4">The journey</RevealItem>
             <RevealItem as="h2" className="font-serif text-[clamp(2rem,3.5vw,3rem)] text-ink mb-10">
-              Our 7-Step Mentoring Process
+              How a Conversation Unfolds
             </RevealItem>
             <RevealItem className="flex flex-wrap justify-center items-center gap-2 md:gap-4 mb-8">
-              {['Listen', 'Understand', 'Explore', 'Perspective', 'Connect', 'Act', 'Review'].map((step, idx, arr) => (
+              {['Talk', 'Understand', 'Explore', 'Choose Your Next Step', 'Follow Through'].map((step, idx, arr) => (
                 <React.Fragment key={step}>
                   <span className="meta rounded-full border border-line bg-paper px-4 py-2 text-ink">
                     {step}
@@ -171,7 +163,7 @@ export default function ForStudentsPage() {
               ))}
             </RevealItem>
             <RevealItem>
-              <Button href="/how-it-works" variant="link">See the full methodology</Button>
+              <Button href="/how-it-works" variant="link">See the full approach</Button>
             </RevealItem>
           </RevealGroup>
         </div>
@@ -183,14 +175,13 @@ export default function ForStudentsPage() {
           <RevealGroup className="max-w-[56rem]">
             <RevealItem as="p" className="meta mb-6">Take the first step</RevealItem>
             <RevealItem as="h2" className="font-serif text-[clamp(2.5rem,5.5vw,5rem)] leading-[0.95] text-ink">
-              Ready to explore your possibilities?
+              Ready to start a conversation?
             </RevealItem>
             <RevealItem as="p" className="lede mt-6 text-[1.125rem]">
-              A 30-minute conversation with Deepak can bring clarity to questions you have been carrying for months.
+              A private conversation can bring clarity to questions you have been carrying for months. Your first conversation is complimentary.
             </RevealItem>
             <RevealItem className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-4">
               <Button href="/book">Start a Conversation</Button>
-              <Button href="/opportunities" variant="secondary" arrow="up-right">Explore Opportunities</Button>
             </RevealItem>
           </RevealGroup>
         </div>

@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
 
-export const alt = 'Second Innings | Mentoring Young Minds (Ages 16–25) — Deepak Sogani';
+export const alt = 'Second Innings | Young Minds. New Perspectives. Wider Possibilities.';
 export const size = {
   width: 1200,
   height: 630,
@@ -87,7 +87,7 @@ export default async function Image() {
                 marginTop: '2px',
               }}
             >
-              Mentoring Young Minds • Ages 16–25
+              Young Minds. New Perspectives. Wider Possibilities.
             </span>
           </div>
         </div>

@@ -8,17 +8,20 @@ const bookingSchema = new mongoose.Schema({
   userType: { type: String, enum: ['student', 'parent', 'institution', 'other'], default: 'student' },
   age: { type: String },
   ageGroup: { type: String },
-  currentStage: { type: String }, // School / College / University / Current Stage
-  city: { type: String },
+  whereCurrently: { type: String }, // School / College or University / Working / Taking a break / Exploring what comes next / Other
+  currentStage: { type: String }, // backward compatibility
+  institutionOrOrg: { type: String, trim: true }, // School / College / University / Organisation
+  city: { type: String, trim: true },
   topic: { type: String }, // What would you like to talk about?
   usefulGoal: { type: String }, // What would make this conversation useful for you?
   concern: { type: String }, // backward compatibility
-  // Under-18 Safeguarding & DPDP Compliance
+  // Consent & Safeguarding
   isUnder18: { type: Boolean, default: false },
   parentName: { type: String, trim: true },
   parentPhone: { type: String, trim: true },
   parentEmail: { type: String, trim: true },
   parentConsentConfirmed: { type: Boolean, default: false },
+  adultConsentConfirmed: { type: Boolean, default: false },
   preferredDate: { type: Date },
   preferredTime: { type: String },
   status: { type: String, enum: ['pending', 'confirmed', 'completed', 'cancelled'], default: 'pending' },

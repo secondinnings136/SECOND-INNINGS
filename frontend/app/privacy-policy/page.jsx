@@ -3,7 +3,7 @@ import Button from '../../components/ui/Button';
 
 export const metadata = {
   title: 'Privacy Policy | Second Innings',
-  description: 'Digital Personal Data Protection (DPDP) compliant Privacy Policy for Second Innings.',
+  description: 'Privacy Policy for Second Innings outlining how personal information is collected, used, and protected.',
 };
 
 const TOC = [
@@ -12,8 +12,8 @@ const TOC = [
   { id: 'under-18', title: '3. Minors Under 18 Safeguarding' },
   { id: 'section-4', title: '4. Storage & Security' },
   { id: 'section-5', title: '5. Retention Policy' },
-  { id: 'section-6', title: '6. Rights Under DPDP Act' },
-  { id: 'section-7', title: '7. Grievance Officer' },
+  { id: 'section-6', title: '6. Your Privacy Rights' },
+  { id: 'section-7', title: '7. Privacy & Grievance Contact' },
 ];
 
 export default function PrivacyPolicyPage() {
@@ -27,7 +27,7 @@ export default function PrivacyPolicyPage() {
             Privacy Policy
           </h1>
           <p className="meta text-muted mb-6">
-            Last Updated: October 2026 • Compliant with India&apos;s Digital Personal Data Protection (DPDP) Act
+            Last Updated: October 2026 • Responsible Collection &amp; Privacy Safeguards
           </p>
           <p className="lede text-[1.125rem]">
             Second Innings (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;the Platform&rdquo;), founded by Deepak Sogani and based in Jaipur, Rajasthan, operates as a human-led mentoring and perspective platform for young people aged 16–25. This Privacy Policy outlines how we collect, process, store, and protect your personal data, and details your rights.
@@ -177,26 +177,26 @@ export default function PrivacyPolicyPage() {
               </div>
               <p className="text-sm text-muted pt-2">
                 To exercise any of these rights, email us at{' '}
-                <a href="mailto:secondinnings136@gmail.com" className="text-ink underline decoration-ink/20 hover:decoration-signal font-medium">
-                  secondinnings136@gmail.com
+                <a href="mailto:deepak@second-innings.in" className="text-ink underline decoration-ink/20 hover:decoration-signal font-medium">
+                  deepak@second-innings.in
                 </a>{' '}
-                with the subject line &ldquo;Data Subject Request&rdquo;. We respond within 7 business days.
+                with the subject line &ldquo;Data Request&rdquo;. We respond within 7 business days.
               </p>
             </section>
 
             {/* Section 7 */}
             <section id="section-7" className="scroll-mt-32 rounded-[1.75rem] border border-line bg-paper-2 p-8 space-y-3">
-              <span className="meta text-signal block">Statutory Compliance</span>
+              <span className="meta text-signal block">Safeguarding &amp; Privacy</span>
               <h2 className="font-serif text-[1.75rem] text-ink leading-snug">
-                7. Grievance Redressal and Privacy Officer
+                7. Privacy &amp; Grievance Contact
               </h2>
               <p className="text-sm text-muted leading-relaxed">
-                In compliance with Indian data protection laws, for any questions, concerns, or grievances regarding personal data processing, you may contact:
+                For any questions, concerns, or inquiries regarding personal information and privacy safeguards, you may contact:
               </p>
               <div className="text-xs sm:text-sm text-ink-2 font-mono space-y-1.5 pt-2">
-                <p><strong>Officer:</strong> Deepak Sogani</p>
-                <p><strong>Designation:</strong> Founder &amp; Data Fiduciary, Second Innings</p>
-                <p><strong>Email:</strong> <a href="mailto:secondinnings136@gmail.com" className="underline hover:text-signal">secondinnings136@gmail.com</a></p>
+                <p><strong>Contact:</strong> Deepak Sogani</p>
+                <p><strong>Designation:</strong> Founder, Second Innings</p>
+                <p><strong>Email:</strong> <a href="mailto:deepak@second-innings.in" className="underline hover:text-signal">deepak@second-innings.in</a></p>
                 <p><strong>Location:</strong> Jaipur, Rajasthan, India</p>
               </div>
             </section>
