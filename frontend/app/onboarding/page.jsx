@@ -71,7 +71,6 @@ function OnboardingContent() {
   const [phoneOtpError, setPhoneOtpError] = useState('');
   const [phoneOtpSuccess, setPhoneOtpSuccess] = useState('');
   const [phoneCooldown, setPhoneCooldown] = useState(0);
-  const [phoneDevOtp, setPhoneDevOtp] = useState('');
   const otpTimerRef = useRef(null);
 
   useEffect(() => {
@@ -154,9 +153,6 @@ function OnboardingContent() {
       setPhoneOtpSent(true);
       setPhoneCooldown(45);
       setPhoneOtpSuccess(res.message || 'OTP sent successfully to your mobile number!');
-      if (res.devOtpPreview) {
-        setPhoneDevOtp(res.devOtpPreview);
-      }
     } catch (err) {
       setPhoneOtpError(err.message || 'Failed to send OTP to this phone number.');
     } finally {
@@ -178,7 +174,6 @@ function OnboardingContent() {
       setPhoneVerified(true);
       setPhoneOtpSent(false);
       setPhoneOtpCode('');
-      setPhoneDevOtp('');
       setPhoneOtpSuccess(res.message || 'Mobile number verified successfully!');
     } catch (err) {
       setPhoneOtpError(err.message || 'Invalid or expired OTP. Please try again.');
@@ -196,8 +191,8 @@ function OnboardingContent() {
       return;
     }
 
-    if (!phoneVerified) {
-      setError('Please verify your 10-digit mobile number with the 6-digit OTP code before completing your profile.');
+    if (phoneOtpSent && !phoneVerified) {
+      setError('Please verify the 6-digit OTP sent to your phone, or enter a valid number to continue.');
       return;
     }
 
@@ -451,14 +446,10 @@ function OnboardingContent() {
                 <label className="block text-xs font-mono uppercase tracking-wider text-charcoal">
                   6. Mobile / WhatsApp Number <span className="text-terracotta">*</span>
                 </label>
-                {phoneVerified ? (
+                {phoneVerified && (
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-sage/15 text-sage text-[11px] font-semibold">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     Verified
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-terracotta/10 text-terracotta text-[10px] font-mono">
-                    OTP Required
                   </span>
                 )}
               </div>
@@ -524,12 +515,6 @@ function OnboardingContent() {
                       {verifyingPhoneOtp ? 'Verifying...' : 'Verify OTP'}
                     </button>
                   </div>
-
-                  {phoneDevOtp && (
-                    <div className="p-2 rounded bg-amber-50 border border-amber-200 text-[11px] text-amber-900 font-mono">
-                      Dev/Preview OTP: <strong>{phoneDevOtp}</strong>
-                    </div>
-                  )}
 
                   {phoneOtpError && (
                     <p className="text-xs text-terracotta font-medium">{phoneOtpError}</p>

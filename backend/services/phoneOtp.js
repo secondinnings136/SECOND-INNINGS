@@ -130,7 +130,16 @@ async function sendPhoneOtpSms({ phone, otpCode }) {
   return { delivered: false, mode: 'console_preview' };
 }
 
+function isSmsGatewayConfigured() {
+  return Boolean(
+    (process.env.TWO_FACTOR_API_KEY && process.env.TWO_FACTOR_API_KEY.trim()) ||
+    (process.env.FAST2SMS_API_KEY && process.env.FAST2SMS_API_KEY.trim()) ||
+    (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER)
+  );
+}
+
 module.exports = {
   normalizePhone10,
-  sendPhoneOtpSms
+  sendPhoneOtpSms,
+  isSmsGatewayConfigured
 };

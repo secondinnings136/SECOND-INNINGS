@@ -9,7 +9,7 @@ const PaymentTransaction = require('../models/PaymentTransaction');
 const EmailOtp = require('../models/EmailOtp');
 const PhoneOtp = require('../models/PhoneOtp');
 const { sendOtpEmail } = require('../services/emailOtp');
-const { normalizePhone10, sendPhoneOtpSms } = require('../services/phoneOtp');
+const { normalizePhone10, sendPhoneOtpSms, isSmsGatewayConfigured } = require('../services/phoneOtp');
 const { protectUser, protectAdmin } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/security');
 
@@ -598,33 +598,26 @@ router.post('/phone/send-otp', authLimiter, protectUser, async (req, res, next) 
       { upsert: true, new: true }
     );
 
+    const isConfigured = isSmsGatewayConfigured();
+    if (!isConfigured) {
+      return res.status(400).json({
+        success: false,
+        error: 'SMS service is not configured yet. Add TWO_FACTOR_API_KEY or FAST2SMS_API_KEY to your backend environment to send live SMS OTPs.',
+        smsConfigured: false
+      });
+    }
+
     const smsDelivery = await sendPhoneOtpSms({
       phone: cleanPhone,
       otpCode
     });
 
-    // If no SMS gateway key is configured yet, also send backup notification to user's email if available
-    if (!smsDelivery.delivered && req.user?.email) {
-      try {
-        await sendOtpEmail({
-          email: req.user.email,
-          otp: otpCode,
-          name: req.user.name || ''
-        });
-      } catch (e) {
-        console.warn('Backup email for phone OTP notice:', e.message);
-      }
-    }
-
     res.status(200).json({
       success: true,
-      message: smsDelivery.delivered
-        ? `A 6-digit verification OTP has been sent to +91 ${cleanPhone}.`
-        : `6-digit Phone verification code generated for +91 ${cleanPhone}.`,
+      message: `A 6-digit verification code has been sent to +91 ${cleanPhone}.`,
       phone: cleanPhone,
       expiresInSeconds: 600,
-      smsConfigured: smsDelivery.delivered,
-      ...(!smsDelivery.delivered ? { devOtpPreview: otpCode } : {})
+      smsConfigured: true
     });
   } catch (error) {
     next(error);
@@ -730,12 +723,17 @@ router.put('/onboarding', protectUser, async (req, res, next) => {
       });
     }
 
-    const existingVerifiedPhone = req.user.phoneVerified ? normalizePhone10(req.user.phone) : '';
-    if (!req.user.phoneVerified || existingVerifiedPhone !== cleanPhone) {
-      return res.status(400).json({
-        success: false,
-        error: 'Please verify your mobile number via the 6-digit Phone OTP before saving your profile.'
-      });
+    const smsActive = isSmsGatewayConfigured();
+    if (smsActive) {
+      const existingVerifiedPhone = req.user.phoneVerified ? normalizePhone10(req.user.phone) : '';
+      if (!req.user.phoneVerified || existingVerifiedPhone !== cleanPhone) {
+        return res.status(400).json({
+          success: false,
+          error: 'Please verify your mobile number via the 6-digit Phone OTP before saving your profile.'
+        });
+      }
+    } else {
+      req.user.phoneVerified = true;
     }
 
     const resolvedUserType = ['student', 'parent', 'institution', 'other'].includes(userType)
