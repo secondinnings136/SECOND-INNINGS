@@ -1,51 +1,53 @@
 const mongoose = require('mongoose');
 
-let isConnecting = false;
+let cachedPromise = null;
 
 const connectDB = async () => {
+  // If already connected, return existing connection immediately
   if (mongoose.connection.readyState === 1) {
     return mongoose.connection;
   }
 
-  if (isConnecting) {
-    return;
+  // If already connecting, await that exact connection promise
+  if (cachedPromise) {
+    return cachedPromise;
   }
 
   const uri = process.env.MONGODB_URI;
   if (!uri) {
-    console.error('MONGODB_URI environment variable is missing!');
-    return;
+    const missingErr = new Error('MONGODB_URI environment variable is missing in project settings!');
+    console.error(missingErr.message);
+    throw missingErr;
   }
 
-  try {
-    isConnecting = true;
-    const conn = await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of hanging 10s+
+  cachedPromise = mongoose
+    .connect(uri, {
+      serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
       maxPoolSize: 10
+    })
+    .then((conn) => {
+      console.log(`MongoDB Connected: ${conn.connection.host}`);
+      return conn;
+    })
+    .catch((err) => {
+      cachedPromise = null;
+      console.error(`Error connecting to MongoDB: ${err.message}`);
+      throw err;
     });
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
-    return conn;
-  } catch (error) {
-    console.error(`Error connecting to MongoDB: ${error.message}`);
-    if (process.env.NODE_ENV !== 'production') {
-      process.exit(1);
-    }
-  } finally {
-    isConnecting = false;
-  }
+
+  return cachedPromise;
 };
 
-// Auto-reconnect if connection drops
+// Reconnect on drop
 mongoose.connection.on('disconnected', () => {
-  console.warn('MongoDB connection lost. Attempting auto-reconnect...');
-  setTimeout(() => {
-    connectDB().catch((err) => console.error('Auto-reconnect failed:', err.message));
-  }, 2000);
+  console.warn('MongoDB connection lost. Clearing cached promise...');
+  cachedPromise = null;
 });
 
 mongoose.connection.on('error', (err) => {
   console.error('MongoDB connection error:', err.message);
+  cachedPromise = null;
 });
 
 module.exports = connectDB;
