@@ -3,7 +3,6 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const Admin = require('../models/Admin');
-const { protect, superadmin } = require('../middleware/auth');
 const Booking = require('../models/Booking');
 const Contact = require('../models/Contact');
 const InstitutionalEnquiry = require('../models/InstitutionalEnquiry');
@@ -12,212 +11,275 @@ const Resource = require('../models/Resource');
 const Testimonial = require('../models/Testimonial');
 const Newsletter = require('../models/Newsletter');
 const SupportTicket = require('../models/SupportTicket');
+const User = require('../models/User');
+const UserSubscription = require('../models/UserSubscription');
+const { protectAdmin } = require('../middleware/auth');
+const { authLimiter } = require('../middleware/security');
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '7d',
+  return jwt.sign({ id, tokenType: 'admin' }, process.env.JWT_SECRET, {
+    expiresIn: '7d'
   });
 };
 
 // @route   POST /api/admin/login
-// @desc    Auth admin & get token
-router.post('/login', [
-  body('email', 'Please include a valid email').isEmail(),
-  body('password', 'Password is required').exists()
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const { email, password } = req.body;
-
-  try {
-    const admin = await Admin.findOne({ email });
-
-    if (admin && (await admin.matchPassword(password))) {
-      if (!admin.isActive) {
-        return res.status(401).json({ message: 'Account disabled' });
-      }
-
-      admin.lastLogin = Date.now();
-      await admin.save();
-
-      res.json({
-        _id: admin._id,
-        name: admin.name,
-        email: admin.email,
-        role: admin.role,
-        token: generateToken(admin._id),
-      });
-    } else {
-      res.status(401).json({ message: 'Invalid email or password' });
+// @desc    Auth admin & get token (Rate-Limited against brute-force)
+// @access  Public
+router.post(
+  '/login',
+  authLimiter,
+  [
+    body('email', 'Please include a valid email').isEmail(),
+    body('password', 'Password is required').exists()
+  ],
+  async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
     }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Server Error');
+
+    const { email, password } = req.body;
+
+    try {
+      const admin = await Admin.findOne({ email: String(email).toLowerCase() });
+
+      if (admin && (await admin.matchPassword(password))) {
+        if (!admin.isActive) {
+          return res.status(401).json({ success: false, error: 'Account is deactivated' });
+        }
+
+        admin.lastLogin = Date.now();
+        await admin.save();
+
+        res.json({
+          success: true,
+          token: generateToken(admin._id),
+          admin: {
+            id: admin._id,
+            name: admin.name,
+            email: admin.email,
+            role: admin.role
+          }
+        });
+      } else {
+        res.status(401).json({ success: false, error: 'Invalid email or password' });
+      }
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 // @route   GET /api/admin/me
-// @desc    Get current admin user
-// @access  Private
-router.get('/me', protect, async (req, res) => {
-  try {
-    const admin = await Admin.findById(req.admin.id).select('-password');
-    res.json(admin);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Server Error');
-  }
+// @desc    Get current logged in admin
+// @access  Private (Admin)
+router.get('/me', protectAdmin, async (req, res) => {
+  res.json({
+    success: true,
+    data: req.admin
+  });
 });
 
 // @route   GET /api/admin/dashboard
-// @desc    Get dashboard stats
-// @access  Private
-router.get('/dashboard', protect, async (req, res) => {
+// @desc    Get dashboard statistics
+// @access  Private (Admin)
+router.get('/dashboard', protectAdmin, async (req, res, next) => {
   try {
     const [
-      bookingsTotal, bookingsPending, bookingsConfirmed, bookingsCompleted,
-      contactsTotal, contactsNew, contactsRead, contactsReplied,
-      institutionsTotal, institutionsNew,
-      opportunitiesActive,
-      resourcesPublished,
-      testimonialsApproved,
-      newsletterActive,
+      totalBookings,
+      pendingBookings,
+      confirmedBookings,
+      completedBookings,
+      totalContacts,
+      newContacts,
+      readContacts,
+      repliedContacts,
+      totalEnquiries,
+      enquiriesByStatus,
+      activeOpportunities,
+      publishedResources,
+      approvedTestimonials,
+      activeSubscribers,
+      totalSupportTickets,
+      openSupportTickets,
+      investigatingSupportTickets,
+      resolvedSupportTickets,
+      totalUsers,
+      activeSubscriptionsCount,
       recentBookings,
       recentContacts,
-      recentInstitutions,
-      supportTotal,
-      supportOpen,
-      recentSupport
+      recentEnquiries,
+      recentSupportTickets
     ] = await Promise.all([
       Booking.countDocuments(),
       Booking.countDocuments({ status: 'pending' }),
       Booking.countDocuments({ status: 'confirmed' }),
       Booking.countDocuments({ status: 'completed' }),
+
       Contact.countDocuments(),
       Contact.countDocuments({ status: 'new' }),
       Contact.countDocuments({ status: 'read' }),
       Contact.countDocuments({ status: 'replied' }),
+
       InstitutionalEnquiry.countDocuments(),
-      InstitutionalEnquiry.countDocuments({ status: 'new' }), // Assuming status field exists
+      InstitutionalEnquiry.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
+
       Opportunity.countDocuments({ isActive: true }),
       Resource.countDocuments({ isPublished: true }),
       Testimonial.countDocuments({ isApproved: true }),
       Newsletter.countDocuments({ isActive: true }),
+
+      SupportTicket.countDocuments(),
+      SupportTicket.countDocuments({ status: 'open' }),
+      SupportTicket.countDocuments({ status: 'investigating' }),
+      SupportTicket.countDocuments({ status: 'resolved' }),
+
+      User.countDocuments(),
+      UserSubscription.countDocuments({ status: 'active' }),
+
       Booking.find().sort({ createdAt: -1 }).limit(5),
       Contact.find().sort({ createdAt: -1 }).limit(5),
       InstitutionalEnquiry.find().sort({ createdAt: -1 }).limit(5),
-      SupportTicket.countDocuments(),
-      SupportTicket.countDocuments({ status: 'open' }),
       SupportTicket.find().sort({ createdAt: -1 }).limit(5)
     ]);
 
+    const enquiryStatusMap = {};
+    enquiriesByStatus.forEach((item) => {
+      enquiryStatusMap[item._id] = item.count;
+    });
+
     res.json({
-      stats: {
-        totalBookings: bookingsTotal,
-        pendingBookings: bookingsPending,
-        confirmedBookings: bookingsConfirmed,
-        completedBookings: bookingsCompleted,
-        totalContacts: contactsTotal,
-        newContacts: contactsNew,
-        readContacts: contactsRead,
-        repliedContacts: contactsReplied,
-        totalSupport: supportTotal,
-        openSupport: supportOpen,
-        institutionalEnquiries: institutionsTotal,
-        newInstitutions: institutionsNew,
-        activeOpportunities: opportunitiesActive,
-        publishedResources: resourcesPublished,
-        approvedTestimonials: testimonialsApproved,
-        newsletterSubscribers: newsletterActive,
-        bookings: { total: bookingsTotal, pending: bookingsPending, confirmed: bookingsConfirmed, completed: bookingsCompleted },
-        contacts: { total: contactsTotal, new: contactsNew, read: contactsRead, replied: contactsReplied },
-        support: { total: supportTotal, open: supportOpen },
-        institutions: { total: institutionsTotal, new: institutionsNew },
-        opportunities: { active: opportunitiesActive },
-        resources: { published: resourcesPublished },
-        testimonials: { approved: testimonialsApproved },
-        newsletter: { active: newsletterActive }
-      },
-      recent: {
-        bookings: recentBookings,
-        contacts: recentContacts,
-        institutions: recentInstitutions,
-        support: recentSupport
+      success: true,
+      data: {
+        stats: {
+          bookings: {
+            total: totalBookings,
+            pending: pendingBookings,
+            confirmed: confirmedBookings,
+            completed: completedBookings
+          },
+          contacts: {
+            total: totalContacts,
+            new: newContacts,
+            read: readContacts,
+            replied: repliedContacts
+          },
+          institutions: {
+            total: totalEnquiries,
+            byStatus: enquiryStatusMap
+          },
+          support: {
+            total: totalSupportTickets,
+            open: openSupportTickets,
+            investigating: investigatingSupportTickets,
+            resolved: resolvedSupportTickets
+          },
+          users: {
+            total: totalUsers,
+            activeSubscriptions: activeSubscriptionsCount
+          },
+          opportunities: { active: activeOpportunities },
+          resources: { published: publishedResources },
+          testimonials: { approved: approvedTestimonials },
+          newsletter: { active: activeSubscribers }
+        },
+        recent: {
+          bookings: recentBookings,
+          contacts: recentContacts,
+          institutions: recentEnquiries,
+          support: recentSupportTickets
+        }
       }
     });
   } catch (error) {
-    console.error(error);
-    // Ignore error for missing collections/fields during early setup
-    res.status(500).send('Server Error');
+    next(error);
   }
 });
 
 // @route   PUT /api/admin/change-password
 // @desc    Change admin password
-// @access  Private
-router.put('/change-password', protect, async (req, res) => {
-  const { currentPassword, newPassword } = req.body;
+// @access  Private (Admin)
+router.put(
+  '/change-password',
+  protectAdmin,
+  [
+    body('currentPassword', 'Current password is required').exists(),
+    body('newPassword', 'Please enter a password with 6 or more characters').isLength({ min: 6 })
+  ],
+  async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
 
-  try {
-    const admin = await Admin.findById(req.admin.id);
+    try {
+      const admin = await Admin.findById(req.admin._id);
+      const { currentPassword, newPassword } = req.body;
 
-    if (admin && (await admin.matchPassword(currentPassword))) {
+      if (!(await admin.matchPassword(currentPassword))) {
+        return res.status(401).json({ success: false, error: 'Invalid current password' });
+      }
+
       admin.password = newPassword;
       await admin.save();
-      res.json({ message: 'Password updated successfully' });
-    } else {
-      res.status(401).json({ message: 'Invalid current password' });
+
+      res.json({ success: true, message: 'Password updated successfully' });
+    } catch (error) {
+      next(error);
     }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Server Error');
   }
-});
+);
 
 // @route   POST /api/admin/create
-// @desc    Create new admin user
+// @desc    Create a new admin
 // @access  Private (Superadmin only)
-router.post('/create', protect, superadmin, [
-  body('name', 'Name is required').not().isEmpty(),
-  body('email', 'Please include a valid email').isEmail(),
-  body('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 })
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const { name, email, password, role } = req.body;
-
-  try {
-    let admin = await Admin.findOne({ email });
-
-    if (admin) {
-      return res.status(400).json({ message: 'Admin already exists' });
+router.post(
+  '/create',
+  protectAdmin,
+  [
+    body('name', 'Name is required').not().isEmpty(),
+    body('email', 'Please include a valid email').isEmail(),
+    body('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 })
+  ],
+  async (req, res, next) => {
+    if (req.admin.role !== 'superadmin') {
+      return res.status(403).json({ success: false, error: 'Not authorized to create admins' });
     }
 
-    admin = new Admin({
-      name,
-      email,
-      password,
-      role: role || 'admin'
-    });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
 
-    await admin.save();
+    const { name, email, password, role } = req.body;
 
-    res.status(201).json({
-      _id: admin._id,
-      name: admin.name,
-      email: admin.email,
-      role: admin.role
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Server Error');
+    try {
+      let admin = await Admin.findOne({ email: String(email).toLowerCase() });
+
+      if (admin) {
+        return res.status(400).json({ success: false, error: 'Admin already exists' });
+      }
+
+      admin = await Admin.create({
+        name,
+        email: String(email).toLowerCase(),
+        password,
+        role: role || 'admin'
+      });
+
+      res.status(201).json({
+        success: true,
+        data: {
+          id: admin._id,
+          name: admin.name,
+          email: admin.email,
+          role: admin.role
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 module.exports = router;

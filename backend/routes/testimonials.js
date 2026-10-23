@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Testimonial = require('../models/Testimonial');
+const { protectAdmin, optionalAdmin } = require('../middleware/auth');
+const { publicFormLimiter } = require('../middleware/security');
 
-// GET /api/testimonials/featured - Get featured testimonials
+// GET /api/testimonials/featured - Get featured testimonials (Public)
 router.get('/featured', async (req, res, next) => {
   try {
     const testimonials = await Testimonial.find({ isApproved: true, isFeatured: true }).sort({ order: 1, createdAt: -1 });
@@ -12,12 +14,13 @@ router.get('/featured', async (req, res, next) => {
   }
 });
 
-// GET /api/testimonials - Get approved testimonials (or all if all=true)
-router.get('/', async (req, res, next) => {
+// GET /api/testimonials - Get approved testimonials (or all if Admin passes all=true)
+router.get('/', optionalAdmin, async (req, res, next) => {
   try {
     const { all } = req.query;
     const query = {};
-    if (all !== 'true') {
+    const isAdminRequest = Boolean(req.admin) && all === 'true';
+    if (!isAdminRequest) {
       query.isApproved = true;
     }
     const testimonials = await Testimonial.find(query).sort({ order: 1, createdAt: -1 });
@@ -27,18 +30,33 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-// POST /api/testimonials - Submit testimonial
-router.post('/', async (req, res, next) => {
+// POST /api/testimonials - Submit testimonial (Public or Admin)
+router.post('/', publicFormLimiter, optionalAdmin, async (req, res, next) => {
   try {
-    const testimonial = await Testimonial.create(req.body);
+    const { name, role, quote, isApproved, isFeatured, order } = req.body;
+    if (!name || !quote) {
+      return res.status(400).json({ success: false, error: 'Name and quote are required.' });
+    }
+
+    const payload = {
+      name: String(name).trim().slice(0, 120),
+      role: role ? String(role).trim().slice(0, 120) : '',
+      quote: String(quote).trim().slice(0, 1000),
+      // Only an authenticated Admin can immediately approve/feature on creation
+      isApproved: req.admin ? Boolean(isApproved) : false,
+      isFeatured: req.admin ? Boolean(isFeatured) : false,
+      order: req.admin && order !== undefined ? Number(order) : 0
+    };
+
+    const testimonial = await Testimonial.create(payload);
     res.status(201).json({ success: true, data: testimonial });
   } catch (error) {
     next(error);
   }
 });
 
-// PATCH /api/testimonials/:id - Update testimonial
-router.patch('/:id', async (req, res, next) => {
+// PATCH /api/testimonials/:id - Update testimonial (Admin Only)
+router.patch('/:id', protectAdmin, async (req, res, next) => {
   try {
     const { isApproved, isFeatured, order, name, role, quote } = req.body;
     const updateData = {};
@@ -63,8 +81,8 @@ router.patch('/:id', async (req, res, next) => {
   }
 });
 
-// DELETE /api/testimonials/:id - Delete testimonial
-router.delete('/:id', async (req, res, next) => {
+// DELETE /api/testimonials/:id - Delete testimonial (Admin Only)
+router.delete('/:id', protectAdmin, async (req, res, next) => {
   try {
     const testimonial = await Testimonial.findByIdAndDelete(req.params.id);
     if (!testimonial) {

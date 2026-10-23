@@ -1,47 +1,112 @@
 const mongoose = require('mongoose');
 
 const bookingSchema = new mongoose.Schema({
+  // Linked User Account (for One-Time Google / Email Login & Session History)
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    index: true,
+    default: null
+  },
+  sessionNumber: {
+    type: Number,
+    default: 1
+  },
+  bookingMode: {
+    type: String,
+    enum: ['free_intro', 'single_paid', 'subscription_credit', 'support_contribution', 'admin_manual'],
+    default: 'single_paid'
+  },
+  userSubscriptionId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'UserSubscription',
+    default: null
+  },
+  planCode: {
+    type: String,
+    default: null
+  },
+
+  // 1. Your Name (Required)
   name: { type: String, required: true, trim: true },
-  email: { type: String, trim: true, lowercase: true },
-  phone: { type: String, required: true },
-  whatsapp: { type: String },
-  userType: { type: String, enum: ['student', 'parent', 'institution', 'other'], default: 'student' },
-  age: { type: String },
-  ageGroup: { type: String },
-  whereCurrently: { type: String }, // School / College or University / Working / Taking a break / Exploring what comes next / Other
-  currentStage: { type: String }, // backward compatibility
-  institutionOrOrg: { type: String, trim: true }, // School / College / University / Organisation
-  city: { type: String, trim: true },
-  topic: { type: String }, // What would you like to talk about?
-  usefulGoal: { type: String }, // What would make this conversation useful for you?
-  concern: { type: String }, // backward compatibility
-  // Consent & Safeguarding
+
+  // 2. Your Age (Required for students; optional for parents)
+  age: { type: Number, min: 10, max: 99 },
+  ageGroup: { type: String, enum: ['16-18', '19-21', '22-25', 'parent', 'other'] },
+
+  // Under-18 Safeguarding Fields (Triggered automatically if age < 18)
   isUnder18: { type: Boolean, default: false },
   parentName: { type: String, trim: true },
   parentPhone: { type: String, trim: true },
-  parentEmail: { type: String, trim: true },
+  parentEmail: { type: String, trim: true, lowercase: true },
   parentConsentConfirmed: { type: Boolean, default: false },
-  adultConsentConfirmed: { type: Boolean, default: false },
+
+  // 3. Where are you currently?
+  whereCurrently: {
+    type: String,
+    enum: ['School (Class 11–12)', 'College (UG)', 'Postgraduate', 'Working', 'Taking a gap / figuring things out', 'Other', '']
+  },
+  currentStage: { type: String },
+
+  // 4. Name of your school / college / organisation
+  institutionOrOrg: { type: String, trim: true },
+
+  // 5. Which city are you in?
+  city: { type: String, trim: true },
+
+  // 6. What would you like to talk about?
+  topic: { type: String, maxlength: 1000 },
+  concern: { type: String, maxlength: 1000 }, // Backward compatibility alias
+
+  // 7. What would make this conversation useful for you?
+  usefulGoal: { type: String, maxlength: 500 },
+
+  // 8. Your mobile / WhatsApp number (Required)
+  phone: { type: String, required: true, trim: true, index: true },
+  whatsapp: { type: String, trim: true },
+
+  // 9. Your email address
+  email: { type: String, trim: true, lowercase: true, index: true },
+
+  // 10. How did you hear about Second Innings?
+  source: { type: String, trim: true },
+
+  // 11. Did someone suggest you speak with us?
+  referredBy: { type: String, trim: true },
+
+  // Additional scheduling & role fields
+  userType: { type: String, enum: ['student', 'parent', 'institution', 'other'], required: true, default: 'student' },
   preferredDate: { type: Date },
   preferredTime: { type: String },
-  status: { type: String, enum: ['pending', 'confirmed', 'completed', 'cancelled'], default: 'pending' },
-  notes: { type: String },
-  followUpDate: { type: Date },
-  actionAgreed: { type: String },
-  actionStatus: { type: String, enum: ['pending', 'in-progress', 'completed', 'not-started'], default: 'not-started' },
-  feedback: { type: String },
-  source: { type: String }, // How did you hear about Second Innings?
-  referredBy: { type: String }, // Were you referred by someone?
-  // Payment Integration (Cashfree PG)
+  slotUpdateToken: { type: String, select: false },
+
+  // 5-Stage Lifecycle & Admin Record-Keeping
+  // Stages: 1. Intake -> 2. Conversation -> 3. Agreed Next Step -> 4. 7-Day Follow-Up -> 5. Outcome
+  status: { type: String, enum: ['pending', 'confirmed', 'completed', 'cancelled'], default: 'pending', index: true },
+  notes: { type: String }, // Private admin notes
+  sharedNotes: { type: String }, // Mentor notes/summary shared with the student on their dashboard
+  followUpDate: { type: Date }, // 7-day follow-up date
+  actionAgreed: { type: String }, // Agreed next step (7-Day Action)
+  actionStatus: { type: String, enum: ['pending', 'in-progress', 'completed', 'not-started', 'done'], default: 'not-started' },
+  studentReflection: { type: String, maxlength: 1500 }, // Student's own progress update on the 7-Day Next Step
+  feedback: { type: String }, // Outcome / review feedback
+
+  // Cashfree Payment & Session Fee Fields
   paymentRequired: { type: Boolean, default: false },
-  paymentStatus: { type: String, enum: ['not_required', 'pending', 'paid', 'failed', 'refunded'], default: 'not_required' },
+  paymentStatus: {
+    type: String,
+    enum: ['not_required', 'pending', 'paid', 'failed', 'refunded', 'credit_redeemed'],
+    default: 'not_required',
+    index: true
+  },
   paymentAmount: { type: Number, default: 0 },
-  paymentCurrency: { type: String, default: 'INR' },
-  cashfreeOrderId: { type: String },
-  cashfreePaymentSessionId: { type: String },
-  cashfreePaymentId: { type: String },
-  paymentMode: { type: String },
-  paymentTime: { type: Date },
+  cashfreeOrderId: { type: String, trim: true, index: true },
+  cashfreePaymentSessionId: { type: String, trim: true },
+  cashfreePaymentId: { type: String, trim: true },
+  orderHistory: [{ type: String }],
+  idempotencyKey: { type: String, index: true },
+  paymentMode: { type: String, trim: true },
+  paymentTime: { type: Date }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Booking', bookingSchema);

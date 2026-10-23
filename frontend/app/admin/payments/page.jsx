@@ -15,7 +15,13 @@ import {
   Check,
   Plus
 } from 'lucide-react';
-import { getAdminPaymentSettings, updateAdminPaymentSettings, getBookings, createBooking } from '../../../lib/adminApi';
+import {
+  getAdminPaymentSettings,
+  updateAdminPaymentSettings,
+  updateAdminSubscriptionPlan,
+  getBookings,
+  createBooking
+} from '../../../lib/adminApi';
 import Modal from '../../../components/admin/Modal';
 
 export default function AdminPaymentsPage() {
@@ -39,6 +45,9 @@ export default function AdminPaymentsPage() {
     totalRevenue: 0
   });
   const [recentBookings, setRecentBookings] = useState([]);
+  const [plans, setPlans] = useState([]);
+  const [duplicateAlerts, setDuplicateAlerts] = useState([]);
+  const [savingPlanId, setSavingPlanId] = useState(null);
 
   // Manual payment / booking recording state
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
@@ -124,12 +133,15 @@ export default function AdminPaymentsPage() {
       ]);
 
       if (resSettings.success) {
-        setPaymentsEnabled(resSettings.settings.paymentsEnabled);
-        setSessionFee(resSettings.settings.sessionFee || 0);
-        setFeeNotice(resSettings.settings.feeNotice || '');
-        setRequirePaymentFor(resSettings.settings.requirePaymentFor || ['student', 'parent', 'institution']);
-        setGateway(resSettings.gateway || {});
-        setStats(resSettings.stats || {});
+        const s = resSettings.settings || resSettings.data || {};
+        setPaymentsEnabled(Boolean(s.paymentsEnabled));
+        setSessionFee(s.sessionFee || 0);
+        setFeeNotice(s.feeNotice || '');
+        setRequirePaymentFor(s.requirePaymentFor || ['student', 'parent', 'institution']);
+        setGateway(resSettings.gateway || { environment: s.environment || 'PRODUCTION' });
+        setStats(resSettings.stats || s.stats || {});
+        setPlans(s.plans || []);
+        setDuplicateAlerts(s.duplicateAlerts || []);
       }
 
       setRecentBookings(bookingsList || []);
@@ -176,6 +188,27 @@ export default function AdminPaymentsPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleSavePlan = async (plan) => {
+    setSavingPlanId(plan._id);
+    try {
+      await updateAdminSubscriptionPlan(plan._id, {
+        price: Number(plan.price),
+        sessionsCount: Number(plan.sessionsCount),
+        durationDays: Number(plan.durationDays),
+        isActive: Boolean(plan.isActive),
+      });
+      setFeedback({
+        type: 'success',
+        message: `Updated "${plan.name}" (${plan.sessionsCount} sessions • ₹${plan.price})!`
+      });
+      await fetchData();
+    } catch (err) {
+      setFeedback({ type: 'error', message: err.message || 'Failed to update subscription plan' });
+    } finally {
+      setSavingPlanId(null);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -212,6 +245,136 @@ export default function AdminPaymentsPage() {
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
           )}
           <span className="text-sm font-medium">{feedback.message}</span>
+        </div>
+      )}
+
+      {/* Duplicate Payment Security Alert Banner (Shown if any duplicate/held order is flagged) */}
+      {duplicateAlerts.length > 0 && (
+        <div className="bg-red-50 border-2 border-red-300 rounded-xl p-5 space-y-2">
+          <div className="flex items-center gap-2 text-red-800 font-bold text-sm">
+            <AlertCircle className="w-5 h-5" />
+            <span>Duplicate / Held Payment Alert ({duplicateAlerts.length})</span>
+          </div>
+          <p className="text-xs text-red-700">
+            Our anti-duplicate payment engine prevented double-charging or state corruption on the following transactions:
+          </p>
+          <div className="space-y-1.5 pt-1">
+            {duplicateAlerts.map((alertTx) => (
+              <div key={alertTx._id} className="text-xs bg-white p-2.5 rounded border border-red-200 flex justify-between">
+                <span>
+                  <strong>{alertTx.customerName}</strong> ({alertTx.customerPhone}) • Order: <code className="font-mono">{alertTx.cashfreeOrderId}</code>
+                </span>
+                <span className="font-bold text-red-700">
+                  ₹{alertTx.paidAmount} • {alertTx.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Subscription & Multi-Session Plans Manager */}
+      {plans.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-4">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">
+                Subscription &amp; Multi-Factor Booking Plans
+              </h2>
+              <p className="text-xs text-gray-500">
+                Configure pricing and session credits for Single Sessions, Monthly Plans (e.g. 4 Sessions/Month), and 90-Day Packs.
+              </p>
+            </div>
+            <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700">
+              {stats.totalActiveSubscriptions || 0} Active Subscribers
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {plans.map((plan, idx) => (
+              <div key={plan._id} className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50/50">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono uppercase font-bold text-[#1e3a5f]">
+                    {plan.code}
+                  </span>
+                  <label className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(plan.isActive)}
+                      onChange={(e) => {
+                        const updated = [...plans];
+                        updated[idx] = { ...plan, isActive: e.target.checked };
+                        setPlans(updated);
+                      }}
+                      className="rounded border-gray-300 text-emerald-600"
+                    />
+                    <span>Active</span>
+                  </label>
+                </div>
+                <p className="font-bold text-gray-900 text-sm">{plan.name}</p>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="block text-[10px] font-semibold uppercase text-gray-500 mb-1">
+                      Price (₹)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={plan.price}
+                      onChange={(e) => {
+                        const updated = [...plans];
+                        updated[idx] = { ...plan, price: e.target.value };
+                        setPlans(updated);
+                      }}
+                      className="w-full px-2.5 py-1.5 text-sm font-bold border border-gray-300 rounded-lg bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold uppercase text-gray-500 mb-1">
+                      Sessions
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={plan.sessionsCount}
+                      onChange={(e) => {
+                        const updated = [...plans];
+                        updated[idx] = { ...plan, sessionsCount: e.target.value };
+                        setPlans(updated);
+                      }}
+                      className="w-full px-2.5 py-1.5 text-sm font-bold border border-gray-300 rounded-lg bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold uppercase text-gray-500 mb-1">
+                      Days Valid
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={plan.durationDays}
+                      onChange={(e) => {
+                        const updated = [...plans];
+                        updated[idx] = { ...plan, durationDays: e.target.value };
+                        setPlans(updated);
+                      }}
+                      className="w-full px-2.5 py-1.5 text-sm font-bold border border-gray-300 rounded-lg bg-white"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={savingPlanId === plan._id}
+                  onClick={() => handleSavePlan(plan)}
+                  className="w-full py-2 px-3 rounded-lg bg-[#1e3a5f] hover:bg-[#162b47] text-white text-xs font-semibold transition-colors disabled:opacity-50"
+                >
+                  {savingPlanId === plan._id ? 'Saving Plan...' : 'Save Plan Changes'}
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

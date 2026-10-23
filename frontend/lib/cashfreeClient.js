@@ -68,3 +68,18 @@ export async function launchCashfreeCheckout({
     });
   });
 }
+
+/**
+ * Convenience wrapper used by booking & subscription pages
+ */
+export async function openCashfreeCheckout(paymentSessionId, environment = 'PRODUCTION') {
+  if (typeof paymentSessionId === 'object' && paymentSessionId !== null) {
+    return launchCashfreeCheckout(paymentSessionId);
+  }
+  return launchCashfreeCheckout({
+    paymentSessionId,
+    mode: String(environment || 'PRODUCTION').toLowerCase() === 'sandbox' ? 'sandbox' : 'production',
+    redirectTarget: '_self'
+  });
+}
+

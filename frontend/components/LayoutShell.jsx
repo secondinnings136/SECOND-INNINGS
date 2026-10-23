@@ -5,6 +5,7 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import WhatsAppButton from './WhatsAppButton';
 import FluidBlurIntro from './FluidBlurIntro';
+import { UserAuthProvider } from '../context/UserAuthContext';
 
 export default function LayoutShell({ children }) {
   const pathname = usePathname();
@@ -15,14 +16,16 @@ export default function LayoutShell({ children }) {
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col">
-      <FluidBlurIntro />
-      <Navbar />
-      <main className="flex-grow">
-        {children}
-      </main>
-      <Footer />
-      <WhatsAppButton />
-    </div>
+    <UserAuthProvider>
+      <div className="flex min-h-[100dvh] flex-col">
+        <FluidBlurIntro />
+        <Navbar />
+        <main className="flex-grow">
+          {children}
+        </main>
+        <Footer />
+        <WhatsAppButton />
+      </div>
+    </UserAuthProvider>
   );
 }

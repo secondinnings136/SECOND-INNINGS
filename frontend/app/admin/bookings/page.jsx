@@ -56,6 +56,7 @@ export default function BookingsPage() {
   const [editForm, setEditForm] = useState({
     status: '', 
     notes: '', 
+    sharedNotes: '',
     followUpDate: '', 
     actionAgreed: '', 
     actionStatus: '', 
@@ -86,6 +87,7 @@ export default function BookingsPage() {
     setEditForm({
       status: row.status || 'pending',
       notes: row.notes || '',
+      sharedNotes: row.sharedNotes || '',
       followUpDate: row.followUpDate ? new Date(row.followUpDate).toISOString().split('T')[0] : '',
       actionAgreed: row.actionAgreed || '',
       actionStatus: row.actionStatus || 'pending',
@@ -181,14 +183,27 @@ export default function BookingsPage() {
   const columns = [
     { 
       key: 'name', 
-      label: 'Name',
+      label: 'Name & Session #',
       render: (val, row) => (
         <div>
-          <span className="font-semibold text-gray-900 block">{val}</span>
+          <div className="flex items-center gap-1.5">
+            <span className="font-semibold text-gray-900">{val}</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-bold">
+              #{row.sessionNumber || 1}
+            </span>
+            {row.participantTotalSessions > 1 && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 font-semibold">
+                {row.participantTotalSessions} Sessions
+              </span>
+            )}
+          </div>
           {row.isUnder18 ? (
             <span className="inline-block text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-medium">Under 18</span>
           ) : (
-            <span className="text-[11px] text-gray-500">{row.age ? `${row.age} yrs` : ''}</span>
+            <span className="text-[11px] text-gray-500">
+              {row.age ? `${row.age} yrs` : ''}
+              {row.bookingMode === 'subscription_credit' ? ' • Subscription Credit' : ''}
+            </span>
           )}
         </div>
       )
@@ -591,6 +606,19 @@ export default function BookingsPage() {
 
                 <div className="col-span-2">
                   <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                    Shared Summary Notes (Visible to Student on their Mentee Dashboard)
+                  </label>
+                  <textarea 
+                    value={editForm.sharedNotes} 
+                    onChange={(e) => setEditForm({...editForm, sharedNotes: e.target.value})}
+                    placeholder="Key perspectives or summary points to share with the student on their dashboard..."
+                    className="w-full border-gray-300 rounded-md shadow-sm p-2 border focus:border-[#2E4052] outline-none text-sm bg-white" 
+                    rows="2"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
                     Internal Notes (Deepak Sir&apos;s Private Observations)
                   </label>
                   <textarea 
@@ -603,6 +631,49 @@ export default function BookingsPage() {
                 </div>
               </div>
             </div>
+
+            {/* Student's 7-Day Reflection & Past Session History */}
+            {selectedBooking.studentReflection && (
+              <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-4 space-y-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 block">
+                  Student&apos;s 7-Day Progress Reflection (Submitted from Dashboard)
+                </span>
+                <p className="text-sm text-gray-900 whitespace-pre-wrap">
+                  {selectedBooking.studentReflection}
+                </p>
+              </div>
+            )}
+
+            {Array.isArray(selectedBooking.participantHistory) && selectedBooking.participantHistory.length > 0 && (
+              <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-3 shadow-sm">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <h3 className="font-semibold text-gray-900 text-sm">
+                    Other Sessions with {selectedBooking.name} ({selectedBooking.participantHistory.length})
+                  </h3>
+                  <span className="text-xs text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full font-semibold">
+                    Returning Mentee
+                  </span>
+                </div>
+                <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+                  {selectedBooking.participantHistory.map((h) => (
+                    <div key={h._id} className="p-3 rounded-lg bg-gray-50 border border-gray-200 text-xs space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-gray-900">
+                          Session #{h.sessionNumber || 1} • {new Date(h.createdAt).toLocaleDateString()}
+                        </span>
+                        <span className="uppercase font-semibold text-gray-600">{h.status}</span>
+                      </div>
+                      <p className="text-gray-700"><strong>Topic:</strong> {h.topic || 'N/A'}</p>
+                      {h.actionAgreed && (
+                        <p className="text-emerald-800">
+                          <strong>7-Day Action ({h.actionStatus}):</strong> {h.actionAgreed}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </Modal>

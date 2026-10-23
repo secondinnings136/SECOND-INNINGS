@@ -1,87 +1,79 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const cors = require('cors');
 const helmet = require('helmet');
+const cors = require('cors');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
+const { mongoSanitizeMiddleware } = require('./middleware/security');
+const { router: subscriptionsRouter } = require('./routes/subscriptions');
 
-// Load env vars
+// Load environment variables
 dotenv.config();
 
-// Connect to database
+// Connect to MongoDB
 connectDB();
 
 const app = express();
 
-// Middleware
-app.use(helmet());
+// Trust proxy for accurate IP rate limiting behind Render / Cloudflare / Vercel
+app.set('trust proxy', 1);
 
-// Comprehensive CORS configuration supporting apex domain, www subdomain, vercel previews, and local dev
+// Security Middleware
+app.use(
+  helmet({
+    crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' } // Allows Google OAuth popup window
+  })
+);
+
+// CORS configuration - allow production domain, Vercel preview URLs, and localhost
 const allowedOrigins = [
   'https://second-innings.in',
   'https://www.second-innings.in',
+  'https://second-innings-indol.vercel.app',
   'http://localhost:3000',
   'http://localhost:3001',
-];
+  process.env.FRONTEND_URL
+].filter(Boolean);
 
-if (process.env.FRONTEND_URL) {
-  process.env.FRONTEND_URL.split(',').forEach(o => {
-    const trimmed = o.trim();
-    if (trimmed && !allowedOrigins.includes(trimmed)) {
-      allowedOrigins.push(trimmed);
-    }
-  });
-}
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+        return callback(null, true);
+      }
+      return callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true
+  })
+);
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    // Allow non-browser requests (Postman, server-to-server, curl)
-    if (!origin) return callback(null, true);
-
-    const isExplicitlyAllowed = allowedOrigins.includes(origin);
-    const isDomainMatch = /^https:\/\/([a-zA-Z0-9-]+\.)?second-innings\.in$/.test(origin);
-    const isVercelPreview = /^https:\/\/second-innings[a-zA-Z0-9-]*\.vercel\.app$/.test(origin);
-    const isLocalhost = /^http:\/\/localhost:\d+$/.test(origin);
-
-    if (isExplicitlyAllowed || isDomainMatch || isVercelPreview || isLocalhost) {
-      return callback(null, true);
-    }
-
-    // If FRONTEND_URL is set to wildcard
-    if (process.env.FRONTEND_URL === '*') {
-      return callback(null, true);
-    }
-
-    console.warn(`[CORS] Denied request from origin: ${origin}`);
-    return callback(null, false);
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-  optionsSuccessStatus: 200 // For legacy browsers
-};
-
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
-
-app.use(express.json());
+// Logging Middleware
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
+} else {
+  app.use(morgan('combined'));
 }
 
-// Ensure database is connected on serverless invocations
-app.use(async (req, res, next) => {
-  await connectDB();
-  next();
-});
+// Body Parser with Raw Body Capture (Required for cryptographic Cashfree Webhook HMAC-SHA256 verification)
+app.use(
+  express.json({
+    limit: '100kb',
+    verify: (req, res, buf) => {
+      if (buf && buf.length) {
+        req.rawBody = buf.toString('utf8');
+      }
+    }
+  })
+);
 
-// Health Check
-app.get('/', (req, res) => {
-  res.status(200).json({ status: 'ok', service: 'Second Innings API' });
-});
+// Strip NoSQL injection operators ($gt, $ne, etc.) from body, query, and params
+app.use(mongoSanitizeMiddleware);
 
-// Routes
+// Mount Routes
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/subscriptions', subscriptionsRouter);
 app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/contact', require('./routes/contact'));
 app.use('/api/institutions', require('./routes/institutions'));
@@ -89,19 +81,26 @@ app.use('/api/opportunities', require('./routes/opportunities'));
 app.use('/api/resources', require('./routes/resources'));
 app.use('/api/testimonials', require('./routes/testimonials'));
 app.use('/api/newsletter', require('./routes/newsletter'));
+app.use('/api/admin', require('./routes/admin'));
 app.use('/api/support', require('./routes/support'));
 app.use('/api/payment', require('./routes/payment'));
-app.use('/api/admin', require('./routes/admin'));
 
-// Error Handler Middleware
+// Health Check Route
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'ok', service: 'Second Innings API', version: '2.0.0' });
+});
+
+// Global Error Handler
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-  });
-}
+const server = app.listen(PORT, () => {
+  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+});
 
-module.exports = app;
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.error(`Error: ${err.message}`);
+  server.close(() => process.exit(1));
+});

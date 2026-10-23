@@ -41,6 +41,22 @@ export const getBooking = async (id) => {
 export const createBooking = (data) => adminFetch('/bookings', { method: 'POST', body: JSON.stringify(data) });
 export const updateBooking = (id, data) => adminFetch(`/bookings/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
 
+// Users & Subscriptions (Admin)
+export const getAdminUsers = async () => {
+  const res = await adminFetch('/auth/admin/users');
+  return res.data || [];
+};
+export const getAdminSubscriptions = async () => {
+  const res = await adminFetch('/subscriptions/admin/all');
+  return res.data || [];
+};
+export const getAdminSubscriptionPlans = async () => {
+  const res = await adminFetch('/subscriptions/plans?all=true');
+  return res.data || [];
+};
+export const updateAdminSubscriptionPlan = (id, data) =>
+  adminFetch(`/subscriptions/plans/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+
 // Contacts
 export const getContacts = async () => {
   const res = await adminFetch('/contact');

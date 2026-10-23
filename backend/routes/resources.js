@@ -1,17 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const Resource = require('../models/Resource');
+const { protectAdmin, optionalAdmin } = require('../middleware/auth');
 
-// GET /api/resources - Get resources (supports category filter, all=true for admin)
-router.get('/', async (req, res, next) => {
+// GET /api/resources - Get resources (supports category filter; all=true only for Admin)
+router.get('/', optionalAdmin, async (req, res, next) => {
   try {
     const { category, all, includeUnpublished } = req.query;
     const query = {};
-    
-    if (all !== 'true' && includeUnpublished !== 'true') {
+
+    const isAdminRequest = Boolean(req.admin) && (all === 'true' || includeUnpublished === 'true');
+    if (!isAdminRequest) {
       query.isPublished = true;
     }
-    
+
     if (category) query.category = category;
 
     const resources = await Resource.find(query).sort({ createdAt: -1 });
@@ -21,8 +23,8 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-// GET /api/resources/id/:id - Get single resource by ID (admin/edit)
-router.get('/id/:id', async (req, res, next) => {
+// GET /api/resources/id/:id - Get single resource by ID (Admin Only)
+router.get('/id/:id', protectAdmin, async (req, res, next) => {
   try {
     const resource = await Resource.findById(req.params.id);
     if (!resource) {
@@ -34,7 +36,7 @@ router.get('/id/:id', async (req, res, next) => {
   }
 });
 
-// GET /api/resources/:slug - Get single resource by slug (public)
+// GET /api/resources/:slug - Get single resource by slug (Public)
 router.get('/:slug', async (req, res, next) => {
   try {
     const resource = await Resource.findOne({ slug: req.params.slug, isPublished: true });
@@ -47,8 +49,8 @@ router.get('/:slug', async (req, res, next) => {
   }
 });
 
-// POST /api/resources - Create resource
-router.post('/', async (req, res, next) => {
+// POST /api/resources - Create resource (Admin Only)
+router.post('/', protectAdmin, async (req, res, next) => {
   try {
     const resource = await Resource.create(req.body);
     res.status(201).json({ success: true, data: resource });
@@ -57,8 +59,8 @@ router.post('/', async (req, res, next) => {
   }
 });
 
-// PUT /api/resources/:id - Update resource
-router.put('/:id', async (req, res, next) => {
+// PUT /api/resources/:id - Update resource (Admin Only)
+router.put('/:id', protectAdmin, async (req, res, next) => {
   try {
     const resource = await Resource.findByIdAndUpdate(
       req.params.id,
@@ -74,8 +76,8 @@ router.put('/:id', async (req, res, next) => {
   }
 });
 
-// DELETE /api/resources/:id - Delete resource
-router.delete('/:id', async (req, res, next) => {
+// DELETE /api/resources/:id - Delete resource (Admin Only)
+router.delete('/:id', protectAdmin, async (req, res, next) => {
   try {
     const resource = await Resource.findByIdAndDelete(req.params.id);
     if (!resource) {
