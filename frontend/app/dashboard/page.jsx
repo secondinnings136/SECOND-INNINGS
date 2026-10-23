@@ -181,11 +181,8 @@ export default function MenteeDashboardPage() {
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-terracotta">
-                    Mentee Account
-                  </span>
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-sage/15 text-sage font-medium">
-                    1-Time Profile Active
+                  <span className="font-mono text-[11px] uppercase tracking-widest text-terracotta font-semibold">
+                    {user.userType === 'parent' ? 'Parent / Guardian' : 'Student'}
                   </span>
                 </div>
                 <h1 className="font-serif text-3xl md:text-4xl text-ink mt-1">

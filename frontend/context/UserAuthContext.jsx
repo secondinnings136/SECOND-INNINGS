@@ -7,6 +7,7 @@ import {
   removeUserToken,
   getCurrentUserProfile,
   googleAuthLogin,
+  directEmailLogin,
   sendEmailVerificationOtp,
   verifyEmailVerificationOtp,
   loginUserAccount,
@@ -80,6 +81,12 @@ export function UserAuthProvider({ children }) {
     return res;
   };
 
+  const directLoginWithEmail = async ({ email, name }) => {
+    const res = await directEmailLogin({ email, name });
+    applyAuthPayload(res);
+    return res;
+  };
+
   const requestEmailOtp = async ({ email, name }) => {
     return await sendEmailVerificationOtp({ email, name });
   };
@@ -131,6 +138,7 @@ export function UserAuthProvider({ children }) {
         isAuthenticated: Boolean(user),
         isOnboarded: Boolean(user?.onboardingCompleted),
         loginWithGoogle,
+        directLoginWithEmail,
         requestEmailOtp,
         verifyEmailOtpAndLogin,
         loginWithEmail,

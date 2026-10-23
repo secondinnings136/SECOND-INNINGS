@@ -208,6 +208,58 @@ router.post('/google', authLimiter, async (req, res, next) => {
   }
 });
 
+// @route   POST /api/auth/email/direct-login
+// @desc    Direct instant sign-in or sign-up with Email (Email OTP verification turned off)
+// @access  Public
+router.post('/email/direct-login', authLimiter, async (req, res, next) => {
+  try {
+    const { email, name } = req.body;
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+
+    if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please enter a valid email address.'
+      });
+    }
+
+    let user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+      const cleanName = String(name || '').trim() || normalizedEmail.split('@')[0];
+      user = await User.create({
+        name: cleanName,
+        email: normalizedEmail,
+        authProvider: 'email',
+        onboardingCompleted: false,
+        lastLoginAt: new Date()
+      });
+    } else {
+      if (name && String(name).trim() && (!user.name || user.name === 'Participant')) {
+        user.name = String(name).trim();
+      }
+      user.lastLoginAt = new Date();
+      await user.save();
+    }
+
+    await linkHistoricalBookings(user);
+    const subSummary = await getUserSubscriptionSummary(user._id);
+    const token = generateUserToken(user._id);
+
+    const userObj = user.toObject();
+    delete userObj.passwordHash;
+
+    res.status(200).json({
+      success: true,
+      token,
+      user: userObj,
+      ...subSummary
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // @route   POST /api/auth/email/send-otp
 // @desc    Send 6-digit Email OTP verification code for email login/signup
 // @access  Public (Rate-limited)

@@ -27,19 +27,13 @@ function LoginContent() {
     isAuthenticated,
     isOnboarded,
     loginWithGoogle,
-    requestEmailOtp,
-    verifyEmailOtpAndLogin
+    directLoginWithEmail
   } = useUserAuth();
 
-  const [step, setStep] = useState('email'); // 'email' | 'otp'
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
-  const [cooldown, setCooldown] = useState(0);
-  const [devOtpHint, setDevOtpHint] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [infoMsg, setInfoMsg] = useState('');
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -50,14 +44,6 @@ function LoginContent() {
       }
     }
   }, [isAuthenticated, isOnboarded, user, router, nextPath]);
-
-  useEffect(() => {
-    if (cooldown <= 0) return;
-    const timer = setInterval(() => {
-      setCooldown((prev) => Math.max(0, prev - 1));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [cooldown]);
 
   const handleGoogleSuccess = async ({ credential, accessToken }) => {
     setError('');
@@ -76,42 +62,24 @@ function LoginContent() {
     }
   };
 
-  const handleSendOtp = async (e) => {
+  const handleEmailLogin = async (e) => {
     e?.preventDefault();
     setError('');
-    setInfoMsg('');
-    setDevOtpHint('');
-    setSubmitting(true);
-
-    try {
-      const res = await requestEmailOtp({ email, name });
-      setStep('otp');
-      setCooldown(45);
-      setInfoMsg(res.message || `6-digit verification code sent to ${email}`);
-      if (res.devOtpPreview) {
-        setDevOtpHint(res.devOtpPreview);
-      }
-    } catch (err) {
-      setError(err.message || 'Could not send verification OTP. Please check your email.');
-    } finally {
-      setSubmitting(false);
+    if (!email || !email.includes('@')) {
+      setError('Please enter a valid email address.');
+      return;
     }
-  };
-
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
-    setError('');
     setSubmitting(true);
 
     try {
-      const res = await verifyEmailOtpAndLogin({ email, otp, name });
+      const res = await directLoginWithEmail({ email, name });
       if (!res.user?.onboardingCompleted) {
         router.push(`/onboarding?next=${encodeURIComponent(nextPath)}`);
       } else {
         router.push(nextPath);
       }
     } catch (err) {
-      setError(err.message || 'Invalid verification code.');
+      setError(err.message || 'Could not sign in with this email.');
     } finally {
       setSubmitting(false);
     }
@@ -193,7 +161,7 @@ function LoginContent() {
               <div className="relative flex py-2 items-center mb-6">
                 <div className="flex-grow border-t border-line"></div>
                 <span className="flex-shrink mx-3 text-[11px] font-mono uppercase tracking-widest text-muted">
-                  Or continue with Email OTP
+                  Or continue with Email
                 </span>
                 <div className="flex-grow border-t border-line"></div>
               </div>
@@ -204,131 +172,52 @@ function LoginContent() {
                 </div>
               )}
 
-              {infoMsg && (
-                <div className="mb-5 p-3.5 rounded-xl bg-sprout/10 border border-sprout/30 text-sprout text-xs font-medium">
-                  {infoMsg}
-                  {devOtpHint && (
-                    <span className="block mt-1 font-mono font-bold text-ink">
-                      Local Dev OTP Code: {devOtpHint}
-                    </span>
-                  )}
+              <form onSubmit={handleEmailLogin} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-mono uppercase tracking-wider text-ink-2 mb-1.5">
+                    Your Name (Optional if returning)
+                  </label>
+                  <div className="relative">
+                    <UserIcon className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="e.g., Aarav Sharma"
+                      className="field pl-10"
+                    />
+                  </div>
                 </div>
-              )}
 
-              {step === 'email' ? (
-                <form onSubmit={handleSendOtp} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-mono uppercase tracking-wider text-ink-2 mb-1.5">
-                      Your Name (Optional if returning)
-                    </label>
-                    <div className="relative">
-                      <UserIcon className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="e.g., Aarav Sharma"
-                        className="field pl-10"
-                      />
-                    </div>
+                <div>
+                  <label className="block text-xs font-mono uppercase tracking-wider text-ink-2 mb-1.5">
+                    Email Address <span className="text-signal">*</span>
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      id="auth-email-input"
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="yourname@gmail.com"
+                      className="field pl-10"
+                    />
                   </div>
+                </div>
 
-                  <div>
-                    <label className="block text-xs font-mono uppercase tracking-wider text-ink-2 mb-1.5">
-                      Email Address <span className="text-signal">*</span>
-                    </label>
-                    <div className="relative">
-                      <Mail className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        id="auth-email-input"
-                        type="email"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="yourname@gmail.com"
-                        className="field pl-10"
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="btn-editorial w-full justify-center py-3.5 text-sm disabled:opacity-50"
-                  >
-                    <span>
-                      {submitting ? 'Sending 6-Digit OTP...' : 'Send Verification OTP to Email'}
-                    </span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </form>
-              ) : (
-                <form onSubmit={handleVerifyOtp} className="space-y-4">
-                  <div className="flex items-center justify-between text-xs text-muted bg-paper-2 p-3 rounded-xl border border-line">
-                    <span>
-                      OTP sent to <strong className="text-ink">{email}</strong>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStep('email');
-                        setOtp('');
-                        setError('');
-                        setInfoMsg('');
-                      }}
-                      className="text-signal font-semibold hover:underline"
-                    >
-                      Change Email
-                    </button>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-mono uppercase tracking-wider text-ink-2 mb-1.5">
-                      Enter 6-Digit Verification OTP <span className="text-signal">*</span>
-                    </label>
-                    <div className="relative">
-                      <KeyRound className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        pattern="\d{6}"
-                        maxLength={6}
-                        required
-                        autoFocus
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        placeholder="000000"
-                        className="field pl-10 font-mono text-lg tracking-[0.35em] font-bold"
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={submitting || otp.length !== 6}
-                    className="btn-editorial w-full justify-center py-3.5 text-sm disabled:opacity-50"
-                  >
-                    <span>{submitting ? 'Verifying OTP...' : 'Verify OTP & Continue'}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-
-                  <div className="text-center pt-1">
-                    <button
-                      type="button"
-                      disabled={cooldown > 0 || submitting}
-                      onClick={handleSendOtp}
-                      className="inline-flex items-center gap-1.5 text-xs font-medium text-muted hover:text-ink disabled:opacity-50"
-                    >
-                      <RefreshCw className="w-3.5 h-3.5" />
-                      <span>
-                        {cooldown > 0
-                          ? `Resend OTP in ${cooldown}s`
-                          : 'Resend Verification OTP'}
-                      </span>
-                    </button>
-                  </div>
-                </form>
-              )}
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="btn-editorial w-full justify-center py-3.5 text-sm disabled:opacity-50"
+                >
+                  <span>
+                    {submitting ? 'Signing In...' : 'Continue with Email'}
+                  </span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </form>
 
               <div className="mt-6 pt-4 border-t border-line flex items-center justify-between text-xs text-muted">
                 <span className="flex items-center gap-1.5">

@@ -60,6 +60,13 @@ export async function googleAuthLogin({ credential, accessToken }) {
   });
 }
 
+export async function directEmailLogin({ email, name }) {
+  return fetchAPI('/auth/email/direct-login', {
+    method: 'POST',
+    body: JSON.stringify({ email, name })
+  });
+}
+
 export async function sendEmailVerificationOtp({ email, name }) {
   return fetchAPI('/auth/email/send-otp', {
     method: 'POST',
