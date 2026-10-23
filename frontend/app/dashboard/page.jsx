@@ -170,7 +170,7 @@ export default function MenteeDashboardPage() {
   const latestActionSession = sessions.find((s) => s.actionAgreed && s.status !== 'cancelled');
 
   return (
-    <div className="min-h-screen bg-paper pt-28 pb-24 md:pt-36">
+    <div className="min-h-screen bg-paper pt-36 pb-24 md:pt-44">
       <div className="container-editorial">
         {/* Top Profile & Subscription Banner */}
         <div className="card-editorial bg-white p-6 md:p-9 mb-8">
@@ -395,7 +395,7 @@ export default function MenteeDashboardPage() {
             ) : (
               sessions.map((session, idx) => {
                 const isEditing = editingSessionId === session._id;
-                const displayNum = session.sessionNumber || sessions.length - idx;
+                const displayNum = sessions.length - idx;
 
                 return (
                   <div

@@ -118,7 +118,7 @@ function LoginContent() {
   };
 
   return (
-    <div className="min-h-screen bg-paper pt-28 pb-20 md:pt-36">
+    <div className="min-h-screen bg-paper pt-36 pb-20 md:pt-44">
       <div className="container-editorial max-w-5xl">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           {/* Left Column: Why One-Time Account */}

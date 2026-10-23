@@ -37,17 +37,21 @@ function isConfigured() {
 async function createPaymentOrder({
   orderId,
   orderAmount,
+  amount,
   customerId,
   customerName,
   customerEmail,
   customerPhone,
   returnUrl,
-  notifyUrl
+  notifyUrl,
+  orderNote
 }) {
   const client = getCashfreeClient();
   if (!client) {
     throw new Error('Cashfree credentials are not configured in environment');
   }
+
+  const resolvedAmount = Number(orderAmount ?? amount);
 
   // Format phone: remove any spaces, dashes, +91 if present
   let cleanPhone = (customerPhone || '9999999999').replace(/[^0-9]/g, '');
@@ -82,7 +86,7 @@ async function createPaymentOrder({
 
   const orderRequest = {
     order_id: String(orderId),
-    order_amount: Number(orderAmount),
+    order_amount: resolvedAmount,
     order_currency: 'INR',
     customer_details: {
       customer_id: String(customerId || `CUST_${Date.now()}`),
@@ -91,7 +95,7 @@ async function createPaymentOrder({
       customer_phone: cleanPhone
     },
     order_meta: orderMeta,
-    order_note: 'Second Innings Mentoring Session'
+    order_note: orderNote || 'Second Innings Mentoring Session'
   };
 
   try {
@@ -158,7 +162,10 @@ function verifyWebhookSignature(signature, rawBody, timestamp) {
 module.exports = {
   isConfigured,
   createPaymentOrder,
+  createCashfreeOrder: createPaymentOrder,
   getOrderDetails,
+  fetchCashfreeOrder: getOrderDetails,
   getOrderPayments,
+  fetchCashfreeOrderPayments: getOrderPayments,
   verifyWebhookSignature
 };

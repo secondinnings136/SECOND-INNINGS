@@ -74,6 +74,20 @@ export async function verifyEmailVerificationOtp({ email, otp, name }) {
   });
 }
 
+export async function sendPhoneOtp({ phone }) {
+  return fetchAPI('/auth/phone/send-otp', {
+    method: 'POST',
+    body: JSON.stringify({ phone })
+  });
+}
+
+export async function verifyPhoneOtp({ phone, otp }) {
+  return fetchAPI('/auth/phone/verify-otp', {
+    method: 'POST',
+    body: JSON.stringify({ phone, otp })
+  });
+}
+
 export async function registerUserAccount({ name, email, password }) {
   return fetchAPI('/auth/register', {
     method: 'POST',

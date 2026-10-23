@@ -7,7 +7,9 @@ const Booking = require('../models/Booking');
 const UserSubscription = require('../models/UserSubscription');
 const PaymentTransaction = require('../models/PaymentTransaction');
 const EmailOtp = require('../models/EmailOtp');
+const PhoneOtp = require('../models/PhoneOtp');
 const { sendOtpEmail } = require('../services/emailOtp');
+const { normalizePhone10, sendPhoneOtpSms } = require('../services/phoneOtp');
 const { protectUser, protectAdmin } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/security');
 
@@ -15,6 +17,13 @@ function hashEmailOtp(email, otp) {
   return crypto
     .createHash('sha256')
     .update(`${String(email).toLowerCase().trim()}:${String(otp).trim()}:${process.env.JWT_SECRET}`)
+    .digest('hex');
+}
+
+function hashPhoneOtp(phone10, otp) {
+  return crypto
+    .createHash('sha256')
+    .update(`PHONE:${String(phone10).trim()}:${String(otp).trim()}:${process.env.JWT_SECRET}`)
     .digest('hex');
 }
 
@@ -495,6 +504,149 @@ router.get('/me', protectUser, async (req, res, next) => {
   }
 });
 
+// @route   POST /api/auth/phone/send-otp
+// @desc    Send 6-digit OTP to user's mobile number for Phone Verification
+// @access  Private (User)
+router.post('/phone/send-otp', authLimiter, protectUser, async (req, res, next) => {
+  try {
+    const cleanPhone = normalizePhone10(req.body.phone);
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please enter a valid 10-digit mobile number.'
+      });
+    }
+
+    // Enforce 45-second cooldown per phone number
+    const existingOtp = await PhoneOtp.findOne({ phone: cleanPhone });
+    if (existingOtp && existingOtp.lastSentAt) {
+      const elapsedSec = Math.floor((Date.now() - new Date(existingOtp.lastSentAt).getTime()) / 1000);
+      if (elapsedSec < 45) {
+        return res.status(429).json({
+          success: false,
+          error: `Please wait ${45 - elapsedSec} seconds before requesting another Phone OTP.`,
+          retryAfterSeconds: 45 - elapsedSec
+        });
+      }
+    }
+
+    const otpCode = String(crypto.randomInt(100000, 999999));
+    const otpHash = hashPhoneOtp(cleanPhone, otpCode);
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes validity
+
+    await PhoneOtp.findOneAndUpdate(
+      { phone: cleanPhone },
+      {
+        phone: cleanPhone,
+        otpHash,
+        attempts: 0,
+        lastSentAt: new Date(),
+        expiresAt
+      },
+      { upsert: true, new: true }
+    );
+
+    const smsDelivery = await sendPhoneOtpSms({
+      phone: cleanPhone,
+      otpCode
+    });
+
+    // If no SMS gateway key is configured yet, also send backup notification to user's email if available
+    if (!smsDelivery.delivered && req.user?.email) {
+      try {
+        await sendOtpEmail({
+          email: req.user.email,
+          otp: otpCode,
+          name: req.user.name || ''
+        });
+      } catch (e) {
+        console.warn('Backup email for phone OTP notice:', e.message);
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: smsDelivery.delivered
+        ? `A 6-digit verification OTP has been sent to +91 ${cleanPhone}.`
+        : `6-digit Phone verification code generated for +91 ${cleanPhone}.`,
+      phone: cleanPhone,
+      expiresInSeconds: 600,
+      smsConfigured: smsDelivery.delivered,
+      ...(!smsDelivery.delivered ? { devOtpPreview: otpCode } : {})
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @route   POST /api/auth/phone/verify-otp
+// @desc    Verify 6-digit Phone OTP and mark user's mobile number as verified
+// @access  Private (User)
+router.post('/phone/verify-otp', authLimiter, protectUser, async (req, res, next) => {
+  try {
+    const cleanPhone = normalizePhone10(req.body.phone);
+    const cleanOtp = String(req.body.otp || '').replace(/\s+/g, '');
+
+    if (!cleanPhone || cleanPhone.length !== 10 || !/^\d{6}$/.test(cleanOtp)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please enter a valid 10-digit mobile number and the 6-digit OTP.'
+      });
+    }
+
+    const otpRecord = await PhoneOtp.findOne({ phone: cleanPhone });
+    if (!otpRecord || new Date() > new Date(otpRecord.expiresAt)) {
+      if (otpRecord) await PhoneOtp.deleteOne({ _id: otpRecord._id });
+      return res.status(400).json({
+        success: false,
+        error: 'Phone OTP has expired or was not found. Please request a new OTP.'
+      });
+    }
+
+    if (otpRecord.attempts >= 5) {
+      await PhoneOtp.deleteOne({ _id: otpRecord._id });
+      return res.status(429).json({
+        success: false,
+        error: 'Too many incorrect Phone OTP attempts. Please request a new code.'
+      });
+    }
+
+    const expectedHash = hashPhoneOtp(cleanPhone, cleanOtp);
+    const isMatch = crypto.timingSafeEqual(
+      Buffer.from(expectedHash, 'hex'),
+      Buffer.from(otpRecord.otpHash, 'hex')
+    );
+
+    if (!isMatch) {
+      otpRecord.attempts += 1;
+      await otpRecord.save();
+      return res.status(400).json({
+        success: false,
+        error: `Invalid Phone OTP. ${5 - otpRecord.attempts} attempts remaining.`
+      });
+    }
+
+    // Verified! Delete OTP record immediately to prevent replay
+    await PhoneOtp.deleteOne({ _id: otpRecord._id });
+
+    req.user.phone = cleanPhone;
+    req.user.whatsapp = cleanPhone;
+    req.user.phoneVerified = true;
+    req.user.phoneVerifiedAt = new Date();
+    await req.user.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Mobile number +91 ${cleanPhone} verified successfully!`,
+      phone: cleanPhone,
+      phoneVerified: true,
+      user: req.user
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // @route   PUT /api/auth/onboarding
 // @desc    Complete one-time post-signup onboarding (or update profile)
 // @access  Private (User)
@@ -518,11 +670,19 @@ router.put('/onboarding', protectUser, async (req, res, next) => {
       referredBy
     } = req.body;
 
-    const cleanPhone = String(phone || req.user.phone || '').trim();
-    if (!cleanPhone || cleanPhone.replace(/[^0-9]/g, '').length < 10) {
+    const cleanPhone = normalizePhone10(phone || req.user.phone || '');
+    if (!cleanPhone || cleanPhone.length !== 10) {
       return res.status(400).json({
         success: false,
         error: 'A valid 10-digit mobile / WhatsApp number is required.'
+      });
+    }
+
+    const existingVerifiedPhone = req.user.phoneVerified ? normalizePhone10(req.user.phone) : '';
+    if (!req.user.phoneVerified || existingVerifiedPhone !== cleanPhone) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please verify your mobile number via the 6-digit Phone OTP before saving your profile.'
       });
     }
 

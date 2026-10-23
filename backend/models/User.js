@@ -54,6 +54,13 @@ const userSchema = new mongoose.Schema({
     trim: true,
     index: true
   },
+  phoneVerified: {
+    type: Boolean,
+    default: false
+  },
+  phoneVerifiedAt: {
+    type: Date
+  },
   whatsapp: {
     type: String,
     trim: true
