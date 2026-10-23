@@ -59,7 +59,8 @@ export default function BookPage() {
     activeSubscription,
     sessionCount,
     loginWithGoogle,
-    directLoginWithEmail,
+    loginWithEmail,
+    registerWithEmail,
     refreshUser
   } = useUserAuth();
 
@@ -67,9 +68,11 @@ export default function BookPage() {
   const isSubmittingRef = useRef(false);
   const currentIdempotencyKeyRef = useRef(null);
 
-  // Inline Login State (Shown when user is not logged in)
+  // Inline Login / Register State (Shown when user is not logged in)
+  const [authMode, setAuthMode] = useState('login'); // 'login' | 'register'
   const [authName, setAuthName] = useState('');
   const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
   const [authSubmitting, setAuthSubmitting] = useState(false);
   const [authError, setAuthError] = useState('');
 
@@ -161,24 +164,42 @@ export default function BookPage() {
     }
   };
 
-  const handleDirectEmailLogin = async (e) => {
+  const handleEmailAuthSubmit = async (e) => {
     e?.preventDefault();
     setAuthError('');
     if (!authEmail || !authEmail.includes('@')) {
       setAuthError('Please enter a valid email address.');
       return;
     }
+    if (!authPassword || authPassword.length < 6) {
+      setAuthError('Password must be at least 6 characters.');
+      return;
+    }
+    if (authMode === 'register' && !authName.trim()) {
+      setAuthError('Please enter your full name.');
+      return;
+    }
+
     setAuthSubmitting(true);
     try {
-      const res = await directLoginWithEmail({
-        email: authEmail,
-        name: authName
-      });
+      let res;
+      if (authMode === 'register') {
+        res = await registerWithEmail({
+          name: authName,
+          email: authEmail,
+          password: authPassword
+        });
+      } else {
+        res = await loginWithEmail({
+          email: authEmail,
+          password: authPassword
+        });
+      }
       if (!res.user?.onboardingCompleted) {
         router.push('/onboarding?next=/book');
       }
     } catch (err) {
-      setAuthError(err.message || 'Could not sign in with this email');
+      setAuthError(err.message || (authMode === 'register' ? 'Could not create account' : 'Invalid email or password'));
     } finally {
       setAuthSubmitting(false);
     }
@@ -410,19 +431,51 @@ export default function BookPage() {
 
               <div className="lg:col-span-6">
                 <div className="card-editorial bg-white p-7 md:p-9">
-                  <div className="border-b border-line pb-4 mb-6">
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-signal block">
-                      Mentee Account Verification
-                    </span>
-                    <h3 className="font-serif text-2xl text-ink mt-0.5">
-                      Sign In or Verify Email to Book
-                    </h3>
+                  <div className="flex items-center justify-between border-b border-line pb-4 mb-6">
+                    <div>
+                      <span className="font-mono text-[10px] uppercase tracking-widest text-signal block">
+                        Mentee Account
+                      </span>
+                      <h3 className="font-serif text-2xl text-ink mt-0.5">
+                        {authMode === 'register' ? 'Create Account' : 'Sign In to Book'}
+                      </h3>
+                    </div>
+                    <div className="inline-flex p-1 rounded-xl bg-paper-2 border border-line">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthMode('login');
+                          setAuthError('');
+                        }}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                          authMode === 'login'
+                            ? 'bg-ink text-paper shadow-sm'
+                            : 'text-muted hover:text-ink'
+                        }`}
+                      >
+                        Sign In
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthMode('register');
+                          setAuthError('');
+                        }}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                          authMode === 'register'
+                            ? 'bg-ink text-paper shadow-sm'
+                            : 'text-muted hover:text-ink'
+                        }`}
+                      >
+                        New User
+                      </button>
+                    </div>
                   </div>
 
                   {/* Google 1-Click Login */}
                   <div className="mb-6">
                     <GoogleSignInButton
-                      text="Continue with Google"
+                      text={authMode === 'register' ? 'Sign up with Google' : 'Sign in with Google'}
                       onSuccess={handleGoogleLoginSuccess}
                       onError={(msg) => setAuthError(msg)}
                       onFallbackClick={() => {
@@ -435,7 +488,7 @@ export default function BookPage() {
                   <div className="relative flex py-2 items-center mb-6">
                     <div className="flex-grow border-t border-line"></div>
                     <span className="flex-shrink mx-3 text-[11px] font-mono uppercase tracking-widest text-muted">
-                      Or continue with Email
+                      Or with Email &amp; Password
                     </span>
                     <div className="flex-grow border-t border-line"></div>
                   </div>
@@ -446,20 +499,22 @@ export default function BookPage() {
                     </div>
                   )}
 
-                  <form onSubmit={handleDirectEmailLogin} className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-mono uppercase tracking-wider text-ink-2 mb-1.5">
-                        Your Full Name <span className="text-signal">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={authName}
-                        onChange={(e) => setAuthName(e.target.value)}
-                        placeholder="e.g., Aarav Sharma"
-                        className="field"
-                      />
-                    </div>
+                  <form onSubmit={handleEmailAuthSubmit} className="space-y-4">
+                    {authMode === 'register' && (
+                      <div>
+                        <label className="block text-xs font-mono uppercase tracking-wider text-ink-2 mb-1.5">
+                          Your Full Name <span className="text-signal">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={authName}
+                          onChange={(e) => setAuthName(e.target.value)}
+                          placeholder="e.g., Aarav Sharma"
+                          className="field"
+                        />
+                      </div>
+                    )}
 
                     <div>
                       <label className="block text-xs font-mono uppercase tracking-wider text-ink-2 mb-1.5">
@@ -476,6 +531,26 @@ export default function BookPage() {
                       />
                     </div>
 
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-xs font-mono uppercase tracking-wider text-ink-2">
+                          Password <span className="text-signal">*</span>
+                        </label>
+                        {authMode === 'register' && (
+                          <span className="text-[10px] text-muted font-mono">Min 6 characters</span>
+                        )}
+                      </div>
+                      <input
+                        type="password"
+                        required
+                        minLength={6}
+                        value={authPassword}
+                        onChange={(e) => setAuthPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="field"
+                      />
+                    </div>
+
                     <button
                       type="submit"
                       disabled={authSubmitting}
@@ -483,12 +558,31 @@ export default function BookPage() {
                     >
                       <span>
                         {authSubmitting
-                          ? 'Signing In...'
-                          : 'Continue with Email'}
+                          ? authMode === 'register'
+                            ? 'Creating Account...'
+                            : 'Signing In...'
+                          : authMode === 'register'
+                          ? 'Create Account & Continue'
+                          : 'Sign In to Book'}
                       </span>
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   </form>
+
+                  <div className="mt-4 text-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode(authMode === 'register' ? 'login' : 'register');
+                        setAuthError('');
+                      }}
+                      className="text-xs text-muted hover:text-signal transition-colors font-medium"
+                    >
+                      {authMode === 'register'
+                        ? 'Already have an account? Sign in here →'
+                        : "Don't have an account yet? Create one here →"}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
