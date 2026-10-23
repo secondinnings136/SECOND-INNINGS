@@ -71,6 +71,30 @@ app.use(
 // Strip NoSQL injection operators ($gt, $ne, etc.) from body, query, and params
 app.use(mongoSanitizeMiddleware);
 
+// Middleware to ensure active MongoDB connection before routing
+app.use(async (req, res, next) => {
+  if (req.path === '/' || req.path === '/api/health') return next();
+  if (require('mongoose').connection.readyState !== 1) {
+    try {
+      await connectDB();
+    } catch (e) {
+      console.warn('On-demand DB reconnect error:', e.message);
+    }
+  }
+  next();
+});
+
+// Health Check Route
+app.get('/api/health', (req, res) => {
+  const state = require('mongoose').connection.readyState;
+  const stateMap = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
+  res.status(200).json({
+    status: 'ok',
+    database: stateMap[state] || 'unknown',
+    connected: state === 1
+  });
+});
+
 // Mount Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/subscriptions', subscriptionsRouter);
