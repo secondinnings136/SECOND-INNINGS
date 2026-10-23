@@ -60,6 +60,20 @@ export async function googleAuthLogin({ credential, accessToken }) {
   });
 }
 
+export async function sendEmailVerificationOtp({ email, name }) {
+  return fetchAPI('/auth/email/send-otp', {
+    method: 'POST',
+    body: JSON.stringify({ email, name })
+  });
+}
+
+export async function verifyEmailVerificationOtp({ email, otp, name }) {
+  return fetchAPI('/auth/email/verify-otp', {
+    method: 'POST',
+    body: JSON.stringify({ email, otp, name })
+  });
+}
+
 export async function registerUserAccount({ name, email, password }) {
   return fetchAPI('/auth/register', {
     method: 'POST',

@@ -59,8 +59,8 @@ export default function BookPage() {
     activeSubscription,
     sessionCount,
     loginWithGoogle,
-    loginWithEmail,
-    registerWithEmail,
+    requestEmailOtp,
+    verifyEmailOtpAndLogin,
     refreshUser
   } = useUserAuth();
 
@@ -68,13 +68,16 @@ export default function BookPage() {
   const isSubmittingRef = useRef(false);
   const currentIdempotencyKeyRef = useRef(null);
 
-  // Inline Login / Signup State (Shown when user is not logged in)
-  const [authMode, setAuthMode] = useState('signup'); // 'signup' | 'signin'
+  // Inline Login / Email OTP Verification State (Shown when user is not logged in)
+  const [otpStep, setOtpStep] = useState('email'); // 'email' | 'otp'
   const [authName, setAuthName] = useState('');
   const [authEmail, setAuthEmail] = useState('');
-  const [authPassword, setAuthPassword] = useState('');
+  const [authOtp, setAuthOtp] = useState('');
+  const [otpCooldown, setOtpCooldown] = useState(0);
+  const [devOtpHint, setDevOtpHint] = useState('');
   const [authSubmitting, setAuthSubmitting] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [authInfo, setAuthInfo] = useState('');
 
   // Session-only fields (Shown ONLY after login & 1-time onboarding)
   const [sessionForm, setSessionForm] = useState({
@@ -141,6 +144,14 @@ export default function BookPage() {
     currentIdempotencyKeyRef.current = generateIdempotencyKey('book');
   }, [sessionForm.topic, selectedBookingFactor, sessionForm.preferredDate, sessionForm.preferredTime]);
 
+  useEffect(() => {
+    if (otpCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setOtpCooldown((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [otpCooldown]);
+
   const handleGoogleLoginSuccess = async ({ credential, accessToken }) => {
     setAuthError('');
     setAuthSubmitting(true);
@@ -156,29 +167,45 @@ export default function BookPage() {
     }
   };
 
-  const handleEmailAuthSubmit = async (e) => {
+  const handleSendEmailOtp = async (e) => {
+    e?.preventDefault();
+    setAuthError('');
+    setAuthInfo('');
+    setDevOtpHint('');
+    setAuthSubmitting(true);
+    try {
+      const res = await requestEmailOtp({
+        email: authEmail,
+        name: authName
+      });
+      setOtpStep('otp');
+      setOtpCooldown(45);
+      setAuthInfo(res.message || `6-digit OTP sent to ${authEmail}`);
+      if (res.devOtpPreview) {
+        setDevOtpHint(res.devOtpPreview);
+      }
+    } catch (err) {
+      setAuthError(err.message || 'Could not send verification OTP');
+    } finally {
+      setAuthSubmitting(false);
+    }
+  };
+
+  const handleVerifyEmailOtp = async (e) => {
     e.preventDefault();
     setAuthError('');
     setAuthSubmitting(true);
     try {
-      let res;
-      if (authMode === 'signup') {
-        res = await registerWithEmail({
-          name: authName,
-          email: authEmail,
-          password: authPassword
-        });
-      } else {
-        res = await loginWithEmail({
-          email: authEmail,
-          password: authPassword
-        });
-      }
+      const res = await verifyEmailOtpAndLogin({
+        email: authEmail,
+        otp: authOtp,
+        name: authName
+      });
       if (!res.user?.onboardingCompleted) {
         router.push('/onboarding?next=/book');
       }
     } catch (err) {
-      setAuthError(err.message || 'Authentication failed');
+      setAuthError(err.message || 'Invalid verification code');
     } finally {
       setAuthSubmitting(false);
     }
@@ -410,35 +437,13 @@ export default function BookPage() {
 
               <div className="lg:col-span-6">
                 <div className="card-editorial bg-white p-7 md:p-9">
-                  <div className="flex items-center justify-between border-b border-line pb-4 mb-6">
-                    <div>
-                      <span className="font-mono text-[10px] uppercase tracking-widest text-signal block">
-                        Mentee Account
-                      </span>
-                      <h3 className="font-serif text-2xl text-ink mt-0.5">
-                        {authMode === 'signup' ? 'Sign Up to Book' : 'Welcome Back'}
-                      </h3>
-                    </div>
-                    <div className="flex rounded-full bg-paper-2 p-1 border border-line text-xs font-medium">
-                      <button
-                        type="button"
-                        onClick={() => { setAuthMode('signup'); setAuthError(''); }}
-                        className={`px-3.5 py-1.5 rounded-full transition-all ${
-                          authMode === 'signup' ? 'bg-ink text-paper' : 'text-muted hover:text-ink'
-                        }`}
-                      >
-                        New User
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => { setAuthMode('signin'); setAuthError(''); }}
-                        className={`px-3.5 py-1.5 rounded-full transition-all ${
-                          authMode === 'signin' ? 'bg-ink text-paper' : 'text-muted hover:text-ink'
-                        }`}
-                      >
-                        Sign In
-                      </button>
-                    </div>
+                  <div className="border-b border-line pb-4 mb-6">
+                    <span className="font-mono text-[10px] uppercase tracking-widest text-signal block">
+                      Mentee Account Verification
+                    </span>
+                    <h3 className="font-serif text-2xl text-ink mt-0.5">
+                      Sign In or Verify Email to Book
+                    </h3>
                   </div>
 
                   {/* Google 1-Click Login */}
@@ -457,7 +462,7 @@ export default function BookPage() {
                   <div className="relative flex py-2 items-center mb-6">
                     <div className="flex-grow border-t border-line"></div>
                     <span className="flex-shrink mx-3 text-[11px] font-mono uppercase tracking-widest text-muted">
-                      Or continue with email
+                      Or continue with Email OTP
                     </span>
                     <div className="flex-grow border-t border-line"></div>
                   </div>
@@ -468,68 +473,125 @@ export default function BookPage() {
                     </div>
                   )}
 
-                  <form onSubmit={handleEmailAuthSubmit} className="space-y-4">
-                    {authMode === 'signup' && (
+                  {authInfo && (
+                    <div className="mb-4 p-3.5 rounded-xl bg-sprout/10 border border-sprout/30 text-sprout text-xs font-medium">
+                      {authInfo}
+                      {devOtpHint && (
+                        <span className="block mt-1 font-mono font-bold text-ink">
+                          Local Dev OTP Code: {devOtpHint}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {otpStep === 'email' ? (
+                    <form onSubmit={handleSendEmailOtp} className="space-y-4">
                       <div>
                         <label className="block text-xs font-mono uppercase tracking-wider text-ink-2 mb-1.5">
-                          Your Full Name <span className="text-signal">*</span>
+                          Your Name (Optional if returning)
                         </label>
                         <input
                           type="text"
-                          required
                           value={authName}
                           onChange={(e) => setAuthName(e.target.value)}
                           placeholder="e.g., Aarav Sharma"
                           className="field"
                         />
                       </div>
-                    )}
 
-                    <div>
-                      <label className="block text-xs font-mono uppercase tracking-wider text-ink-2 mb-1.5">
-                        Email Address <span className="text-signal">*</span>
-                      </label>
-                      <input
-                        id="book-auth-email"
-                        type="email"
-                        required
-                        value={authEmail}
-                        onChange={(e) => setAuthEmail(e.target.value)}
-                        placeholder="yourname@gmail.com"
-                        className="field"
-                      />
-                    </div>
+                      <div>
+                        <label className="block text-xs font-mono uppercase tracking-wider text-ink-2 mb-1.5">
+                          Email Address <span className="text-signal">*</span>
+                        </label>
+                        <input
+                          id="book-auth-email"
+                          type="email"
+                          required
+                          value={authEmail}
+                          onChange={(e) => setAuthEmail(e.target.value)}
+                          placeholder="yourname@gmail.com"
+                          className="field"
+                        />
+                      </div>
 
-                    <div>
-                      <label className="block text-xs font-mono uppercase tracking-wider text-ink-2 mb-1.5">
-                        Password <span className="text-signal">*</span>
-                      </label>
-                      <input
-                        type="password"
-                        required
-                        minLength={6}
-                        value={authPassword}
-                        onChange={(e) => setAuthPassword(e.target.value)}
-                        placeholder={authMode === 'signup' ? 'Create a password (min 6 chars)' : 'Enter your password'}
-                        className="field"
-                      />
-                    </div>
+                      <button
+                        type="submit"
+                        disabled={authSubmitting}
+                        className="btn-editorial w-full justify-center py-3.5 text-sm disabled:opacity-50"
+                      >
+                        <span>
+                          {authSubmitting
+                            ? 'Sending 6-Digit OTP...'
+                            : 'Send Verification OTP to Email'}
+                        </span>
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    </form>
+                  ) : (
+                    <form onSubmit={handleVerifyEmailOtp} className="space-y-4">
+                      <div className="flex items-center justify-between text-xs text-muted bg-paper-2 p-3 rounded-xl border border-line">
+                        <span>
+                          OTP sent to <strong className="text-ink">{authEmail}</strong>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOtpStep('email');
+                            setAuthOtp('');
+                            setAuthError('');
+                            setAuthInfo('');
+                          }}
+                          className="text-signal font-semibold hover:underline"
+                        >
+                          Change Email
+                        </button>
+                      </div>
 
-                    <button
-                      type="submit"
-                      disabled={authSubmitting}
-                      className="btn-editorial w-full justify-center py-3.5 text-sm disabled:opacity-50"
-                    >
-                      <span>
-                        {authSubmitting
-                          ? 'Signing in...'
-                          : authMode === 'signup'
-                          ? 'Continue to 1-Time Profile Questions'
-                          : 'Sign In & Continue to Booking'}
-                      </span>
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  </form>
+                      <div>
+                        <label className="block text-xs font-mono uppercase tracking-wider text-ink-2 mb-1.5">
+                          Enter 6-Digit Email OTP <span className="text-signal">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          pattern="\d{6}"
+                          maxLength={6}
+                          required
+                          autoFocus
+                          value={authOtp}
+                          onChange={(e) => setAuthOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          placeholder="000000"
+                          className="field font-mono text-lg tracking-[0.35em] font-bold text-center"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={authSubmitting || authOtp.length !== 6}
+                        className="btn-editorial w-full justify-center py-3.5 text-sm disabled:opacity-50"
+                      >
+                        <span>
+                          {authSubmitting
+                            ? 'Verifying OTP...'
+                            : 'Verify OTP & Continue to Setup'}
+                        </span>
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+
+                      <div className="text-center pt-1">
+                        <button
+                          type="button"
+                          disabled={otpCooldown > 0 || authSubmitting}
+                          onClick={handleSendEmailOtp}
+                          className="text-xs font-medium text-muted hover:text-ink disabled:opacity-50"
+                        >
+                          {otpCooldown > 0
+                            ? `Resend OTP in ${otpCooldown}s`
+                            : 'Resend Verification OTP'}
+                        </button>
+                      </div>
+                    </form>
+                  )}
                 </div>
               </div>
             </div>

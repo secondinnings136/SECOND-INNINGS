@@ -7,6 +7,8 @@ import {
   removeUserToken,
   getCurrentUserProfile,
   googleAuthLogin,
+  sendEmailVerificationOtp,
+  verifyEmailVerificationOtp,
   loginUserAccount,
   registerUserAccount,
   saveUserOnboarding
@@ -78,6 +80,16 @@ export function UserAuthProvider({ children }) {
     return res;
   };
 
+  const requestEmailOtp = async ({ email, name }) => {
+    return await sendEmailVerificationOtp({ email, name });
+  };
+
+  const verifyEmailOtpAndLogin = async ({ email, otp, name }) => {
+    const res = await verifyEmailVerificationOtp({ email, otp, name });
+    applyAuthPayload(res);
+    return res;
+  };
+
   const loginWithEmail = async ({ email, password }) => {
     const res = await loginUserAccount({ email, password });
     applyAuthPayload(res);
@@ -119,6 +131,8 @@ export function UserAuthProvider({ children }) {
         isAuthenticated: Boolean(user),
         isOnboarded: Boolean(user?.onboardingCompleted),
         loginWithGoogle,
+        requestEmailOtp,
+        verifyEmailOtpAndLogin,
         loginWithEmail,
         registerWithEmail,
         completeOnboarding,

@@ -1,12 +1,22 @@
 const express = require('express');
+const crypto = require('crypto');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Booking = require('../models/Booking');
 const UserSubscription = require('../models/UserSubscription');
 const PaymentTransaction = require('../models/PaymentTransaction');
+const EmailOtp = require('../models/EmailOtp');
+const { sendOtpEmail } = require('../services/emailOtp');
 const { protectUser, protectAdmin } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/security');
+
+function hashEmailOtp(email, otp) {
+  return crypto
+    .createHash('sha256')
+    .update(`${String(email).toLowerCase().trim()}:${String(otp).trim()}:${process.env.JWT_SECRET}`)
+    .digest('hex');
+}
 
 /**
  * Generate signed User JWT with explicit tokenType='user' claim
@@ -186,6 +196,168 @@ router.post('/google', authLimiter, async (req, res, next) => {
       success: false,
       error: error.message || 'Google authentication failed'
     });
+  }
+});
+
+// @route   POST /api/auth/email/send-otp
+// @desc    Send 6-digit Email OTP verification code for email login/signup
+// @access  Public (Rate-limited)
+router.post('/email/send-otp', authLimiter, async (req, res, next) => {
+  try {
+    const { email, name } = req.body;
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+
+    if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please enter a valid email address.'
+      });
+    }
+
+    // Enforce 45-second cooldown per email address to prevent OTP spam
+    const existingOtp = await EmailOtp.findOne({ email: normalizedEmail });
+    if (existingOtp && existingOtp.lastSentAt) {
+      const elapsedSec = Math.floor((Date.now() - new Date(existingOtp.lastSentAt).getTime()) / 1000);
+      if (elapsedSec < 45) {
+        return res.status(429).json({
+          success: false,
+          error: `Please wait ${45 - elapsedSec} seconds before requesting another OTP.`,
+          retryAfterSeconds: 45 - elapsedSec
+        });
+      }
+    }
+
+    const otpCode = String(crypto.randomInt(100000, 999999));
+    const otpHash = hashEmailOtp(normalizedEmail, otpCode);
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes validity
+
+    await EmailOtp.findOneAndUpdate(
+      { email: normalizedEmail },
+      {
+        email: normalizedEmail,
+        name: name ? String(name).trim().slice(0, 120) : '',
+        otpHash,
+        attempts: 0,
+        lastSentAt: new Date(),
+        expiresAt
+      },
+      { upsert: true, new: true }
+    );
+
+    const delivery = await sendOtpEmail({
+      email: normalizedEmail,
+      otp: otpCode,
+      name: name ? String(name).trim() : ''
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `A 6-digit verification code has been sent to ${normalizedEmail}.`,
+      email: normalizedEmail,
+      expiresInSeconds: 600,
+      smtpConfigured: delivery.delivered,
+      // Only in local development when SMTP is not yet configured in .env, return devOtpPreview so local testing works
+      ...(process.env.NODE_ENV === 'development' && !delivery.delivered
+        ? { devOtpPreview: otpCode }
+        : {})
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @route   POST /api/auth/email/verify-otp
+// @desc    Verify 6-digit Email OTP and sign in / create Mentee Account
+// @access  Public (Rate-limited)
+router.post('/email/verify-otp', authLimiter, async (req, res, next) => {
+  try {
+    const { email, otp, name, password } = req.body;
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    const cleanOtp = String(otp || '').replace(/\s+/g, '');
+
+    if (!normalizedEmail || !/^\d{6}$/.test(cleanOtp)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please enter the 6-digit verification code sent to your email.'
+      });
+    }
+
+    const otpRecord = await EmailOtp.findOne({ email: normalizedEmail });
+    if (!otpRecord || new Date() > new Date(otpRecord.expiresAt)) {
+      if (otpRecord) await EmailOtp.deleteOne({ _id: otpRecord._id });
+      return res.status(400).json({
+        success: false,
+        error: 'Verification code has expired or was not found. Please request a new OTP.'
+      });
+    }
+
+    if (otpRecord.attempts >= 5) {
+      await EmailOtp.deleteOne({ _id: otpRecord._id });
+      return res.status(429).json({
+        success: false,
+        error: 'Too many incorrect OTP attempts. Please request a new verification code.'
+      });
+    }
+
+    const expectedHash = hashEmailOtp(normalizedEmail, cleanOtp);
+    const isMatch = crypto.timingSafeEqual(
+      Buffer.from(expectedHash, 'hex'),
+      Buffer.from(otpRecord.otpHash, 'hex')
+    );
+
+    if (!isMatch) {
+      otpRecord.attempts += 1;
+      await otpRecord.save();
+      return res.status(400).json({
+        success: false,
+        error: `Invalid verification code. ${5 - otpRecord.attempts} attempts remaining.`
+      });
+    }
+
+    // OTP verified! Delete OTP record immediately so it can never be replayed
+    const savedName = name || otpRecord.name || normalizedEmail.split('@')[0];
+    await EmailOtp.deleteOne({ _id: otpRecord._id });
+
+    let user = await User.findOne({ email: normalizedEmail }).select('+passwordHash');
+
+    if (!user) {
+      user = new User({
+        name: String(savedName).trim(),
+        email: normalizedEmail,
+        authProvider: 'email',
+        onboardingCompleted: false,
+        lastLoginAt: new Date()
+      });
+      if (password && String(password).length >= 6) {
+        await user.setPassword(String(password));
+      }
+      await user.save();
+    } else {
+      if (name && String(name).trim() && !user.name) {
+        user.name = String(name).trim();
+      }
+      if (password && String(password).length >= 6) {
+        await user.setPassword(String(password));
+      }
+      user.lastLoginAt = new Date();
+      await user.save();
+    }
+
+    await linkHistoricalBookings(user);
+    const subSummary = await getUserSubscriptionSummary(user._id);
+    const token = generateUserToken(user._id);
+
+    const userObj = user.toObject();
+    delete userObj.passwordHash;
+
+    res.status(200).json({
+      success: true,
+      token,
+      user: userObj,
+      ...subSummary
+    });
+  } catch (error) {
+    next(error);
   }
 });
 
