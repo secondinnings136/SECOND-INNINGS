@@ -12,8 +12,21 @@ router.post('/', publicFormLimiter, optionalAuth, async (req, res, next) => {
     const isAdminManual = Boolean(req.admin);
     const user = req.user || null;
 
-    // 1. If NOT an Admin manual entry, enforce strict payment bypass check & field whitelisting
+    // 1. If NOT an Admin manual entry, require authenticated & onboarded user + check payment bypass
     if (!isAdminManual) {
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          error: 'Please sign in with Google or Email first to book a mentoring session.'
+        });
+      }
+      if (!user.onboardingCompleted) {
+        return res.status(400).json({
+          success: false,
+          error: 'Please complete your one-time post-login profile setup before booking.'
+        });
+      }
+
       const enabledDoc = await Setting.findOne({ key: 'paymentsEnabled' });
       const paymentsEnabled = enabledDoc ? Boolean(enabledDoc.value) : false;
 

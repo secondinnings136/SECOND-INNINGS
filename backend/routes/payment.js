@@ -368,8 +368,20 @@ router.post('/create-order', paymentLimiter, optionalAuth, async (req, res, next
     const headerIdempKey = req.headers['x-idempotency-key'];
     const rawIdempKey = String(headerIdempKey || bodyIdempKey || '').trim().slice(0, 120);
 
-    // Resolve user identity (from logged-in user token OR bookingData)
+    // Resolve user identity (Sign-in & 1-Time Onboarding required!)
     const user = req.user || null;
+    if (!user && !req.admin) {
+      return res.status(401).json({
+        success: false,
+        error: 'Please sign in to your Second Innings account before booking or making a payment.'
+      });
+    }
+    if (user && !user.onboardingCompleted) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please complete your one-time profile setup right after login before booking.'
+      });
+    }
     const customerName = String(user?.name || bookingData.name || 'Second Innings Participant').trim();
     const customerPhone = String(user?.phone || bookingData.phone || '').trim();
     const customerEmail = String(user?.email || bookingData.email || 'mentoring@second-innings.in').trim().toLowerCase();
