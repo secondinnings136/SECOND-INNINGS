@@ -182,7 +182,7 @@ const jsonLd = {
       '@id': 'https://second-innings.in/#organization',
       name: 'Second Innings',
       url: 'https://second-innings.in',
-      logo: 'https://second-innings.in/logo.png',
+      logo: 'https://second-innings.in/logo.jpg',
       description:
         'A space for young minds aged 16–25, parents, and educational institutions to explore perspectives, clarity, and wider possibilities.',
       founder: {

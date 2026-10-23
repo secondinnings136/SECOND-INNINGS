@@ -40,13 +40,35 @@
 
 @layer components {
   /* Shared container. */
-  .page-x {
+  .page-x,
+  .container-editorial {
     @apply mx-auto w-full max-w-page px-5 md:px-10;
   }
 
+  .section-padding {
+    @apply py-14 md:py-20;
+  }
+
   /* Mono metadata label. */
-  .meta {
-    @apply font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-muted;
+  .meta,
+  .eyebrow {
+    @apply font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-signal;
+  }
+
+  .text-display-lg {
+    @apply text-4xl md:text-6xl leading-[1.06] tracking-[-0.02em];
+  }
+
+  .card-editorial {
+    @apply rounded-2xl border border-line bg-white shadow-sm;
+  }
+
+  .btn-editorial {
+    @apply inline-flex items-center justify-center gap-2.5 rounded-full bg-ink px-6 py-3 text-sm font-medium text-paper transition-all duration-300 ease-editorial hover:bg-ink-2 active:scale-[0.98];
+  }
+
+  .btn-editorial-outline {
+    @apply inline-flex items-center justify-center gap-2.5 rounded-full border border-line bg-paper px-6 py-3 text-sm font-medium text-ink transition-all duration-300 ease-editorial hover:border-ink hover:bg-paper-2 active:scale-[0.98];
   }
 
   /* Editorial body copy. */

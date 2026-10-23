@@ -2,21 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ArrowUpRight, User, Sparkles } from 'lucide-react';
+import { User, Sparkles } from 'lucide-react';
+import { EASE } from './ui/motion';
+import Arrow from './ui/Arrow';
+import Logo from './Logo';
 import { useUserAuth } from '../context/UserAuthContext';
 
 const navLinks = [
-  { name: 'Home', href: '/' },
-  { name: 'About Us', href: '/about' },
-  { name: 'Students', href: '/for-students' },
-  { name: 'Parents', href: '/for-parents' },
-  { name: 'Institutions', href: '/for-institutions' },
-  { name: 'Opportunities', href: '/opportunities' },
-  { name: 'Resources', href: '/resources' },
-  { name: 'Contact', href: '/contact' },
+  { name: 'For Students', path: '/for-students' },
+  { name: 'For Parents', path: '/for-parents' },
+  { name: 'For Institutions', path: '/for-institutions' },
+  { name: 'How It Works', path: '/how-it-works' },
+  { name: 'About Deepak', path: '/about' },
 ];
 
 export default function Navbar() {
@@ -26,200 +25,188 @@ export default function Navbar() {
   const { user, isAuthenticated, remainingCredits } = useUserAuth();
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 24);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Close overlay on route change, lock scroll while open.
+  useEffect(() => setIsOpen(false), [pathname]);
   useEffect(() => {
-    setIsOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = isOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
+  const isActive = (p) => pathname === p || pathname?.startsWith(p + '/');
   const firstName = user?.name ? user.name.split(' ')[0] : 'Account';
 
   return (
     <>
-      <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out-expo ${
-          scrolled
-            ? 'bg-paper/85 backdrop-blur-md border-b border-stone/40 py-3.5'
-            : 'bg-transparent py-5 lg:py-6'
-        }`}
-      >
-        <div className="container-editorial flex items-center justify-between">
-          {/* Brand Lockup */}
-          <Link href="/" className="group flex items-center gap-3">
-            <div className="relative h-10 w-10 md:h-11 md:w-11 overflow-hidden rounded-full border border-stone/40 bg-warm/40 shrink-0">
-              <Image
-                src="/logo.png"
-                alt="Second Innings Logo"
-                fill
-                className="object-contain p-1 transition-transform duration-500 ease-out-expo group-hover:scale-105"
-                priority
-              />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-serif text-xl md:text-2xl tracking-tight text-ink leading-none">
-                Second Innings
-              </span>
-              <span className="hidden sm:block text-[10px] font-mono uppercase tracking-[0.14em] text-ash mt-1">
-                Young Minds · New Perspectives
-              </span>
-            </div>
+      <header className="fixed inset-x-0 top-0 z-nav px-3 pt-3 md:px-6 md:pt-5">
+        <div
+          className={`mx-auto flex max-w-page items-center justify-between gap-4 rounded-full border pl-5 pr-2 py-2 transition-[background-color,border-color] duration-700 ease-editorial ${
+            scrolled || isOpen
+              ? 'border-line bg-paper/80 backdrop-blur-xl'
+              : 'border-transparent bg-transparent'
+          }`}
+        >
+          <Link href="/" className="shrink-0" aria-label="Second Innings home">
+            <Logo size="sm" showTagline={false} />
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden xl:flex items-center gap-6">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className={`relative text-[14px] font-medium transition-colors duration-300 py-1 ${
-                    isActive ? 'text-ink' : 'text-charcoal/70 hover:text-ink'
-                  }`}
-                >
-                  {link.name}
-                  {isActive && (
-                    <motion.span
-                      layoutId="nav-indicator"
-                      className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-terracotta"
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                    />
-                  )}
-                </Link>
-              );
-            })}
+          <nav className="hidden xl:flex items-center gap-1" aria-label="Primary">
+            {navLinks.map((link) => (
+              <Link
+                key={link.path}
+                href={link.path}
+                className={`relative rounded-full px-3 py-2 text-[0.8125rem] transition-colors duration-300 ${
+                  isActive(link.path) ? 'text-ink' : 'text-muted hover:text-ink'
+                }`}
+              >
+                {link.name}
+                {isActive(link.path) && (
+                  <motion.span
+                    layoutId="nav-active"
+                    className="absolute inset-x-3 -bottom-px h-px bg-signal"
+                    transition={{ duration: 0.5, ease: EASE }}
+                  />
+                )}
+              </Link>
+            ))}
           </nav>
 
-          {/* Desktop Account & CTA */}
-          <div className="hidden xl:flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {isAuthenticated ? (
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full border border-stone/60 bg-white/90 hover:border-ink/40 text-ink text-xs font-semibold transition-all shadow-sm"
+                className="hidden sm:inline-flex items-center gap-2 rounded-full border border-line bg-paper/90 hover:border-ink/40 px-3.5 py-1.5 text-[0.78rem] font-medium text-ink transition-colors"
               >
-                <span className="w-6 h-6 rounded-full bg-terracotta/15 text-terracotta flex items-center justify-center font-bold text-[11px]">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-signal/15 text-signal font-bold text-[10px]">
                   {firstName.charAt(0).toUpperCase()}
                 </span>
-                <span>{firstName}&apos;s Dashboard</span>
+                <span>{firstName}</span>
                 {remainingCredits > 0 && (
-                  <span className="px-2 py-0.5 rounded-full bg-sage/15 text-sage font-mono text-[10px] font-bold">
-                    {remainingCredits} {remainingCredits === 1 ? 'Credit' : 'Credits'}
+                  <span className="rounded-full bg-sprout/15 px-2 py-0.5 font-mono text-[10px] font-bold text-sprout">
+                    {remainingCredits} Cr
                   </span>
                 )}
               </Link>
             ) : (
               <Link
                 href="/login"
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold text-charcoal hover:text-ink border border-transparent hover:border-stone/50 transition-all"
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[0.8125rem] font-medium text-muted hover:text-ink transition-colors"
               >
-                <User className="w-3.5 h-3.5 text-terracotta" />
+                <User className="h-3.5 w-3.5 text-signal" />
                 <span>Sign In</span>
               </Link>
             )}
 
             <Link
               href="/book"
-              className="btn-editorial text-xs py-2.5 px-5"
+              className="group hidden sm:inline-flex items-center gap-2.5 rounded-full bg-ink pl-4 pr-1 py-1 text-[0.8125rem] font-medium text-paper transition-[transform,background-color] duration-500 ease-editorial hover:bg-ink-2 active:scale-[0.98]"
             >
-              <span>{isAuthenticated ? 'Book Session' : 'Start a Conversation'}</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
+              {isAuthenticated ? 'Book Session' : 'Start a Conversation'}
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-paper/10 transition-transform duration-500 ease-editorial group-hover:translate-x-0.5">
+                <Arrow className="h-3 w-3" />
+              </span>
             </Link>
-          </div>
 
-          {/* Mobile Menu Trigger */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle Menu"
-            className="xl:hidden flex items-center justify-center w-10 h-10 rounded-full border border-stone/60 text-ink hover:bg-warm transition-colors"
-          >
-            {isOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-          </button>
+            <button
+              type="button"
+              onClick={() => setIsOpen((v) => !v)}
+              aria-label={isOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isOpen}
+              className="xl:hidden relative flex h-10 w-10 items-center justify-center rounded-full border border-line bg-paper transition-transform active:scale-[0.96]"
+            >
+              <span
+                className={`absolute h-px w-4 bg-ink transition-transform duration-500 ease-editorial ${
+                  isOpen ? 'rotate-45' : '-translate-y-[3px]'
+                }`}
+              />
+              <span
+                className={`absolute h-px w-4 bg-ink transition-transform duration-500 ease-editorial ${
+                  isOpen ? '-rotate-45' : 'translate-y-[3px]'
+                }`}
+              />
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* Fullscreen Editorial Mobile Drawer */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            key="overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-40 bg-paper pt-24 pb-10 px-6 flex flex-col justify-between xl:hidden overflow-y-auto"
+            transition={{ duration: 0.5, ease: EASE }}
+            className="fixed inset-0 z-overlay flex flex-col bg-paper/95 backdrop-blur-2xl xl:hidden overflow-y-auto"
           >
-            <div className="container-editorial">
-              <p className="eyebrow mb-6">Navigation</p>
-              <div className="flex flex-col divide-y divide-stone/40">
-                {navLinks.map((link, idx) => {
-                  const isActive = pathname === link.href;
-                  return (
-                    <motion.div
-                      key={link.name}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.04, duration: 0.4 }}
+            <nav className="page-x flex flex-1 flex-col justify-center pt-24 pb-10" aria-label="Mobile">
+              <ul className="border-t border-line">
+                {[
+                  { name: 'Home', path: '/' },
+                  ...navLinks,
+                  { name: 'Contact', path: '/contact' },
+                  isAuthenticated
+                    ? { name: `My Dashboard (${firstName})`, path: '/dashboard' }
+                    : { name: 'Sign In / Create Account', path: '/login' }
+                ].map((link, i) => (
+                  <motion.li
+                    key={link.path}
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    transition={{ duration: 0.6, ease: EASE, delay: 0.06 + i * 0.045 }}
+                    className="border-b border-line"
+                  >
+                    <Link
+                      href={link.path}
+                      onClick={() => setIsOpen(false)}
+                      className="group flex items-baseline justify-between py-3.5"
                     >
-                      <Link
-                        href={link.href}
-                        className={`flex items-center justify-between py-3.5 font-serif text-2xl ${
-                          isActive ? 'text-terracotta italic' : 'text-ink'
+                      <span
+                        className={`font-serif text-[2rem] leading-none tracking-[-0.02em] ${
+                          pathname === link.path ? 'text-signal' : 'text-ink'
                         }`}
                       >
-                        <span>{link.name}</span>
-                        <span className="font-mono text-xs text-ash">0{idx + 1}</span>
-                      </Link>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="container-editorial pt-8 border-t border-stone/40 space-y-3">
-              {isAuthenticated ? (
-                <Link
-                  href="/dashboard"
-                  className="btn-editorial-outline w-full justify-between"
-                >
-                  <span className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-terracotta" />
-                    <span>My Mentee Dashboard ({firstName})</span>
-                  </span>
-                  {remainingCredits > 0 && (
-                    <span className="px-2 py-0.5 rounded-full bg-sage/15 text-sage text-xs font-mono">
-                      {remainingCredits} Credits
-                    </span>
-                  )}
-                </Link>
-              ) : (
-                <Link
-                  href="/login"
-                  className="btn-editorial-outline w-full justify-between"
-                >
-                  <span>Sign In / Create Account</span>
-                  <User className="w-4 h-4" />
-                </Link>
-              )}
-
-              <Link
-                href="/book"
-                className="btn-editorial w-full justify-between"
+                        {link.name}
+                      </span>
+                      <span className="meta">{String(i + 1).padStart(2, '0')}</span>
+                    </Link>
+                  </motion.li>
+                ))}
+              </ul>
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: EASE, delay: 0.5 }}
+                className="mt-8 flex flex-wrap items-center gap-3"
               >
-                <span>{isAuthenticated ? 'Book Next Session' : 'Start a Conversation'}</span>
-                <ArrowUpRight className="w-4 h-4" />
-              </Link>
-            </div>
+                <Link
+                  href="/book"
+                  onClick={() => setIsOpen(false)}
+                  className="group inline-flex items-center gap-3 rounded-full bg-ink pl-6 pr-1.5 py-1.5 font-medium text-paper active:scale-[0.98]"
+                >
+                  {isAuthenticated ? 'Book Next Session' : 'Start a Conversation'}
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-paper/10">
+                    <Arrow className="h-3.5 w-3.5" />
+                  </span>
+                </Link>
+                {isAuthenticated && remainingCredits > 0 && (
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setIsOpen(false)}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-sprout/15 px-4 py-2.5 text-xs font-mono font-bold text-sprout"
+                  >
+                    <Sparkles className="h-3.5 w-3.5" />
+                    <span>{remainingCredits} Credits Active</span>
+                  </Link>
+                )}
+              </motion.div>
+            </nav>
           </motion.div>
         )}
       </AnimatePresence>

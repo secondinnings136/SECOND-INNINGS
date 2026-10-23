@@ -31,6 +31,13 @@ module.exports = {
         sky: { DEFAULT: '#2B6A8F', soft: '#EAF3F8', border: '#B5D8EB', deep: '#1B4D6B' },
         coral: { DEFAULT: '#C85236', soft: '#FBF0EC', border: '#F2C2B5', deep: '#9B3921' },
 
+        // Editorial semantic aliases used across booking, login, onboarding & dashboard
+        terracotta: signal,
+        sage: '#38784E',
+        stone: '#D6D0C2',
+        ash: muted,
+        warm: paper2,
+
         // Legacy names remapped so untouched screens (admin) adopt the new palette.
         'charcoal-blue': ink,
         'golden-pollen': signal,
