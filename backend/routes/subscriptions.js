@@ -4,6 +4,7 @@ const SubscriptionPlan = require('../models/SubscriptionPlan');
 const UserSubscription = require('../models/UserSubscription');
 const Booking = require('../models/Booking');
 const Setting = require('../models/Setting');
+const { sendBookingConfirmationEmails } = require('../services/emailService');
 const { protectUser, protectAdmin, optionalAdmin } = require('../middleware/auth');
 const { computeDedupFingerprint } = require('../middleware/security');
 
@@ -267,11 +268,19 @@ router.post('/book-with-credit', protectUser, async (req, res, next) => {
     }
     await updatedSub.save();
 
+    const emailNotifications = await sendBookingConfirmationEmails(booking, {
+      stage: 'confirmed'
+    });
+
     res.status(201).json({
       success: true,
       message: `Session #${booking.sessionNumber} confirmed using 1 credit from your ${updatedSub.planName}!`,
       data: booking,
-      subscription: updatedSub
+      subscription: updatedSub,
+      emailNotifications: {
+        userNotified: Boolean(emailNotifications.userEmail && emailNotifications.userEmail.sent),
+        adminNotified: Boolean(emailNotifications.adminEmail && emailNotifications.adminEmail.sent)
+      }
     });
   } catch (error) {
     next(error);

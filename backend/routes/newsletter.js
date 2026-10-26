@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Newsletter = require('../models/Newsletter');
+const { sendNewsletterWelcomeEmail } = require('../services/emailService');
 const { protectAdmin } = require('../middleware/auth');
 const { publicFormLimiter } = require('../middleware/security');
 
@@ -39,7 +40,14 @@ router.post('/', publicFormLimiter, async (req, res, next) => {
       email: cleanEmail,
       name: name ? String(name).trim().slice(0, 120) : ''
     });
-    res.status(201).json({ success: true, data: subscriber });
+
+    const emailResult = await sendNewsletterWelcomeEmail(subscriber);
+
+    res.status(201).json({
+      success: true,
+      data: subscriber,
+      emailSent: Boolean(emailResult && emailResult.sent)
+    });
   } catch (error) {
     next(error);
   }

@@ -13,6 +13,7 @@ const Newsletter = require('../models/Newsletter');
 const SupportTicket = require('../models/SupportTicket');
 const User = require('../models/User');
 const UserSubscription = require('../models/UserSubscription');
+const EmailLog = require('../models/EmailLog');
 const { protectAdmin } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/security');
 
@@ -281,5 +282,37 @@ router.post(
     }
   }
 );
+
+// @route   GET /api/admin/email-logs
+// @desc    Inspect recent transactional email logs & delivery metrics
+// @access  Private (Admin)
+router.get('/email-logs', protectAdmin, async (req, res, next) => {
+  try {
+    const limit = Math.min(Number(req.query.limit) || 50, 200);
+    const filter = {};
+    if (req.query.status) filter.status = String(req.query.status);
+    if (req.query.workflow) filter.workflow = String(req.query.workflow);
+
+    const [logs, totalSent, totalFailed, totalPendingDomain] = await Promise.all([
+      EmailLog.find(filter).sort({ createdAt: -1 }).limit(limit).lean(),
+      EmailLog.countDocuments({ status: 'sent' }),
+      EmailLog.countDocuments({ status: 'failed' }),
+      EmailLog.countDocuments({ status: 'skipped_unverified_domain' })
+    ]);
+
+    res.status(200).json({
+      success: true,
+      summary: {
+        sent: totalSent,
+        failed: totalFailed,
+        skippedUnverifiedDomain: totalPendingDomain
+      },
+      count: logs.length,
+      data: logs
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
 module.exports = router;

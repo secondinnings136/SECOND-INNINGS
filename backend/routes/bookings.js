@@ -3,6 +3,11 @@ const router = express.Router();
 const Booking = require('../models/Booking');
 const Setting = require('../models/Setting');
 const UserSubscription = require('../models/UserSubscription');
+const {
+  sendBookingConfirmationEmails,
+  sendBookingStatusUpdateEmail,
+  sendSevenDayFollowUpEmail
+} = require('../services/emailService');
 const { protectAdmin, optionalAuth } = require('../middleware/auth');
 const { publicFormLimiter, computeDedupFingerprint } = require('../middleware/security');
 
@@ -137,7 +142,18 @@ router.post('/', publicFormLimiter, optionalAuth, async (req, res, next) => {
       await user.save();
     }
 
-    res.status(201).json({ success: true, data: booking });
+    const emailNotifications = await sendBookingConfirmationEmails(booking, {
+      stage: booking.status === 'confirmed' ? 'confirmed' : 'created'
+    });
+
+    res.status(201).json({
+      success: true,
+      data: booking,
+      emailNotifications: {
+        userNotified: Boolean(emailNotifications.userEmail && emailNotifications.userEmail.sent),
+        adminNotified: Boolean(emailNotifications.adminEmail && emailNotifications.adminEmail.sent)
+      }
+    });
   } catch (error) {
     next(error);
   }
@@ -273,10 +289,32 @@ router.patch('/:id', protectAdmin, async (req, res, next) => {
       }
     }
 
+    const statusOrSlotChanged =
+      (updates.status !== undefined && updates.status !== existing.status) ||
+      (updates.preferredDate !== undefined &&
+        String(updates.preferredDate || '') !== String(existing.preferredDate || '')) ||
+      (updates.preferredTime !== undefined &&
+        String(updates.preferredTime || '') !== String(existing.preferredTime || ''));
+
+    const followUpNotesChanged =
+      (updates.actionAgreed !== undefined &&
+        String(updates.actionAgreed || '').trim() !== '' &&
+        updates.actionAgreed !== existing.actionAgreed) ||
+      (updates.sharedNotes !== undefined &&
+        String(updates.sharedNotes || '').trim() !== '' &&
+        updates.sharedNotes !== existing.sharedNotes);
+
     const booking = await Booking.findByIdAndUpdate(req.params.id, updates, {
       new: true,
       runValidators: true
     });
+
+    if (statusOrSlotChanged) {
+      await sendBookingStatusUpdateEmail(booking, 'admin_lifecycle_update');
+    }
+    if (followUpNotesChanged) {
+      await sendSevenDayFollowUpEmail(booking);
+    }
 
     res.status(200).json({ success: true, data: booking });
   } catch (error) {

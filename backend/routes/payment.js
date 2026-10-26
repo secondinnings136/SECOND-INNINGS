@@ -20,6 +20,12 @@ const {
   fetchCashfreeOrderPayments,
   verifyWebhookSignature
 } = require('../services/cashfree');
+const {
+  sendPaymentSuccessEmails,
+  sendPaymentFailedEmail,
+  sendBookingConfirmationEmails,
+  sendBookingStatusUpdateEmail
+} = require('../services/emailService');
 
 /**
  * Helper to read payment settings from MongoDB with defaults
@@ -86,6 +92,14 @@ async function reconcileOrderPayment(orderId, verifiedBySource = 'verify_endpoin
     if (failedPayment && booking && booking.paymentStatus === 'pending') {
       booking.paymentStatus = 'failed';
       await booking.save();
+    }
+
+    if (failedPayment && failedPayment.payment_status === 'FAILED') {
+      await sendPaymentFailedEmail({
+        orderId: cleanOrderId,
+        booking,
+        transaction: tx
+      });
     }
 
     return {
@@ -306,6 +320,18 @@ async function reconcileOrderPayment(orderId, verifiedBySource = 'verify_endpoin
     } else {
       booking = await Booking.findById(booking._id).select('+slotUpdateToken');
     }
+  }
+
+  // 7. Dispatch idempotent payment receipt + booking confirmation emails (never blocks or rolls back payment)
+  await sendPaymentSuccessEmails({
+    orderId: cleanOrderId,
+    booking,
+    subscription: activatedSub,
+    transaction: tx
+  });
+
+  if (booking && booking.status === 'confirmed') {
+    await sendBookingConfirmationEmails(booking, { stage: 'confirmed' });
   }
 
   return {
@@ -797,6 +823,8 @@ router.patch('/slot-preference/:bookingId', optionalAuth, async (req, res, next)
     }
 
     await booking.save();
+
+    await sendBookingStatusUpdateEmail(booking, 'slot_preference_saved');
 
     const safeBooking = booking.toObject();
     delete safeBooking.notes;

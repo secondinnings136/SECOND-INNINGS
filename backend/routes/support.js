@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const SupportTicket = require('../models/SupportTicket');
+const { sendSupportTicketEmails } = require('../services/emailService');
 const { protectAdmin } = require('../middleware/auth');
 const { publicFormLimiter } = require('../middleware/security');
 
@@ -39,7 +40,16 @@ router.post('/', publicFormLimiter, async (req, res, next) => {
       status: 'open'
     });
 
-    res.status(201).json({ success: true, data: ticket });
+    const emailNotifications = await sendSupportTicketEmails(ticket);
+
+    res.status(201).json({
+      success: true,
+      data: ticket,
+      emailNotifications: {
+        userConfirmed: Boolean(emailNotifications.userEmail && emailNotifications.userEmail.sent),
+        adminNotified: Boolean(emailNotifications.adminEmail && emailNotifications.adminEmail.sent)
+      }
+    });
   } catch (error) {
     next(error);
   }

@@ -9,6 +9,7 @@ const PaymentTransaction = require('../models/PaymentTransaction');
 const EmailOtp = require('../models/EmailOtp');
 const PhoneOtp = require('../models/PhoneOtp');
 const { sendOtpEmail } = require('../services/emailOtp');
+const { sendWelcomeEmail } = require('../services/emailService');
 const { normalizePhone10, sendPhoneOtpSms, isSmsGatewayConfigured } = require('../services/phoneOtp');
 const { protectUser, protectAdmin } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/security');
@@ -182,6 +183,9 @@ router.post('/google', authLimiter, async (req, res, next) => {
         onboardingCompleted: false,
         lastLoginAt: new Date()
       });
+      sendWelcomeEmail(user).catch((err) =>
+        console.error('[Auth] Welcome email warning:', err.message)
+      );
     } else {
       if (!user.googleId) user.googleId = googleProfile.googleId;
       if (googleProfile.avatar && !user.avatar) user.avatar = googleProfile.avatar;
@@ -316,11 +320,8 @@ router.post('/email/send-otp', authLimiter, async (req, res, next) => {
       message: `A 6-digit verification code has been sent to ${normalizedEmail}.`,
       email: normalizedEmail,
       expiresInSeconds: 600,
-      smtpConfigured: delivery.delivered,
-      // Only in local development when SMTP is not yet configured in .env, return devOtpPreview so local testing works
-      ...(process.env.NODE_ENV === 'development' && !delivery.delivered
-        ? { devOtpPreview: otpCode }
-        : {})
+      emailDelivered: delivery.delivered,
+      deliveryStatus: delivery.status
     });
   } catch (error) {
     next(error);
@@ -393,6 +394,9 @@ router.post('/email/verify-otp', authLimiter, async (req, res, next) => {
         await user.setPassword(String(password));
       }
       await user.save();
+      sendWelcomeEmail(user).catch((err) =>
+        console.error('[Auth] Welcome email warning:', err.message)
+      );
     } else {
       if (name && String(name).trim() && !user.name) {
         user.name = String(name).trim();
@@ -460,6 +464,10 @@ router.post('/register', authLimiter, async (req, res, next) => {
     });
     await user.setPassword(String(password));
     await user.save();
+
+    sendWelcomeEmail(user).catch((err) =>
+      console.error('[Auth] Welcome email warning:', err.message)
+    );
 
     await linkHistoricalBookings(user);
     const subSummary = await getUserSubscriptionSummary(user._id);

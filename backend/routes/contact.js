@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Contact = require('../models/Contact');
+const { sendContactEmails } = require('../services/emailService');
 const { protectAdmin } = require('../middleware/auth');
 const { publicFormLimiter } = require('../middleware/security');
 
@@ -25,7 +26,16 @@ router.post('/', publicFormLimiter, async (req, res, next) => {
       status: 'new'
     });
 
-    res.status(201).json({ success: true, data: contact });
+    const emailNotifications = await sendContactEmails(contact);
+
+    res.status(201).json({
+      success: true,
+      data: contact,
+      emailNotifications: {
+        userConfirmed: Boolean(emailNotifications.userEmail && emailNotifications.userEmail.sent),
+        adminNotified: Boolean(emailNotifications.adminEmail && emailNotifications.adminEmail.sent)
+      }
+    });
   } catch (error) {
     next(error);
   }
