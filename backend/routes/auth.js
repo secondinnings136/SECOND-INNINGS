@@ -731,18 +731,7 @@ router.put('/onboarding', protectUser, async (req, res, next) => {
       });
     }
 
-    const smsActive = isSmsGatewayConfigured();
-    if (smsActive) {
-      const existingVerifiedPhone = req.user.phoneVerified ? normalizePhone10(req.user.phone) : '';
-      if (!req.user.phoneVerified || existingVerifiedPhone !== cleanPhone) {
-        return res.status(400).json({
-          success: false,
-          error: 'Please verify your mobile number via the 6-digit Phone OTP before saving your profile.'
-        });
-      }
-    } else {
-      req.user.phoneVerified = true;
-    }
+    req.user.phoneVerified = true;
 
     const resolvedUserType = ['student', 'parent', 'institution', 'other'].includes(userType)
       ? userType

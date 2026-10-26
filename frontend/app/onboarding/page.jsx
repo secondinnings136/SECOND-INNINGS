@@ -1,20 +1,14 @@
 'use client';
 
-import { useState, useEffect, useRef, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowRight,
   ShieldCheck,
   Sparkles,
-  CheckCircle2,
-  UserCheck,
-  Phone,
-  RotateCcw,
-  Check,
-  AlertCircle
+  UserCheck
 } from 'lucide-react';
 import { useUserAuth } from '../../context/UserAuthContext';
-import { sendPhoneOtp, verifyPhoneOtp } from '../../lib/api';
 
 const CURRENT_STAGE_OPTIONS = [
   'School (Class 11–12)',
@@ -62,17 +56,6 @@ function OnboardingContent() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  // Phone OTP Verification State
-  const [phoneVerified, setPhoneVerified] = useState(false);
-  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
-  const [phoneOtpCode, setPhoneOtpCode] = useState('');
-  const [sendingPhoneOtp, setSendingPhoneOtp] = useState(false);
-  const [verifyingPhoneOtp, setVerifyingPhoneOtp] = useState(false);
-  const [phoneOtpError, setPhoneOtpError] = useState('');
-  const [phoneOtpSuccess, setPhoneOtpSuccess] = useState('');
-  const [phoneCooldown, setPhoneCooldown] = useState(0);
-  const otpTimerRef = useRef(null);
-
   useEffect(() => {
     if (!loading && !isAuthenticated) {
       router.replace(`/login?next=${encodeURIComponent(nextPath)}`);
@@ -97,20 +80,8 @@ function OnboardingContent() {
         source: user.source || prev.source,
         referredBy: user.referredBy || prev.referredBy
       }));
-      if (user.phoneVerified && user.phone) {
-        setPhoneVerified(true);
-      }
     }
   }, [user]);
-
-  useEffect(() => {
-    if (phoneCooldown > 0) {
-      otpTimerRef.current = setTimeout(() => {
-        setPhoneCooldown((prev) => prev - 1);
-      }, 1000);
-      return () => clearTimeout(otpTimerRef.current);
-    }
-  }, [phoneCooldown]);
 
   const numericAge = Number(formData.age);
   const isUnder18 =
@@ -121,65 +92,10 @@ function OnboardingContent() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    if (name === 'phone') {
-      const cleanInput = value.replace(/[^0-9]/g, '');
-      const userClean = (user?.phone || '').replace(/[^0-9]/g, '');
-      if (user?.phoneVerified && cleanInput === userClean && cleanInput.length === 10) {
-        setPhoneVerified(true);
-      } else {
-        setPhoneVerified(false);
-      }
-      setPhoneOtpSent(false);
-      setPhoneOtpError('');
-      setPhoneOtpSuccess('');
-    }
     setFormData((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-  };
-
-  const handleSendPhoneOtp = async () => {
-    setPhoneOtpError('');
-    setPhoneOtpSuccess('');
-    const cleanPhone = (formData.phone || '').replace(/[^0-9]/g, '');
-    if (cleanPhone.length < 10) {
-      setPhoneOtpError('Please enter a valid 10-digit mobile number first.');
-      return;
-    }
-    setSendingPhoneOtp(true);
-    try {
-      const res = await sendPhoneOtp({ phone: formData.phone });
-      setPhoneOtpSent(true);
-      setPhoneCooldown(45);
-      setPhoneOtpSuccess(res.message || 'OTP sent successfully to your mobile number!');
-    } catch (err) {
-      setPhoneOtpError(err.message || 'Failed to send OTP to this phone number.');
-    } finally {
-      setSendingPhoneOtp(false);
-    }
-  };
-
-  const handleVerifyPhoneOtp = async () => {
-    setPhoneOtpError('');
-    setPhoneOtpSuccess('');
-    const cleanCode = phoneOtpCode.trim();
-    if (!/^\d{6}$/.test(cleanCode)) {
-      setPhoneOtpError('Please enter the 6-digit OTP code.');
-      return;
-    }
-    setVerifyingPhoneOtp(true);
-    try {
-      const res = await verifyPhoneOtp({ phone: formData.phone, otp: cleanCode });
-      setPhoneVerified(true);
-      setPhoneOtpSent(false);
-      setPhoneOtpCode('');
-      setPhoneOtpSuccess(res.message || 'Mobile number verified successfully!');
-    } catch (err) {
-      setPhoneOtpError(err.message || 'Invalid or expired OTP. Please try again.');
-    } finally {
-      setVerifyingPhoneOtp(false);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -191,8 +107,9 @@ function OnboardingContent() {
       return;
     }
 
-    if (phoneOtpSent && !phoneVerified) {
-      setError('Please verify the 6-digit OTP sent to your phone, or enter a valid number to continue.');
+    const cleanPhone = (formData.phone || '').replace(/[^0-9]/g, '');
+    if (cleanPhone.length < 10) {
+      setError('Please enter a valid 10-digit mobile / WhatsApp number.');
       return;
     }
 
@@ -442,95 +359,18 @@ function OnboardingContent() {
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-xs font-mono uppercase tracking-wider text-charcoal">
-                  6. Mobile / WhatsApp Number <span className="text-terracotta">*</span>
-                </label>
-                {phoneVerified && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-sage/15 text-sage text-[11px] font-semibold">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    Verified
-                  </span>
-                )}
-              </div>
-
-              <div className="flex gap-2">
-                <input
-                  type="tel"
-                  name="phone"
-                  required
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="+91 98765 43210"
-                  className="w-full px-4 py-3 rounded-lg border border-stone bg-paper text-ink focus:outline-none focus:border-ink transition-colors text-sm"
-                />
-                {!phoneVerified && (
-                  <button
-                    type="button"
-                    onClick={handleSendPhoneOtp}
-                    disabled={sendingPhoneOtp || phoneCooldown > 0 || (formData.phone || '').replace(/[^0-9]/g, '').length < 10}
-                    className="shrink-0 px-4 py-3 rounded-lg bg-ink text-paper text-xs font-semibold hover:bg-ink/90 disabled:opacity-50 transition-all"
-                  >
-                    {sendingPhoneOtp
-                      ? 'Sending...'
-                      : phoneCooldown > 0
-                      ? `Resend (${phoneCooldown}s)`
-                      : phoneOtpSent
-                      ? 'Resend OTP'
-                      : 'Send OTP'}
-                  </button>
-                )}
-              </div>
-
-              {/* Inline OTP Verification Box */}
-              {!phoneVerified && phoneOtpSent && (
-                <div className="mt-3 p-4 rounded-xl bg-warm/80 border border-stone/50 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-ink flex items-center gap-1.5">
-                      <Phone className="w-3.5 h-3.5 text-terracotta" />
-                      Enter 6-Digit OTP sent to your phone:
-                    </span>
-                    {phoneCooldown > 0 && (
-                      <span className="text-[11px] text-ash font-mono">
-                        Resend in {phoneCooldown}s
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      maxLength={6}
-                      value={phoneOtpCode}
-                      onChange={(e) => setPhoneOtpCode(e.target.value.replace(/[^0-9]/g, ''))}
-                      placeholder="e.g. 123456"
-                      className="w-full px-3.5 py-2.5 rounded-lg border border-stone bg-paper text-ink text-sm font-mono tracking-widest text-center focus:outline-none focus:border-ink"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleVerifyPhoneOtp}
-                      disabled={verifyingPhoneOtp || phoneOtpCode.trim().length !== 6}
-                      className="px-5 py-2.5 rounded-lg bg-terracotta text-paper text-xs font-semibold hover:bg-terracotta/90 disabled:opacity-50 transition-all shrink-0"
-                    >
-                      {verifyingPhoneOtp ? 'Verifying...' : 'Verify OTP'}
-                    </button>
-                  </div>
-
-                  {phoneOtpError && (
-                    <p className="text-xs text-terracotta font-medium">{phoneOtpError}</p>
-                  )}
-                  {phoneOtpSuccess && (
-                    <p className="text-xs text-sage font-medium">{phoneOtpSuccess}</p>
-                  )}
-                </div>
-              )}
-
-              {phoneVerified && (
-                <p className="text-[11px] text-sage mt-1.5 flex items-center gap-1">
-                  <Check className="w-3 h-3" />
-                  Your phone number is verified and ready for instant booking.
-                </p>
-              )}
+              <label className="block text-xs font-mono uppercase tracking-wider text-charcoal mb-2">
+                6. Mobile / WhatsApp Number <span className="text-terracotta">*</span>
+              </label>
+              <input
+                type="tel"
+                name="phone"
+                required
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="+91 98765 43210"
+                className="w-full px-4 py-3 rounded-lg border border-stone bg-paper text-ink focus:outline-none focus:border-ink transition-colors text-sm"
+              />
             </div>
           </div>
 
