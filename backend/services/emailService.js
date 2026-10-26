@@ -1091,8 +1091,12 @@ async function sendBookingConfirmationEmails(booking, options = {}) {
     booking.paymentStatus === 'credit_redeemed';
   const stageLabel = options.stage || (isConfirmed ? 'confirmed' : 'created');
   const formattedDate = formatPreferredDate(booking.preferredDate);
-  const formattedSlot = `${formattedDate} — ${booking.preferredTime || 'Flexible'}`;
+  const timezoneLabel = `${booking.timezone || 'Asia/Kolkata'} (IST, UTC+05:30)`;
+  const formattedSlot = `${formattedDate} — ${booking.preferredTime || 'Flexible'} (IST)`;
   const isParentBooking = booking.userType === 'parent' || booking.bookedBy === 'parent';
+  const hasVerifiedMeetLink =
+    Boolean(booking.meetingLink) &&
+    /^https:\/\/meet\.google\.com\/[a-z0-9-]+/i.test(String(booking.meetingLink).trim());
 
   const userSubject = isConfirmed
     ? `Your mentorship session is confirmed (${shortRef}) — Second Innings`
@@ -1108,7 +1112,8 @@ async function sendBookingConfirmationEmails(booking, options = {}) {
         ? `Parent / Guardian${booking.parentName ? ` (${booking.parentName})` : ''}`
         : 'Student / Mentee'
     },
-    { label: 'Preferred Date & Slot', value: formattedSlot },
+    { label: 'Scheduled Date & Time', value: formattedSlot },
+    { label: 'Timezone', value: timezoneLabel },
     { label: 'Booking Status', value: isConfirmed ? 'Confirmed' : 'Pending Confirmation' },
     {
       label: 'Payment / Credit Status',
@@ -1123,10 +1128,12 @@ async function sendBookingConfirmationEmails(booking, options = {}) {
     }
   ];
 
-  if (booking.meetingLink && isConfirmed) {
+  if (hasVerifiedMeetLink && isConfirmed) {
     detailsRows.push({
-      label: 'Meeting Link',
-      value: `<a href="${escapeHtml(booking.meetingLink)}" style="color: #B85D3B; font-weight: 600;">Join Online Session</a>`,
+      label: 'Google Meet Link',
+      value: `<a href="${escapeHtml(booking.meetingLink)}" style="color: #B85D3B; font-weight: 700;">${escapeHtml(
+        booking.meetingLink
+      )}</a>`,
       isSafeHtml: true
     });
   }
@@ -1141,12 +1148,19 @@ async function sendBookingConfirmationEmails(booking, options = {}) {
       ? `<p style="margin: 0 0 12px 0;">Your 1-on-1 mentorship session with Deepak at Second Innings is confirmed. Please find your session details below.</p>`
       : `<p style="margin: 0 0 12px 0;">We have saved your mentorship session details on Second Innings. Please review your booking summary below.</p>`,
     detailsRows,
-    calloutTitle: 'What Happens Next',
-    calloutBodyHtml: isConfirmed
-      ? `<p style="margin: 0;">Deepak will review your context ahead of the conversation. We will coordinate the session details with you prior to your scheduled slot.</p>`
-      : `<p style="margin: 0;">You can check your session status or update your preferred time slot directly from your Second Innings dashboard.</p>`,
-    ctaLabel: 'View Your Session Dashboard',
-    ctaUrl: `${config.frontendUrl}/dashboard`
+    calloutTitle: hasVerifiedMeetLink && isConfirmed ? 'Join via Google Meet' : 'What Happens Next',
+    calloutBodyHtml:
+      hasVerifiedMeetLink && isConfirmed
+        ? `<p style="margin: 0;">Your dedicated Google Meet conference room is ready: <a href="${escapeHtml(
+            booking.meetingLink
+          )}" style="color: #B85D3B; font-weight: 600;">${escapeHtml(
+            booking.meetingLink
+          )}</a>. A Google Calendar invitation has also been scheduled for your session.</p>`
+        : isConfirmed
+        ? `<p style="margin: 0;">Deepak will review your context ahead of the conversation. We will coordinate the session details with you prior to your scheduled slot.</p>`
+        : `<p style="margin: 0;">You can check your session status or update your preferred time slot directly from your Second Innings dashboard.</p>`,
+    ctaLabel: hasVerifiedMeetLink && isConfirmed ? 'Join Google Meet Session' : 'View Your Session Dashboard',
+    ctaUrl: hasVerifiedMeetLink && isConfirmed ? booking.meetingLink : `${config.frontendUrl}/dashboard`
   });
 
   const userText = [
@@ -1156,14 +1170,18 @@ async function sendBookingConfirmationEmails(booking, options = {}) {
       ? `Your 1-on-1 mentorship session (${shortRef}) with Second Innings is confirmed.`
       : `Your session booking request (${shortRef}) has been logged with Second Innings.`,
     `Participant: ${booking.studentName || booking.name}`,
-    `Preferred Date & Time: ${formattedSlot}`,
+    `Scheduled Date & Time: ${formattedSlot}`,
+    `Timezone: ${timezoneLabel}`,
     `Status: ${isConfirmed ? 'Confirmed' : 'Pending Confirmation'}`,
+    hasVerifiedMeetLink && isConfirmed ? `Google Meet Link: ${booking.meetingLink}` : '',
     '',
     `View your dashboard: ${config.frontendUrl}/dashboard`,
     '',
     'Warm regards,',
     'Deepak & Team Second Innings'
-  ].join('\n');
+  ]
+    .filter(Boolean)
+    .join('\n');
 
   const adminSubject = isConfirmed
     ? `Confirmed mentorship booking (${shortRef}) — Second Innings`
@@ -1186,6 +1204,7 @@ async function sendBookingConfirmationEmails(booking, options = {}) {
     { label: 'Phone / WhatsApp', value: booking.phone },
     { label: 'City / Institution', value: [booking.city, booking.institutionOrOrg].filter(Boolean).join(' • ') || 'Not specified' },
     { label: 'Preferred Date & Time', value: formattedSlot },
+    { label: 'Timezone', value: timezoneLabel },
     { label: 'Booking Status', value: booking.status },
     { label: 'Payment Status', value: `${booking.paymentStatus || 'pending'} (${booking.paymentMode || 'online'})` },
     {
@@ -1198,6 +1217,16 @@ async function sendBookingConfirmationEmails(booking, options = {}) {
           : 'INR 0'
     }
   ];
+
+  if (hasVerifiedMeetLink) {
+    adminRows.push({
+      label: 'Google Meet Link',
+      value: `<a href="${escapeHtml(booking.meetingLink)}" style="color: #B85D3B; font-weight: 700;">${escapeHtml(
+        booking.meetingLink
+      )}</a>`,
+      isSafeHtml: true
+    });
+  }
 
   if (booking.isUnder18 && booking.parentName) {
     adminRows.push({
@@ -1292,12 +1321,16 @@ async function sendBookingConfirmationEmails(booking, options = {}) {
 //    Safeguarding rule: never include private mentor `notes` in student emails.
 // ---------------------------------------------------------------------------
 async function sendBookingStatusUpdateEmail(booking, changeSummary = 'updated') {
-  if (!booking || !booking.email) return { sent: false };
+  if (!booking) return { sent: false };
   const config = getEmailConfig();
   const bookingId = String(booking._id || crypto.randomUUID());
   const shortRef = `#${bookingId.slice(-6).toUpperCase()}`;
   const formattedDate = formatPreferredDate(booking.preferredDate);
-  const formattedSlot = `${formattedDate} — ${booking.preferredTime || 'Flexible'}`;
+  const timezoneLabel = `${booking.timezone || 'Asia/Kolkata'} (IST, UTC+05:30)`;
+  const formattedSlot = `${formattedDate} — ${booking.preferredTime || 'Flexible'} (IST)`;
+  const hasVerifiedMeetLink =
+    Boolean(booking.meetingLink) &&
+    /^https:\/\/meet\.google\.com\/[a-z0-9-]+/i.test(String(booking.meetingLink).trim());
 
   const statusMap = {
     confirmed: 'Confirmed',
@@ -1317,13 +1350,16 @@ async function sendBookingStatusUpdateEmail(booking, changeSummary = 'updated') 
     { label: 'Booking Reference', value: shortRef },
     { label: 'Participant', value: booking.studentName || booking.name },
     { label: 'Current Status', value: friendlyStatus },
-    { label: 'Scheduled Date & Slot', value: formattedSlot }
+    { label: 'Scheduled Date & Slot', value: formattedSlot },
+    { label: 'Timezone', value: timezoneLabel }
   ];
 
-  if (booking.meetingLink && booking.status !== 'cancelled') {
+  if (hasVerifiedMeetLink && booking.status !== 'cancelled') {
     detailsRows.push({
-      label: 'Meeting Link',
-      value: `<a href="${escapeHtml(booking.meetingLink)}" style="color: #B85D3B; font-weight: 600;">Join Session Link</a>`,
+      label: 'Google Meet Link',
+      value: `<a href="${escapeHtml(booking.meetingLink)}" style="color: #B85D3B; font-weight: 700;">${escapeHtml(
+        booking.meetingLink
+      )}</a>`,
       isSafeHtml: true
     });
   }
@@ -1340,8 +1376,14 @@ async function sendBookingStatusUpdateEmail(booking, changeSummary = 'updated') 
         ? `<p style="margin: 0 0 12px 0;">Your mentorship booking <strong>${shortRef}</strong> has been marked as cancelled. If you would like to reschedule for another date, please reply to this email or visit your dashboard.</p>`
         : `<p style="margin: 0 0 12px 0;">There is an update to your Second Innings mentorship booking <strong>${shortRef}</strong>. Please review the latest schedule and session details below.</p>`,
     detailsRows,
-    ctaLabel: 'Open Session Dashboard',
-    ctaUrl: `${config.frontendUrl}/dashboard`
+    ctaLabel:
+      hasVerifiedMeetLink && booking.status === 'confirmed'
+        ? 'Join Google Meet Session'
+        : 'Open Session Dashboard',
+    ctaUrl:
+      hasVerifiedMeetLink && booking.status === 'confirmed'
+        ? booking.meetingLink
+        : `${config.frontendUrl}/dashboard`
   });
 
   const text = [
@@ -1350,7 +1392,10 @@ async function sendBookingStatusUpdateEmail(booking, changeSummary = 'updated') 
     `There is an update to your Second Innings mentorship booking (${shortRef}):`,
     `Status: ${friendlyStatus}`,
     `Date & Slot: ${formattedSlot}`,
-    booking.meetingLink ? `Meeting Link: ${booking.meetingLink}` : '',
+    `Timezone: ${timezoneLabel}`,
+    hasVerifiedMeetLink && booking.status !== 'cancelled'
+      ? `Google Meet Link: ${booking.meetingLink}`
+      : '',
     '',
     `View on your dashboard: ${config.frontendUrl}/dashboard`,
     '',
@@ -1360,18 +1405,82 @@ async function sendBookingStatusUpdateEmail(booking, changeSummary = 'updated') 
     .filter(Boolean)
     .join('\n');
 
-  const signatureKey = `${booking.status}:${formattedDate}:${booking.preferredTime || ''}:${booking.meetingLink || ''}:${changeSummary}`;
+  const signatureKey = `${booking.status}:${formattedDate}:${booking.preferredTime || ''}:${
+    hasVerifiedMeetLink ? booking.meetingLink : ''
+  }:${changeSummary}`;
   const hash = crypto.createHash('sha1').update(signatureKey).digest('hex').slice(0, 10);
 
-  return sendTransactionalEmail({
-    workflow: 'booking_status_update',
-    to: booking.email,
-    subject,
-    html,
-    text,
-    idempotencyKey: `booking_status_update:${bookingId}:${hash}`,
-    metadata: { bookingId, status: booking.status, changeSummary }
+  const promises = [];
+  if (isValidEmailAddress(booking.email)) {
+    promises.push(
+      sendTransactionalEmail({
+        workflow: 'booking_status_update',
+        to: booking.email,
+        subject,
+        html,
+        text,
+        idempotencyKey: `booking_status_update:${bookingId}:${hash}`,
+        metadata: { bookingId, status: booking.status, changeSummary }
+      })
+    );
+  } else {
+    promises.push(Promise.resolve({ sent: false, status: 'skipped_invalid_recipient' }));
+  }
+
+  // Also notify mentor (Deepak) on reschedule or cancellation
+  const adminSubject =
+    booking.status === 'cancelled'
+      ? `Session cancelled (${shortRef}) — Second Innings`
+      : `Session schedule updated (${shortRef}) — Second Innings`;
+
+  const adminHtml = renderBrandEmailLayout({
+    eyebrow: 'MENTOR SCHEDULE UPDATE',
+    title:
+      booking.status === 'cancelled'
+        ? `Session Cancelled (${shortRef})`
+        : `Session Rescheduled / Updated (${shortRef})`,
+    greeting: 'Hello Deepak,',
+    introHtml: `<p style="margin: 0 0 12px 0;">Booking <strong>${shortRef}</strong> with <strong>${escapeHtml(
+      booking.name
+    )}</strong> has been updated (${escapeHtml(changeSummary)}).</p>`,
+    detailsRows: [
+      ...detailsRows,
+      { label: 'Phone / WhatsApp', value: booking.phone || 'Not provided' }
+    ],
+    ctaLabel: 'Open Admin Bookings',
+    ctaUrl: `${config.frontendUrl}/admin/bookings`
   });
+
+  const adminText = [
+    'Hello Deepak,',
+    '',
+    `Booking (${shortRef}) with ${booking.name} was updated (${changeSummary}):`,
+    `Status: ${friendlyStatus}`,
+    `Scheduled Slot: ${formattedSlot}`,
+    hasVerifiedMeetLink && booking.status !== 'cancelled'
+      ? `Google Meet Link: ${booking.meetingLink}`
+      : '',
+    '',
+    `Admin Panel: ${config.frontendUrl}/admin/bookings`
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  promises.push(
+    sendTransactionalEmail({
+      workflow: 'booking_status_update_admin',
+      to: config.adminEmail,
+      replyTo: isValidEmailAddress(booking.email) ? booking.email : config.replyTo,
+      subject: adminSubject,
+      html: adminHtml,
+      text: adminText,
+      idempotencyKey: `booking_status_update_admin:${bookingId}:${hash}`,
+      metadata: { bookingId, status: booking.status, changeSummary }
+    })
+  );
+
+  const [userRes] = await Promise.allSettled(promises);
+  return userRes.status === 'fulfilled' ? userRes.value : { sent: false };
 }
 
 // ---------------------------------------------------------------------------

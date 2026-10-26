@@ -117,3 +117,29 @@ export const deleteSupportTicket = (id) => adminFetch(`/support/${id}`, { method
 // Payments & Fees (Cashfree PG)
 export const getAdminPaymentSettings = () => adminFetch('/payment/admin/settings');
 export const updateAdminPaymentSettings = (data) => adminFetch('/payment/admin/settings', { method: 'PUT', body: JSON.stringify(data) });
+
+// Google Calendar & Meet Integration + Session Summaries & Continuity (Admin)
+export const getGoogleIntegrationStatus = () => adminFetch('/admin/google/status');
+export const getGoogleConnectUrl = (redirectUri = '') =>
+  adminFetch(`/admin/google/connect-url${redirectUri ? `?redirectUri=${encodeURIComponent(redirectUri)}` : ''}`);
+export const disconnectGoogleIntegration = () =>
+  adminFetch('/admin/google/disconnect', { method: 'POST' });
+
+export const generateBookingMeetLink = (bookingId) =>
+  adminFetch(`/admin/bookings/${bookingId}/generate-meet`, { method: 'POST' });
+
+export const getBookingContinuityBrief = (bookingId) =>
+  adminFetch(`/admin/bookings/${bookingId}/continuity`);
+
+export const generateBookingSessionSummary = (bookingId, payload = {}) =>
+  adminFetch(`/admin/bookings/${bookingId}/summary/generate`, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+
+export const updateBookingSessionSummary = (bookingId, payload = {}) =>
+  adminFetch(`/admin/bookings/${bookingId}/summary`, {
+    method: 'PUT',
+    body: JSON.stringify(payload)
+  });
+

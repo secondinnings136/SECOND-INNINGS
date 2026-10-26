@@ -81,7 +81,8 @@ export default function BookPage() {
     topic: '',
     usefulGoal: '',
     preferredDate: '',
-    preferredTime: ''
+    preferredTime: '',
+    aiNotesConsent: true
   });
 
   // Booking Factor: 'CREDIT' | 'SINGLE_SESSION' | 'MONTHLY_4' | 'QUARTERLY_8'
@@ -140,14 +141,6 @@ export default function BookPage() {
   useEffect(() => {
     currentIdempotencyKeyRef.current = generateIdempotencyKey('book');
   }, [sessionForm.topic, selectedBookingFactor, sessionForm.preferredDate, sessionForm.preferredTime]);
-
-  useEffect(() => {
-    if (otpCooldown <= 0) return;
-    const timer = setInterval(() => {
-      setOtpCooldown((prev) => Math.max(0, prev - 1));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [otpCooldown]);
 
   const handleGoogleLoginSuccess = async ({ credential, accessToken }) => {
     setAuthError('');
@@ -259,7 +252,8 @@ export default function BookPage() {
             topic: sessionForm.topic,
             usefulGoal: sessionForm.usefulGoal,
             preferredDate: sessionForm.preferredDate || undefined,
-            preferredTime: sessionForm.preferredTime || undefined
+            preferredTime: sessionForm.preferredTime || undefined,
+            aiNotesConsent: Boolean(sessionForm.aiNotesConsent)
           },
           idempKey
         );
@@ -286,7 +280,8 @@ export default function BookPage() {
               topic: sessionForm.topic,
               usefulGoal: sessionForm.usefulGoal,
               preferredDate: sessionForm.preferredDate || undefined,
-              preferredTime: sessionForm.preferredTime || undefined
+              preferredTime: sessionForm.preferredTime || undefined,
+              aiNotesConsent: Boolean(sessionForm.aiNotesConsent)
             }
           },
           idempKey
@@ -310,7 +305,8 @@ export default function BookPage() {
         concern: sessionForm.topic,
         usefulGoal: sessionForm.usefulGoal,
         preferredDate: sessionForm.preferredDate || undefined,
-        preferredTime: sessionForm.preferredTime || undefined
+        preferredTime: sessionForm.preferredTime || undefined,
+        aiNotesConsent: Boolean(sessionForm.aiNotesConsent)
       };
 
       if (paymentConfig.paymentsEnabled && paymentConfig.sessionFee > 0) {
@@ -701,7 +697,7 @@ export default function BookPage() {
                           : 'Your session has been recorded in your Mentee Dashboard. We will confirm your exact time on WhatsApp shortly.'}
                       </p>
 
-                      <div className="p-5 rounded-xl bg-paper-2 border border-line text-left text-sm space-y-1.5">
+                      <div className="p-5 rounded-xl bg-paper-2 border border-line text-left text-sm space-y-2">
                         <p><strong>Focus:</strong> {status.confirmedBooking?.topic || sessionForm.topic}</p>
                         {(status.confirmedBooking?.preferredDate || sessionForm.preferredDate) && (
                           <p>
@@ -709,9 +705,30 @@ export default function BookPage() {
                             {new Date(
                               status.confirmedBooking?.preferredDate || sessionForm.preferredDate
                             ).toLocaleDateString('en-IN')}{' '}
-                            {status.confirmedBooking?.preferredTime || sessionForm.preferredTime}
+                            {status.confirmedBooking?.preferredTime || sessionForm.preferredTime}{' '}
+                            <span className="text-xs text-muted">(IST • Asia/Kolkata)</span>
                           </p>
                         )}
+                        {status.confirmedBooking?.meetingLink &&
+                          status.confirmedBooking.meetingLink.startsWith('https://meet.google.com/') && (
+                            <div className="pt-2.5 mt-2.5 border-t border-line space-y-2">
+                              <p className="text-xs font-mono uppercase tracking-wider text-sprout font-bold">
+                                ✓ Google Meet Session Link Ready
+                              </p>
+                              <a
+                                href={status.confirmedBooking.meetingLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sprout text-white text-xs font-semibold hover:opacity-90 transition-opacity"
+                              >
+                                <span>Join Google Meet Session</span>
+                                <ArrowUpRight className="w-3.5 h-3.5" />
+                              </a>
+                              <p className="text-xs text-muted break-all">
+                                {status.confirmedBooking.meetingLink}
+                              </p>
+                            </div>
+                          )}
                       </div>
 
                       <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -722,7 +739,13 @@ export default function BookPage() {
                         <button
                           type="button"
                           onClick={() => {
-                            setSessionForm({ topic: '', usefulGoal: '', preferredDate: '', preferredTime: '' });
+                            setSessionForm({
+                              topic: '',
+                              usefulGoal: '',
+                              preferredDate: '',
+                              preferredTime: '',
+                              aiNotesConsent: true
+                            });
                             setStatus({ loading: false, success: false, error: null, confirmedBooking: null });
                           }}
                           className="btn-editorial-outline"
@@ -937,6 +960,26 @@ export default function BookPage() {
                               ))}
                             </select>
                           </div>
+                        </div>
+
+                        {/* Session Continuity & AI-Assisted Notes Consent Disclosure */}
+                        <div className="p-4 rounded-xl bg-paper-2 border border-line">
+                          <label className="flex items-start gap-3 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={Boolean(sessionForm.aiNotesConsent)}
+                              onChange={(e) =>
+                                setSessionForm({ ...sessionForm, aiNotesConsent: e.target.checked })
+                              }
+                              className="mt-1 h-4 w-4 rounded border-line text-signal focus:ring-signal"
+                            />
+                            <div className="text-xs text-ink-2 leading-relaxed">
+                              <span className="font-semibold text-ink block">
+                                Consent for Structured Session Notes &amp; Continuity Briefs (Optional)
+                              </span>
+                              Allow Second Innings to generate structured post-session notes and a 7-day continuity summary (using Google Meet notes/transcripts when enabled or mentor notes) so Deepak Sir can prepare for your future sessions. If unchecked, only manual mentor-entered notes will be used.
+                            </div>
+                          </label>
                         </div>
                       </div>
 

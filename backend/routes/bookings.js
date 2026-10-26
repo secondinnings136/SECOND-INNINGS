@@ -8,6 +8,12 @@ const {
   sendBookingStatusUpdateEmail,
   sendSevenDayFollowUpEmail
 } = require('../services/emailService');
+const {
+  ensureBookingCalendarAndMeet,
+  updateBookingCalendarEvent,
+  cancelBookingCalendarEvent
+} = require('../services/googleMeetService');
+const { generateSessionSummaryForBooking } = require('../services/sessionSummaryService');
 const { protectAdmin, optionalAuth } = require('../middleware/auth');
 const { publicFormLimiter, computeDedupFingerprint } = require('../middleware/security');
 
@@ -125,9 +131,11 @@ router.post('/', publicFormLimiter, optionalAuth, async (req, res, next) => {
       preferredTime: req.body.preferredTime ? String(req.body.preferredTime).trim() : undefined,
       source: user?.source || req.body.source || '',
       referredBy: user?.referredBy || req.body.referredBy || '',
+      aiNotesConsent: Boolean(req.body.aiNotesConsent),
+      aiNotesConsentAt: req.body.aiNotesConsent ? new Date() : null,
 
       // Privileged fields ONLY allowed if req.admin is authenticated
-      status: isAdminManual && req.body.status ? req.body.status : 'pending',
+      status: isAdminManual && req.body.status ? req.body.status : 'confirmed',
       paymentRequired: isAdminManual ? Boolean(req.body.paymentRequired) : false,
       paymentStatus: isAdminManual && req.body.paymentStatus ? req.body.paymentStatus : 'not_required',
       paymentAmount: isAdminManual ? Number(req.body.paymentAmount || 0) : 0,
@@ -136,10 +144,16 @@ router.post('/', publicFormLimiter, optionalAuth, async (req, res, next) => {
       notes: isAdminManual ? req.body.notes || '' : ''
     };
 
-    const booking = await Booking.create(bookingPayload);
+    let booking = await Booking.create(bookingPayload);
     if (user && !user.hasUsedFreeSession && bookingPayload.bookingMode === 'free_intro') {
       user.hasUsedFreeSession = true;
       await user.save();
+    }
+
+    // Generate Google Calendar event + unique Google Meet link BEFORE sending confirmation email
+    if (booking.status === 'confirmed') {
+      await ensureBookingCalendarAndMeet(booking);
+      booking = await Booking.findById(booking._id);
     }
 
     const emailNotifications = await sendBookingConfirmationEmails(booking, {
@@ -304,10 +318,45 @@ router.patch('/:id', protectAdmin, async (req, res, next) => {
         String(updates.sharedNotes || '').trim() !== '' &&
         updates.sharedNotes !== existing.sharedNotes);
 
-    const booking = await Booking.findByIdAndUpdate(req.params.id, updates, {
+    let booking = await Booking.findByIdAndUpdate(req.params.id, updates, {
       new: true,
       runValidators: true
     });
+
+    const slotChanged =
+      (updates.preferredDate !== undefined &&
+        String(updates.preferredDate || '') !== String(existing.preferredDate || '')) ||
+      (updates.preferredTime !== undefined &&
+        String(updates.preferredTime || '') !== String(existing.preferredTime || ''));
+
+    // Synchronize Google Calendar & Meet event BEFORE sending update emails
+    if (updates.status === 'cancelled' && existing.status !== 'cancelled') {
+      await cancelBookingCalendarEvent(booking);
+      booking = await Booking.findById(booking._id);
+    } else if (booking.status === 'confirmed' && !booking.meetingLink) {
+      await ensureBookingCalendarAndMeet(booking);
+      booking = await Booking.findById(booking._id);
+    } else if (slotChanged && booking.status !== 'cancelled') {
+      await updateBookingCalendarEvent(booking);
+      booking = await Booking.findById(booking._id);
+    }
+
+    // Automatically generate or refresh the 9-part structured post-session summary when session is completed or notes are updated
+    if (
+      booking.status === 'completed' &&
+      (existing.status !== 'completed' ||
+        updates.notes !== undefined ||
+        updates.sharedNotes !== undefined ||
+        updates.actionAgreed !== undefined ||
+        updates.feedback !== undefined)
+    ) {
+      try {
+        await generateSessionSummaryForBooking(booking._id);
+        booking = await Booking.findById(booking._id);
+      } catch (sumErr) {
+        console.warn('[Bookings] Non-fatal session summary generation warning:', sumErr.message);
+      }
+    }
 
     if (statusOrSlotChanged) {
       await sendBookingStatusUpdateEmail(booking, 'admin_lifecycle_update');

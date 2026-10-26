@@ -814,7 +814,7 @@ router.get('/my-sessions', protectUser, async (req, res, next) => {
     await linkHistoricalBookings(req.user);
 
     const sessions = await Booking.find({ userId: req.user._id })
-      .select('-notes -slotUpdateToken') // Never expose private mentor notes to client
+      .select('-notes -slotUpdateToken -calendarLastError') // Never expose private mentor notes to client
       .sort({ createdAt: -1 });
 
     const subscriptions = await UserSubscription.find({ userId: req.user._id })

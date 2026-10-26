@@ -14,6 +14,19 @@ const SupportTicket = require('../models/SupportTicket');
 const User = require('../models/User');
 const UserSubscription = require('../models/UserSubscription');
 const EmailLog = require('../models/EmailLog');
+const {
+  createAdminGoogleAuthUrl,
+  handleAdminGoogleCallback,
+  getGoogleIntegrationStatus,
+  disconnectGoogleIntegration,
+  ensureBookingCalendarAndMeet
+} = require('../services/googleMeetService');
+const {
+  generateSessionSummaryForBooking,
+  updateAndApproveSessionSummary,
+  getStudentContinuityBrief
+} = require('../services/sessionSummaryService');
+const { sendBookingStatusUpdateEmail } = require('../services/emailService');
 const { protectAdmin } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/security');
 
@@ -309,6 +322,203 @@ router.get('/email-logs', protectAdmin, async (req, res, next) => {
       },
       count: logs.length,
       data: logs
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ============================================================================
+// GOOGLE CALENDAR & GOOGLE MEET INTEGRATION ROUTES (ADMIN ONLY + CSRF CALLBACK)
+// ============================================================================
+
+// @route   GET /api/admin/google/status
+// @desc    Get current Google Calendar & Meet OAuth connection status
+// @access  Private (Admin)
+router.get('/google/status', protectAdmin, async (req, res, next) => {
+  try {
+    const status = await getGoogleIntegrationStatus();
+    res.status(200).json({
+      success: true,
+      data: status
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @route   GET /api/admin/google/connect-url
+// @desc    Generate CSRF-protected Google OAuth 2.0 authorization URL for Calendar & Meet
+// @access  Private (Admin)
+router.get('/google/connect-url', protectAdmin, async (req, res, next) => {
+  try {
+    const customRedirectUri = req.query.redirectUri ? String(req.query.redirectUri) : undefined;
+    const result = await createAdminGoogleAuthUrl({
+      adminId: req.admin._id,
+      req,
+      redirectUri: customRedirectUri
+    });
+
+    res.status(200).json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @route   GET /api/admin/google/callback
+// @desc    Handle Google OAuth 2.0 callback, verify CSRF state, and store encrypted refresh token
+// @access  Public (Protected by signed JWT state + persisted SHA-256 nonce)
+router.get('/google/callback', async (req, res) => {
+  const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:3000')
+    .trim()
+    .replace(/\/+$/, '');
+  const wantsJson =
+    req.query.format === 'json' ||
+    String(req.headers.accept || '').includes('application/json');
+
+  try {
+    if (req.query.error) {
+      throw new Error(`Google OAuth error: ${req.query.error}`);
+    }
+
+    const { code, state } = req.query;
+    const result = await handleAdminGoogleCallback({ code, state });
+
+    if (wantsJson) {
+      return res.status(200).json({
+        success: true,
+        data: result
+      });
+    }
+
+    return res.redirect(
+      `${frontendUrl}/admin?google_connected=true&email=${encodeURIComponent(
+        result.connectedEmail || ''
+      )}`
+    );
+  } catch (error) {
+    console.error('[Google OAuth Callback Error]:', error.message);
+    if (wantsJson) {
+      return res.status(400).json({
+        success: false,
+        error: error.message || 'Google Calendar connection failed'
+      });
+    }
+    return res.redirect(
+      `${frontendUrl}/admin?google_error=${encodeURIComponent(
+        error.message || 'Google Calendar connection failed'
+      )}`
+    );
+  }
+});
+
+// @route   POST /api/admin/google/disconnect
+// @desc    Disconnect Google Calendar & clear stored OAuth tokens
+// @access  Private (Admin)
+router.post('/google/disconnect', protectAdmin, async (req, res, next) => {
+  try {
+    const result = await disconnectGoogleIntegration();
+    res.status(200).json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @route   POST /api/admin/bookings/:id/generate-meet
+// @desc    Manually create or retry Google Calendar event & unique Google Meet link for a booking
+// @access  Private (Admin)
+router.post('/bookings/:id/generate-meet', protectAdmin, async (req, res, next) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+      return res.status(404).json({ success: false, error: 'Booking not found' });
+    }
+
+    const meetResult = await ensureBookingCalendarAndMeet(booking);
+    const updatedBooking = await Booking.findById(req.params.id);
+
+    if (meetResult.created && !meetResult.reusedExisting && updatedBooking.meetingLink) {
+      await sendBookingStatusUpdateEmail(updatedBooking, 'google_meet_link_generated');
+    }
+
+    res.status(200).json({
+      success: Boolean(meetResult.created),
+      meetResult,
+      data: updatedBooking
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ============================================================================
+// SESSION CONTINUITY & 9-PART STRUCTURED SUMMARY ROUTES (ADMIN ONLY)
+// ============================================================================
+
+// @route   GET /api/admin/bookings/:id/continuity
+// @desc    Get chronological student session history, continuity prep brief & current session summary
+// @access  Private (Admin)
+router.get('/bookings/:id/continuity', protectAdmin, async (req, res, next) => {
+  try {
+    const continuityData = await getStudentContinuityBrief(req.params.id);
+    res.status(200).json({
+      success: true,
+      data: continuityData
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @route   POST /api/admin/bookings/:id/summary/generate
+// @desc    Generate or regenerate the 9-part structured post-session summary
+// @access  Private (Admin)
+router.post('/bookings/:id/summary/generate', protectAdmin, async (req, res, next) => {
+  try {
+    const {
+      meetNotesText,
+      meetTranscriptText,
+      mentorNotesText,
+      forceRegenerate
+    } = req.body || {};
+
+    const result = await generateSessionSummaryForBooking(req.params.id, {
+      meetNotesText,
+      meetTranscriptText,
+      mentorNotesText,
+      forceRegenerate: Boolean(forceRegenerate)
+    });
+
+    res.status(200).json({
+      success: true,
+      deduplicated: result.deduplicated,
+      data: result.summary
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @route   PUT /api/admin/bookings/:id/summary
+// @desc    Review, edit, correct, and approve a generated session summary
+// @access  Private (Admin)
+router.put('/bookings/:id/summary', protectAdmin, async (req, res, next) => {
+  try {
+    const updatedSummary = await updateAndApproveSessionSummary(
+      req.params.id,
+      req.body || {},
+      req.admin._id
+    );
+
+    res.status(200).json({
+      success: true,
+      data: updatedSummary
     });
   } catch (error) {
     next(error);

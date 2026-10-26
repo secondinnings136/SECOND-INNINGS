@@ -1,7 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getBookings, updateBooking, createBooking } from '../../../lib/adminApi';
+import {
+  getBookings,
+  updateBooking,
+  createBooking,
+  generateBookingMeetLink,
+  getBookingContinuityBrief,
+  generateBookingSessionSummary,
+  updateBookingSessionSummary
+} from '../../../lib/adminApi';
 import DataTable from '../../../components/admin/DataTable';
 import StatusBadge from '../../../components/admin/StatusBadge';
 import Modal from '../../../components/admin/Modal';
@@ -16,7 +24,12 @@ import {
   User, 
   ShieldCheck, 
   AlertCircle,
-  ArrowRight
+  ArrowRight,
+  Video,
+  Sparkles,
+  ExternalLink,
+  Copy,
+  FileText
 } from 'lucide-react';
 
 const LIFECYCLE_STEPS = [
@@ -55,6 +68,8 @@ export default function BookingsPage() {
   // Edit form state
   const [editForm, setEditForm] = useState({
     status: '', 
+    preferredDate: '',
+    preferredTime: '',
     notes: '', 
     sharedNotes: '',
     followUpDate: '', 
@@ -64,6 +79,28 @@ export default function BookingsPage() {
     paymentStatus: 'pending',
     paymentAmount: 0,
     paymentMode: 'DIRECT_UPI'
+  });
+
+  // Google Meet & Continuity & Summary state inside Booking Modal
+  const [generatingMeet, setGeneratingMeet] = useState(false);
+  const [meetMessage, setMeetMessage] = useState(null);
+  const [continuityData, setContinuityData] = useState(null);
+  const [loadingContinuity, setLoadingContinuity] = useState(false);
+  const [summarySourceType, setSummarySourceType] = useState('mentor_notes');
+  const [summaryRawInput, setSummaryRawInput] = useState('');
+  const [generatingSummary, setGeneratingSummary] = useState(false);
+  const [savingSummary, setSavingSummary] = useState(false);
+  const [summaryNotice, setSummaryNotice] = useState('');
+  const [summaryDraft, setSummaryDraft] = useState({
+    studentGoalsAndConcerns: '',
+    keyTopicsAndPerspectives: '',
+    importantObservationsFacts: '',
+    importantObservationsInterpretations: '',
+    agreedStudentActions: '',
+    progressFromPreviousSession: '',
+    unresolvedQuestionsToRevisit: '',
+    suggestedOpeningQuestionsNextSession: '',
+    privateMentorPrepBrief: ''
   });
 
   useEffect(() => {
@@ -82,10 +119,65 @@ export default function BookingsPage() {
     }
   };
 
+  const populateSummaryDraft = (sum) => {
+    if (!sum) {
+      setSummaryDraft({
+        studentGoalsAndConcerns: '',
+        keyTopicsAndPerspectives: '',
+        importantObservationsFacts: '',
+        importantObservationsInterpretations: '',
+        agreedStudentActions: '',
+        progressFromPreviousSession: '',
+        unresolvedQuestionsToRevisit: '',
+        suggestedOpeningQuestionsNextSession: '',
+        privateMentorPrepBrief: ''
+      });
+      return;
+    }
+    setSummaryDraft({
+      studentGoalsAndConcerns: sum.goalsAndConcernsDiscussed || sum.studentGoalsAndConcerns || '',
+      keyTopicsAndPerspectives: sum.keyTopicsAndPerspectives || '',
+      importantObservationsFacts:
+        sum.importantObservations?.factualStatements || sum.importantObservationsFacts || '',
+      importantObservationsInterpretations:
+        sum.importantObservations?.mentorInterpretations ||
+        sum.importantObservationsInterpretations ||
+        '',
+      agreedStudentActions: sum.agreedActions || sum.agreedStudentActions || '',
+      progressFromPreviousSession: sum.progressFromPreviousSession || '',
+      unresolvedQuestionsToRevisit: sum.unresolvedQuestions || sum.unresolvedQuestionsToRevisit || '',
+      suggestedOpeningQuestionsNextSession: Array.isArray(sum.suggestedOpeningQuestions)
+        ? sum.suggestedOpeningQuestions.join('\n')
+        : sum.suggestedOpeningQuestionsNextSession || '',
+      privateMentorPrepBrief: sum.privateMentorPrepBrief || ''
+    });
+  };
+
+  const loadContinuityAndSummary = async (bookingId) => {
+    setLoadingContinuity(true);
+    setSummaryNotice('');
+    try {
+      const res = await getBookingContinuityBrief(bookingId);
+      if (res?.data) {
+        setContinuityData(res.data);
+        populateSummaryDraft(res.data.currentSummary);
+      }
+    } catch (err) {
+      console.error('Failed to load continuity brief:', err);
+    } finally {
+      setLoadingContinuity(false);
+    }
+  };
+
   const handleRowClick = (row) => {
     setSelectedBooking(row);
+    setMeetMessage(null);
+    setSummaryRawInput('');
+    setSummarySourceType('mentor_notes');
     setEditForm({
       status: row.status || 'pending',
+      preferredDate: row.preferredDate ? new Date(row.preferredDate).toISOString().split('T')[0] : '',
+      preferredTime: row.preferredTime || '',
       notes: row.notes || '',
       sharedNotes: row.sharedNotes || '',
       followUpDate: row.followUpDate ? new Date(row.followUpDate).toISOString().split('T')[0] : '',
@@ -96,6 +188,82 @@ export default function BookingsPage() {
       paymentAmount: row.paymentAmount || 0,
       paymentMode: row.paymentMode || 'DIRECT_UPI'
     });
+    loadContinuityAndSummary(row._id);
+  };
+
+  const handleGenerateMeetLink = async () => {
+    if (!selectedBooking) return;
+    setGeneratingMeet(true);
+    setMeetMessage(null);
+    try {
+      const res = await generateBookingMeetLink(selectedBooking._id);
+      if (res?.data) {
+        setSelectedBooking((prev) => ({
+          ...prev,
+          ...res.data
+        }));
+      }
+      setMeetMessage({
+        type: 'success',
+        text: res.message || 'Google Meet link generated and saved!'
+      });
+      fetchData();
+    } catch (err) {
+      setMeetMessage({
+        type: 'error',
+        text: err.message || 'Could not generate Google Meet link. Verify Google Calendar is connected on Dashboard.'
+      });
+    } finally {
+      setGeneratingMeet(false);
+    }
+  };
+
+  const handleGenerateStructuredSummary = async () => {
+    if (!selectedBooking) return;
+    setGeneratingSummary(true);
+    setSummaryNotice('');
+    try {
+      const payload = {
+        forceRegenerate: true,
+        mentorNotesText: editForm.notes || selectedBooking.notes || ''
+      };
+      if (summarySourceType === 'google_meet_notes' && summaryRawInput.trim()) {
+        payload.googleMeetNotesText = summaryRawInput.trim();
+      } else if (summarySourceType === 'google_meet_transcript' && summaryRawInput.trim()) {
+        payload.googleMeetTranscriptText = summaryRawInput.trim();
+      }
+      const res = await generateBookingSessionSummary(selectedBooking._id, payload);
+      if (res?.data) {
+        populateSummaryDraft(res.data);
+        setContinuityData((prev) => (prev ? { ...prev, currentSummary: res.data } : prev));
+        setSummaryNotice('✓ 9-Part Structured Summary generated! Review and click "Approve Summary" below.');
+      }
+    } catch (err) {
+      alert(err.message || 'Failed to generate structured summary');
+    } finally {
+      setGeneratingSummary(false);
+    }
+  };
+
+  const handleSaveAndApproveSummary = async (approve = true) => {
+    if (!selectedBooking) return;
+    setSavingSummary(true);
+    setSummaryNotice('');
+    try {
+      const res = await updateBookingSessionSummary(selectedBooking._id, {
+        ...summaryDraft,
+        approve
+      });
+      if (res?.data) {
+        populateSummaryDraft(res.data);
+        setContinuityData((prev) => (prev ? { ...prev, currentSummary: res.data } : prev));
+        setSummaryNotice(approve ? '✓ Summary approved and saved for session continuity!' : '✓ Draft summary saved.');
+      }
+    } catch (err) {
+      alert(err.message || 'Failed to save summary');
+    } finally {
+      setSavingSummary(false);
+    }
   };
 
   const handleSave = async () => {
@@ -250,8 +418,24 @@ export default function BookingsPage() {
     },
     { 
       key: 'status', 
-      label: 'Status', 
-      render: (val) => <StatusBadge status={val} /> 
+      label: 'Status & Meet', 
+      render: (val, row) => (
+        <div className="flex flex-col items-start gap-1">
+          <StatusBadge status={val} />
+          {row.meetingLink && row.meetingLink.startsWith('https://meet.google.com/') && (
+            <a
+              href={row.meetingLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold hover:bg-emerald-100"
+            >
+              <Video className="w-3 h-3" />
+              <span>Google Meet Ready</span>
+            </a>
+          )}
+        </div>
+      )
     },
     { key: 'createdAt', label: 'Submitted Date', render: (val) => new Date(val).toLocaleDateString() },
   ];
@@ -504,9 +688,202 @@ export default function BookingsPage() {
                     <span className="font-semibold text-blue-900">Preferred Slot Requested: </span>
                     {selectedBooking.preferredDate && new Date(selectedBooking.preferredDate).toLocaleDateString()}
                     {selectedBooking.preferredTime && ` • ${selectedBooking.preferredTime}`}
+                    <span className="ml-1 text-blue-700">({selectedBooking.timezone || 'Asia/Kolkata'} • IST)</span>
                   </div>
-                  <span className="text-blue-700 font-medium">Introductory Slot</span>
+                  <span className="text-blue-700 font-medium">Session #{selectedBooking.sessionNumber || 1}</span>
                 </div>
+              )}
+            </div>
+
+            {/* Google Calendar & Google Meet Automation Control Bar */}
+            <div className="bg-emerald-50/60 border border-emerald-200 rounded-xl p-5 space-y-3 shadow-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                    <Video className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="font-semibold text-gray-900 text-sm">
+                        Google Calendar &amp; Google Meet Conference
+                      </h3>
+                      {selectedBooking.meetingLink &&
+                      selectedBooking.meetingLink.startsWith('https://meet.google.com/') ? (
+                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold">
+                          ✓ Meet Link Active
+                        </span>
+                      ) : (
+                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">
+                          {selectedBooking.calendarEventStatus || 'Not Generated Yet'}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-600 mt-0.5">
+                      {selectedBooking.meetingLink &&
+                      selectedBooking.meetingLink.startsWith('https://meet.google.com/')
+                        ? `Unique Google Meet conference assigned (${selectedBooking.timezone || 'Asia/Kolkata'} IST).`
+                        : selectedBooking.calendarLastError
+                        ? `Last Calendar note: ${selectedBooking.calendarLastError}`
+                        : 'Confirming this booking or clicking "Generate / Retry Meet Link" creates a Google Calendar event and unique Google Meet room.'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                  {selectedBooking.meetingLink &&
+                    selectedBooking.meetingLink.startsWith('https://meet.google.com/') && (
+                      <>
+                        <a
+                          href={selectedBooking.meetingLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 shadow-xs"
+                        >
+                          <Video className="w-3.5 h-3.5" />
+                          <span>Join Google Meet</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard?.writeText(selectedBooking.meetingLink);
+                            setMeetMessage({ type: 'success', text: 'Meet link copied to clipboard!' });
+                          }}
+                          className="px-3 py-2 rounded-lg border border-emerald-300 bg-white hover:bg-emerald-50 text-emerald-800 text-xs font-semibold inline-flex items-center gap-1"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copy</span>
+                        </button>
+                      </>
+                    )}
+
+                  <button
+                    type="button"
+                    disabled={generatingMeet}
+                    onClick={handleGenerateMeetLink}
+                    className="px-3.5 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 text-xs font-semibold inline-flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    <span>
+                      {generatingMeet
+                        ? 'Provisioning Meet...'
+                        : selectedBooking.meetingLink
+                        ? 'Refresh / Sync Calendar'
+                        : 'Generate Google Meet Link'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {selectedBooking.meetingLink && (
+                <div className="text-xs font-mono text-emerald-900 bg-white/80 px-3 py-2 rounded-lg border border-emerald-200 flex flex-wrap items-center justify-between gap-2">
+                  <span className="break-all">{selectedBooking.meetingLink}</span>
+                  {selectedBooking.calendarHtmlLink && (
+                    <a
+                      href={selectedBooking.calendarHtmlLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline font-sans font-semibold inline-flex items-center gap-1"
+                    >
+                      <span>Open Calendar Event</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {meetMessage && (
+                <div
+                  className={`text-xs px-3 py-2 rounded-lg font-medium ${
+                    meetMessage.type === 'success'
+                      ? 'bg-emerald-100 text-emerald-900'
+                      : 'bg-red-100 text-red-800'
+                  }`}
+                >
+                  {meetMessage.text}
+                </div>
+              )}
+            </div>
+
+            {/* Pre-Session Continuity Brief (Chronological History & Next-Session Preparation) */}
+            <div className="bg-indigo-50/50 border border-indigo-200 rounded-xl p-5 space-y-4 shadow-xs">
+              <div className="flex items-center justify-between border-b border-indigo-200/70 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-indigo-600" />
+                  <h3 className="font-semibold text-gray-900 text-sm">
+                    Pre-Session Continuity Brief &amp; Student History
+                  </h3>
+                </div>
+                <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-semibold">
+                  {continuityData?.totalPreviousSessions
+                    ? `${continuityData.totalPreviousSessions} Prior Session(s)`
+                    : 'First Session with Student'}
+                </span>
+              </div>
+
+              {loadingContinuity ? (
+                <p className="text-xs text-gray-500">Loading student continuity brief...</p>
+              ) : continuityData?.totalPreviousSessions > 0 ? (
+                <div className="space-y-3 text-xs">
+                  {continuityData.latestSummary?.privateMentorPrepBrief && (
+                    <div className="p-3.5 rounded-lg bg-white border border-indigo-200 space-y-1">
+                      <span className="font-bold uppercase tracking-wider text-[10px] text-indigo-700 block">
+                        Private Mentor Preparation Brief (From Last Session)
+                      </span>
+                      <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">
+                        {continuityData.latestSummary.privateMentorPrepBrief}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="p-3 rounded-lg bg-white border border-gray-200 space-y-1">
+                      <span className="font-bold uppercase tracking-wider text-[10px] text-emerald-700 block">
+                        Prior Agreed 7-Day Actions &amp; Progress
+                      </span>
+                      {continuityData.priorCommitments?.length > 0 ? (
+                        <ul className="space-y-1.5 text-gray-700">
+                          {continuityData.priorCommitments.slice(0, 3).map((c, idx) => (
+                            <li key={idx}>
+                              <strong>Session #{c.sessionNumber}:</strong> {c.actionAgreed}{' '}
+                              <span className="uppercase text-[10px] px-1.5 py-0.5 rounded bg-gray-100 font-semibold">
+                                {c.actionStatus}
+                              </span>
+                              {c.studentReflection && (
+                                <p className="text-[11px] text-gray-500 italic mt-0.5">
+                                  Student reflection: &ldquo;{c.studentReflection}&rdquo;
+                                </p>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-gray-500">No prior 7-day actions recorded.</p>
+                      )}
+                    </div>
+
+                    <div className="p-3 rounded-lg bg-white border border-gray-200 space-y-1">
+                      <span className="font-bold uppercase tracking-wider text-[10px] text-amber-800 block">
+                        Suggested Opening Questions &amp; Unresolved Topics
+                      </span>
+                      {continuityData.latestSummary?.suggestedOpeningQuestionsNextSession && (
+                        <p className="text-gray-800 whitespace-pre-wrap">
+                          <strong>Opening Questions:</strong>{' '}
+                          {continuityData.latestSummary.suggestedOpeningQuestionsNextSession}
+                        </p>
+                      )}
+                      {continuityData.latestSummary?.unresolvedQuestionsToRevisit && (
+                        <p className="text-gray-700 whitespace-pre-wrap mt-1">
+                          <strong>Unresolved to Revisit:</strong>{' '}
+                          {continuityData.latestSummary.unresolvedQuestionsToRevisit}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-gray-600">
+                  This is {selectedBooking.name}&apos;s first recorded session. Once you complete this session and generate a structured summary below, future bookings will automatically display a continuity preparation brief here.
+                </p>
               )}
             </div>
 
@@ -528,9 +905,9 @@ export default function BookingsPage() {
                     className="w-full border-gray-300 rounded-md shadow-sm p-2 border focus:border-[#2E4052] outline-none text-sm bg-white"
                   >
                     <option value="pending">Pending (New Intake)</option>
-                    <option value="confirmed">Confirmed (Scheduled)</option>
+                    <option value="confirmed">Confirmed (Scheduled — Auto-Creates Meet)</option>
                     <option value="completed">Completed (Conversation Held)</option>
-                    <option value="cancelled">Cancelled</option>
+                    <option value="cancelled">Cancelled (Cancels Calendar Event)</option>
                   </select>
                 </div>
                 
@@ -542,6 +919,31 @@ export default function BookingsPage() {
                     type="date" 
                     value={editForm.followUpDate} 
                     onChange={(e) => setEditForm({...editForm, followUpDate: e.target.value})}
+                    className="w-full border-gray-300 rounded-md shadow-sm p-2 border focus:border-[#2E4052] outline-none text-sm bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                    Scheduled Session Date (Reschedule Syncs Calendar)
+                  </label>
+                  <input
+                    type="date"
+                    value={editForm.preferredDate}
+                    onChange={(e) => setEditForm({ ...editForm, preferredDate: e.target.value })}
+                    className="w-full border-gray-300 rounded-md shadow-sm p-2 border focus:border-[#2E4052] outline-none text-sm bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                    Scheduled Time Window (IST)
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.preferredTime}
+                    onChange={(e) => setEditForm({ ...editForm, preferredTime: e.target.value })}
+                    placeholder="e.g. Afternoon (2:00 PM – 5:00 PM) or 4:00 PM"
                     className="w-full border-gray-300 rounded-md shadow-sm p-2 border focus:border-[#2E4052] outline-none text-sm bg-white"
                   />
                 </div>
@@ -629,6 +1031,267 @@ export default function BookingsPage() {
                     rows="2"
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* 9-Part Post-Session Structured Summary Generator, Editor & Approval */}
+            <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-[#2E4052]" />
+                    <h3 className="font-semibold text-gray-900 text-base">
+                      9-Part Post-Session Structured Summary
+                    </h3>
+                    {continuityData?.currentSummary?.isApproved ? (
+                      <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold">
+                        ✓ Reviewed &amp; Approved
+                      </span>
+                    ) : continuityData?.currentSummary?.status === 'ready' ? (
+                      <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">
+                        Draft Ready for Review
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Participant Consent:{' '}
+                    <strong>
+                      {selectedBooking.aiNotesConsent !== false
+                        ? 'Consented to AI/Meet + Mentor Notes'
+                        : 'Mentor-Entered Notes Fallback Only'}
+                    </strong>
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={generatingSummary}
+                  onClick={handleGenerateStructuredSummary}
+                  className="px-3.5 py-2 rounded-lg bg-[#2E4052] hover:bg-[#1e2c3a] text-white text-xs font-semibold inline-flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <span>
+                    {generatingSummary
+                      ? 'Generating 9-Part Summary...'
+                      : 'Generate / Refresh 9-Part Summary'}
+                  </span>
+                </button>
+              </div>
+
+              {/* Optional Input Source Selector (Google Meet Notes / Transcript / Mentor Notes) */}
+              <div className="p-3.5 rounded-lg bg-gray-50 border border-gray-200 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-xs font-semibold text-gray-700">
+                    Preferred Summary Input Source:
+                  </span>
+                  <div className="inline-flex rounded-lg border border-gray-300 bg-white p-0.5 text-xs">
+                    {[
+                      { id: 'mentor_notes', label: 'Mentor Notes (Fallback)' },
+                      { id: 'google_meet_notes', label: 'Google Meet Notes' },
+                      { id: 'google_meet_transcript', label: 'Meet Transcript' }
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setSummarySourceType(tab.id)}
+                        className={`px-2.5 py-1 rounded-md font-medium transition-colors ${
+                          summarySourceType === tab.id
+                            ? 'bg-[#2E4052] text-white'
+                            : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {(summarySourceType === 'google_meet_notes' ||
+                  summarySourceType === 'google_meet_transcript') && (
+                  <div>
+                    <textarea
+                      rows={3}
+                      value={summaryRawInput}
+                      onChange={(e) => setSummaryRawInput(e.target.value)}
+                      placeholder={
+                        summarySourceType === 'google_meet_notes'
+                          ? 'Paste Google Meet auto-generated notes doc content here...'
+                          : 'Paste Google Meet transcript excerpt here...'
+                      }
+                      className="w-full border border-gray-300 rounded-md p-2 text-xs bg-white outline-none focus:border-[#2E4052]"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {summaryNotice && (
+                <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-medium">
+                  {summaryNotice}
+                </div>
+              )}
+
+              {/* 9 Editable Structured Summary Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs">
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">
+                    2. Student&apos;s Goals &amp; Concerns Explicitly Discussed
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={summaryDraft.studentGoalsAndConcerns}
+                    onChange={(e) =>
+                      setSummaryDraft({ ...summaryDraft, studentGoalsAndConcerns: e.target.value })
+                    }
+                    className="w-full border border-gray-300 rounded-md p-2 bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">
+                    3. Key Topics &amp; Perspectives Explored
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={summaryDraft.keyTopicsAndPerspectives}
+                    onChange={(e) =>
+                      setSummaryDraft({ ...summaryDraft, keyTopicsAndPerspectives: e.target.value })
+                    }
+                    className="w-full border border-gray-300 rounded-md p-2 bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">
+                    4A. Important Observations (Factual Statements)
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={summaryDraft.importantObservationsFacts}
+                    onChange={(e) =>
+                      setSummaryDraft({
+                        ...summaryDraft,
+                        importantObservationsFacts: e.target.value
+                      })
+                    }
+                    className="w-full border border-gray-300 rounded-md p-2 bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">
+                    4B. Important Observations (Mentor Interpretations)
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={summaryDraft.importantObservationsInterpretations}
+                    onChange={(e) =>
+                      setSummaryDraft({
+                        ...summaryDraft,
+                        importantObservationsInterpretations: e.target.value
+                      })
+                    }
+                    className="w-full border border-gray-300 rounded-md p-2 bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">
+                    5. Goals or Actions Agreed Upon by the Student
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={summaryDraft.agreedStudentActions}
+                    onChange={(e) =>
+                      setSummaryDraft({ ...summaryDraft, agreedStudentActions: e.target.value })
+                    }
+                    className="w-full border border-gray-300 rounded-md p-2 bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">
+                    6. Progress Reported on Actions from Previous Session
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={summaryDraft.progressFromPreviousSession}
+                    onChange={(e) =>
+                      setSummaryDraft({
+                        ...summaryDraft,
+                        progressFromPreviousSession: e.target.value
+                      })
+                    }
+                    className="w-full border border-gray-300 rounded-md p-2 bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">
+                    7. Unresolved Questions &amp; Topics to Revisit
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={summaryDraft.unresolvedQuestionsToRevisit}
+                    onChange={(e) =>
+                      setSummaryDraft({
+                        ...summaryDraft,
+                        unresolvedQuestionsToRevisit: e.target.value
+                      })
+                    }
+                    className="w-full border border-gray-300 rounded-md p-2 bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">
+                    8. Suggested Opening Questions for Next Session
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={summaryDraft.suggestedOpeningQuestionsNextSession}
+                    onChange={(e) =>
+                      setSummaryDraft({
+                        ...summaryDraft,
+                        suggestedOpeningQuestionsNextSession: e.target.value
+                      })
+                    }
+                    className="w-full border border-gray-300 rounded-md p-2 bg-white"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block font-semibold text-indigo-900 mb-1">
+                    9. Short Private Mentor Preparation Brief (Strictly Private to Mentor)
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={summaryDraft.privateMentorPrepBrief}
+                    onChange={(e) =>
+                      setSummaryDraft({ ...summaryDraft, privateMentorPrepBrief: e.target.value })
+                    }
+                    className="w-full border border-indigo-200 rounded-md p-2 bg-indigo-50/30"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-gray-100">
+                <button
+                  type="button"
+                  disabled={savingSummary}
+                  onClick={() => handleSaveAndApproveSummary(false)}
+                  className="px-3.5 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs font-semibold text-gray-700"
+                >
+                  Save Draft Summary
+                </button>
+                <button
+                  type="button"
+                  disabled={savingSummary}
+                  onClick={() => handleSaveAndApproveSummary(true)}
+                  className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 shadow-xs"
+                >
+                  <CheckCircle className="w-3.5 h-3.5" />
+                  <span>{savingSummary ? 'Saving...' : 'Approve & Mark Summary Reviewed'}</span>
+                </button>
               </div>
             </div>
 

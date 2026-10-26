@@ -5,6 +5,7 @@ const UserSubscription = require('../models/UserSubscription');
 const Booking = require('../models/Booking');
 const Setting = require('../models/Setting');
 const { sendBookingConfirmationEmails } = require('../services/emailService');
+const { ensureBookingCalendarAndMeet } = require('../services/googleMeetService');
 const { protectUser, protectAdmin, optionalAdmin } = require('../middleware/auth');
 const { computeDedupFingerprint } = require('../middleware/security');
 
@@ -238,6 +239,8 @@ router.post('/book-with-credit', protectUser, async (req, res, next) => {
         usefulGoal: usefulGoal ? String(usefulGoal).trim().slice(0, 500) : '',
         preferredDate: preferredDate || undefined,
         preferredTime: preferredTime ? String(preferredTime).trim() : undefined,
+        aiNotesConsent: Boolean(req.body.aiNotesConsent),
+        aiNotesConsentAt: req.body.aiNotesConsent ? now : null,
 
         status: 'confirmed',
         paymentRequired: false,
@@ -267,6 +270,10 @@ router.post('/book-with-credit', protectUser, async (req, res, next) => {
       updatedSub.status = 'exhausted';
     }
     await updatedSub.save();
+
+    // Generate Google Calendar event + unique Google Meet link BEFORE sending confirmation email
+    await ensureBookingCalendarAndMeet(booking);
+    booking = await Booking.findById(booking._id);
 
     const emailNotifications = await sendBookingConfirmationEmails(booking, {
       stage: 'confirmed'

@@ -26,6 +26,10 @@ const {
   sendBookingConfirmationEmails,
   sendBookingStatusUpdateEmail
 } = require('../services/emailService');
+const {
+  ensureBookingCalendarAndMeet,
+  updateBookingCalendarEvent
+} = require('../services/googleMeetService');
 
 /**
  * Helper to read payment settings from MongoDB with defaults
@@ -322,7 +326,13 @@ async function reconcileOrderPayment(orderId, verifiedBySource = 'verify_endpoin
     }
   }
 
-  // 7. Dispatch idempotent payment receipt + booking confirmation emails (never blocks or rolls back payment)
+  // 7. Create Google Calendar event & unique Google Meet link BEFORE sending confirmation emails
+  if (booking && booking.status === 'confirmed') {
+    await ensureBookingCalendarAndMeet(booking);
+    booking = await Booking.findById(booking._id).select('+slotUpdateToken');
+  }
+
+  // 8. Dispatch idempotent payment receipt + booking confirmation emails (never blocks or rolls back payment)
   await sendPaymentSuccessEmails({
     orderId: cleanOrderId,
     booking,
@@ -571,7 +581,8 @@ router.post('/create-order', paymentLimiter, optionalAuth, async (req, res, next
               topic: initialTopic,
               usefulGoal: bookingData.usefulGoal || '',
               preferredDate: bookingData.preferredDate || undefined,
-              preferredTime: bookingData.preferredTime || undefined
+              preferredTime: bookingData.preferredTime || undefined,
+              aiNotesConsent: Boolean(bookingData.aiNotesConsent)
             }
           : null
       });
@@ -636,6 +647,8 @@ router.post('/create-order', paymentLimiter, optionalAuth, async (req, res, next
           usefulGoal: bookingData.usefulGoal || '',
           preferredDate: bookingData.preferredDate || undefined,
           preferredTime: bookingData.preferredTime || undefined,
+          aiNotesConsent: Boolean(bookingData.aiNotesConsent),
+          aiNotesConsentAt: bookingData.aiNotesConsent ? new Date() : null,
           source: user?.source || bookingData.source || '',
           referredBy: user?.referredBy || bookingData.referredBy || '',
           slotUpdateToken: crypto.randomBytes(24).toString('hex'),
@@ -824,9 +837,14 @@ router.patch('/slot-preference/:bookingId', optionalAuth, async (req, res, next)
 
     await booking.save();
 
-    await sendBookingStatusUpdateEmail(booking, 'slot_preference_saved');
+    if (booking.status === 'confirmed') {
+      await updateBookingCalendarEvent(booking);
+    }
+    const refreshedBooking = await Booking.findById(booking._id).select('+slotUpdateToken');
 
-    const safeBooking = booking.toObject();
+    await sendBookingStatusUpdateEmail(refreshedBooking, 'slot_preference_saved');
+
+    const safeBooking = refreshedBooking.toObject();
     delete safeBooking.notes;
     delete safeBooking.slotUpdateToken;
 

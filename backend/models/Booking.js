@@ -78,7 +78,39 @@ const bookingSchema = new mongoose.Schema({
   userType: { type: String, enum: ['student', 'parent', 'institution', 'other'], required: true, default: 'student' },
   preferredDate: { type: Date },
   preferredTime: { type: String },
+  duration: { type: Number, default: 45 }, // Session duration in minutes
+  timezone: { type: String, default: 'Asia/Kolkata' },
+  scheduledStartAt: { type: Date, default: null },
+  scheduledEndAt: { type: Date, default: null },
   slotUpdateToken: { type: String, select: false },
+
+  // Google Calendar & Google Meet Integration Fields
+  meetingLink: { type: String, trim: true, default: null },
+  calendarEventId: { type: String, trim: true, index: true, default: null },
+  calendarHtmlLink: { type: String, trim: true, default: null },
+  meetConferenceId: { type: String, trim: true, default: null },
+  calendarEventStatus: {
+    type: String,
+    enum: ['not_created', 'pending', 'confirmed', 'cancelled', 'failed'],
+    default: 'not_created'
+  },
+  calendarLastError: { type: String, default: null },
+
+  // Participant Consent for AI-Assisted Session Notes & Summary
+  aiNotesConsent: { type: Boolean, default: false },
+  aiNotesConsentAt: { type: Date, default: null },
+
+  // Post-Session Structured Summary Reference
+  summaryId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SessionSummary',
+    default: null
+  },
+  summaryStatus: {
+    type: String,
+    enum: ['none', 'pending', 'processing', 'ready', 'failed', 'reviewed'],
+    default: 'none'
+  },
 
   // 5-Stage Lifecycle & Admin Record-Keeping
   // Stages: 1. Intake -> 2. Conversation -> 3. Agreed Next Step -> 4. 7-Day Follow-Up -> 5. Outcome

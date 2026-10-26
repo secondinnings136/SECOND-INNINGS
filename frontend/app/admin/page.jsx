@@ -18,29 +18,65 @@ import {
   PlusCircle,
   CheckCircle,
   Sparkles,
-  ShieldCheck
+  ShieldCheck,
+  Video,
+  Link2,
+  Unlink
 } from 'lucide-react';
-import { getDashboard, getAdminPaymentSettings } from '../../lib/adminApi';
+import {
+  getDashboard,
+  getAdminPaymentSettings,
+  getGoogleIntegrationStatus,
+  getGoogleConnectUrl,
+  disconnectGoogleIntegration
+} from '../../lib/adminApi';
 import StatsCard from '../../components/admin/StatsCard';
 import StatusBadge from '../../components/admin/StatusBadge';
 
 export default function AdminDashboard() {
   const [data, setData] = useState(null);
   const [paymentConfig, setPaymentConfig] = useState(null);
+  const [googleStatus, setGoogleStatus] = useState(null);
+  const [googleActionLoading, setGoogleActionLoading] = useState(false);
+  const [googleNotice, setGoogleNotice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const connected = params.get('google_connected');
+      const email = params.get('google_email');
+      const gErr = params.get('google_error');
+      if (connected === 'true') {
+        setGoogleNotice({
+          type: 'success',
+          message: `Google Calendar & Meet connected successfully${email ? ` (${email})` : ''}! Confirmed bookings will now automatically generate unique Google Meet links.`
+        });
+        window.history.replaceState({}, '', window.location.pathname);
+      } else if (gErr) {
+        setGoogleNotice({
+          type: 'error',
+          message: `Google Calendar connection error: ${gErr}`
+        });
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
+
     const fetchAll = async () => {
       try {
-        const [dashData, payData] = await Promise.all([
+        const [dashData, payData, gStatus] = await Promise.all([
           getDashboard(),
-          getAdminPaymentSettings().catch(() => null)
+          getAdminPaymentSettings().catch(() => null),
+          getGoogleIntegrationStatus().catch(() => null)
         ]);
         setData(dashData);
         if (payData?.success) {
           setPaymentConfig(payData);
+        }
+        if (gStatus?.data) {
+          setGoogleStatus(gStatus.data);
         }
       } catch (err) {
         console.error(err);
@@ -51,6 +87,55 @@ export default function AdminDashboard() {
     };
     fetchAll();
   }, []);
+
+  const handleConnectGoogle = async () => {
+    setGoogleActionLoading(true);
+    setGoogleNotice(null);
+    try {
+      let preferredRedirectUri = '';
+      if (typeof window !== 'undefined') {
+        const host = window.location.hostname;
+        if (host === 'localhost' || host === '127.0.0.1') {
+          preferredRedirectUri = 'http://localhost:5000/api/admin/google/callback';
+        } else {
+          preferredRedirectUri = `${window.location.origin}/api/admin/google/callback`;
+        }
+      }
+      const res = await getGoogleConnectUrl(preferredRedirectUri);
+      if (res?.authUrl) {
+        window.location.href = res.authUrl;
+      }
+    } catch (err) {
+      setGoogleNotice({
+        type: 'error',
+        message: err.message || 'Failed to initiate Google Calendar OAuth flow'
+      });
+      setGoogleActionLoading(false);
+    }
+  };
+
+  const handleDisconnectGoogle = async () => {
+    if (!window.confirm('Disconnect Google Calendar & Meet integration? Automated Meet link generation will pause until reconnected.')) {
+      return;
+    }
+    setGoogleActionLoading(true);
+    try {
+      await disconnectGoogleIntegration();
+      const updated = await getGoogleIntegrationStatus().catch(() => null);
+      if (updated?.data) setGoogleStatus(updated.data);
+      setGoogleNotice({
+        type: 'success',
+        message: 'Google Calendar & Meet integration disconnected.'
+      });
+    } catch (err) {
+      setGoogleNotice({
+        type: 'error',
+        message: err.message || 'Failed to disconnect Google Calendar'
+      });
+    } finally {
+      setGoogleActionLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -130,6 +215,107 @@ export default function AdminDashboard() {
               <span>Fee Control</span>
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Google Calendar & Meet Connection Status Card */}
+      {googleNotice && (
+        <div
+          className={`p-4 rounded-2xl border text-sm flex items-center justify-between gap-4 ${
+            googleNotice.type === 'success'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+              : 'bg-red-50 border-red-200 text-red-800'
+          }`}
+        >
+          <span>{googleNotice.message}</span>
+          <button
+            onClick={() => setGoogleNotice(null)}
+            className="text-xs font-mono uppercase font-semibold underline shrink-0"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      <div className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-6 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+        <div className="flex items-start gap-4">
+          <div
+            className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
+              googleStatus?.connected
+                ? 'bg-emerald-100 text-emerald-700'
+                : googleStatus?.status === 'revoked_or_expired'
+                ? 'bg-red-100 text-red-700'
+                : 'bg-amber-100 text-amber-800'
+            }`}
+          >
+            <Video className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="font-bold text-gray-900 text-base">
+                Google Calendar &amp; Google Meet Automation
+              </h2>
+              {googleStatus?.connected ? (
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 flex items-center gap-1">
+                  <CheckCircle className="w-3.5 h-3.5" /> Connected
+                </span>
+              ) : googleStatus?.status === 'revoked_or_expired' ? (
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                  Token Expired / Revoked — Reconnect Needed
+                </span>
+              ) : (
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
+                  Not Connected Yet
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-gray-600 mt-1 max-w-2xl leading-relaxed">
+              {googleStatus?.connected
+                ? `Connected to ${googleStatus.connectedEmail || 'Mentor Google Calendar'} (${googleStatus.calendarId || 'primary'}). Every confirmed booking automatically creates a Google Calendar event and a unique Google Meet conference link.`
+                : googleStatus?.lastError
+                ? `Last status: ${googleStatus.lastError}. Click "Connect Google Calendar & Meet" to authorize automatic Google Meet link creation.`
+                : 'Connect Deepak’s Google account once using OAuth 2.0 so confirmed bookings automatically generate a Calendar invite and unique Google Meet link.'}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          {googleStatus?.connected ? (
+            <>
+              <button
+                type="button"
+                disabled={googleActionLoading}
+                onClick={handleConnectGoogle}
+                className="px-3.5 py-2 rounded-xl border border-gray-300 hover:bg-gray-50 text-xs font-semibold text-gray-700 flex items-center gap-1.5 transition-colors"
+              >
+                <Link2 className="w-3.5 h-3.5" />
+                <span>{googleActionLoading ? 'Redirecting...' : 'Reconnect Account'}</span>
+              </button>
+              <button
+                type="button"
+                disabled={googleActionLoading}
+                onClick={handleDisconnectGoogle}
+                className="px-3.5 py-2 rounded-xl border border-red-200 hover:bg-red-50 text-xs font-semibold text-red-700 flex items-center gap-1.5 transition-colors"
+              >
+                <Unlink className="w-3.5 h-3.5" />
+                <span>Disconnect</span>
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              disabled={googleActionLoading}
+              onClick={handleConnectGoogle}
+              className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-2 shadow-xs transition-colors disabled:opacity-50"
+            >
+              <Video className="w-4 h-4" />
+              <span>
+                {googleActionLoading
+                  ? 'Redirecting to Google...'
+                  : 'Connect Google Calendar & Meet'}
+              </span>
+            </button>
+          )}
         </div>
       </div>
 

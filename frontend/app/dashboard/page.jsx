@@ -496,7 +496,7 @@ export default function MenteeDashboardPage() {
                       <div className="md:col-span-4 flex flex-col justify-between p-4 rounded-xl bg-paper border border-stone/40 space-y-4">
                         <div className="space-y-2 text-xs">
                           <span className="font-mono text-[10px] uppercase tracking-widest text-ash block">
-                            Session Slot
+                            Session Slot &amp; Meeting Link
                           </span>
                           {session.preferredDate ? (
                             <p className="font-semibold text-ink flex items-center gap-1.5">
@@ -517,6 +517,28 @@ export default function MenteeDashboardPage() {
                               {session.preferredTime}
                             </p>
                           )}
+                          <p className="text-[11px] text-ash font-mono">
+                            Timezone: {session.timezone || 'Asia/Kolkata'} (IST, UTC+05:30)
+                          </p>
+
+                          {session.meetingLink &&
+                            session.meetingLink.startsWith('https://meet.google.com/') &&
+                            session.status !== 'cancelled' && (
+                              <div className="pt-2">
+                                <a
+                                  href={session.meetingLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="w-full py-2.5 px-3 rounded-lg bg-sage text-white text-xs font-semibold flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity shadow-xs"
+                                >
+                                  <span>Join Google Meet Session</span>
+                                  <ArrowUpRight className="w-3.5 h-3.5" />
+                                </a>
+                                <p className="text-[10px] text-ash mt-1 break-all text-center">
+                                  {session.meetingLink}
+                                </p>
+                              </div>
+                            )}
                         </div>
 
                         <div className="space-y-2 pt-2 border-t border-stone/30">
