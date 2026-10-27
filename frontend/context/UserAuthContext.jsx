@@ -99,13 +99,17 @@ export function UserAuthProvider({ children }) {
 
   const loginWithEmail = async ({ email, password }) => {
     const res = await loginUserAccount({ email, password });
-    applyAuthPayload(res);
+    if (res.token && res.user) {
+      applyAuthPayload(res);
+    }
     return res;
   };
 
   const registerWithEmail = async ({ name, email, password }) => {
     const res = await registerUserAccount({ name, email, password });
-    applyAuthPayload(res);
+    if (res.token && res.user) {
+      applyAuthPayload(res);
+    }
     return res;
   };
 

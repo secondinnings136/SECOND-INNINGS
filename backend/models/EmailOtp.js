@@ -12,6 +12,16 @@ const emailOtpSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  purpose: {
+    type: String,
+    enum: ['register', 'login_2fa', 'email_verify'],
+    default: 'email_verify'
+  },
+  pendingPasswordHash: {
+    type: String,
+    select: false,
+    default: null
+  },
   otpHash: {
     type: String,
     required: true

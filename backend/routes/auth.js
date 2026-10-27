@@ -1,5 +1,6 @@
 const express = require('express');
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
@@ -280,7 +281,7 @@ router.post('/email/send-otp', authLimiter, async (req, res, next) => {
     }
 
     // Enforce 45-second cooldown per email address to prevent OTP spam
-    const existingOtp = await EmailOtp.findOne({ email: normalizedEmail });
+    const existingOtp = await EmailOtp.findOne({ email: normalizedEmail }).select('+pendingPasswordHash');
     if (existingOtp && existingOtp.lastSentAt) {
       const elapsedSec = Math.floor((Date.now() - new Date(existingOtp.lastSentAt).getTime()) / 1000);
       if (elapsedSec < 45) {
@@ -295,12 +296,20 @@ router.post('/email/send-otp', authLimiter, async (req, res, next) => {
     const otpCode = String(crypto.randomInt(100000, 999999));
     const otpHash = hashEmailOtp(normalizedEmail, otpCode);
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes validity
+    const resolvedName = name
+      ? String(name).trim().slice(0, 120)
+      : existingOtp?.name || '';
+    const resolvedPurpose = existingOtp?.purpose || 'email_verify';
 
     await EmailOtp.findOneAndUpdate(
       { email: normalizedEmail },
       {
         email: normalizedEmail,
-        name: name ? String(name).trim().slice(0, 120) : '',
+        name: resolvedName,
+        purpose: resolvedPurpose,
+        ...(existingOtp?.pendingPasswordHash
+          ? { pendingPasswordHash: existingOtp.pendingPasswordHash }
+          : {}),
         otpHash,
         attempts: 0,
         lastSentAt: new Date(),
@@ -312,14 +321,17 @@ router.post('/email/send-otp', authLimiter, async (req, res, next) => {
     const delivery = await sendOtpEmail({
       email: normalizedEmail,
       otp: otpCode,
-      name: name ? String(name).trim() : ''
+      name: resolvedName,
+      purpose: resolvedPurpose
     });
 
     res.status(200).json({
       success: true,
       message: `A 6-digit verification code has been sent to ${normalizedEmail}.`,
       email: normalizedEmail,
+      purpose: resolvedPurpose,
       expiresInSeconds: 600,
+      retryAfterSeconds: 45,
       emailDelivered: delivery.delivered,
       deliveryStatus: delivery.status
     });
@@ -329,7 +341,7 @@ router.post('/email/send-otp', authLimiter, async (req, res, next) => {
 });
 
 // @route   POST /api/auth/email/verify-otp
-// @desc    Verify 6-digit Email OTP and sign in / create Mentee Account
+// @desc    Verify 6-digit Email OTP (for Sign-Up Email Verification OR Login 2FA) and issue JWT
 // @access  Public (Rate-limited)
 router.post('/email/verify-otp', authLimiter, async (req, res, next) => {
   try {
@@ -344,7 +356,7 @@ router.post('/email/verify-otp', authLimiter, async (req, res, next) => {
       });
     }
 
-    const otpRecord = await EmailOtp.findOne({ email: normalizedEmail });
+    const otpRecord = await EmailOtp.findOne({ email: normalizedEmail }).select('+pendingPasswordHash');
     if (!otpRecord || new Date() > new Date(otpRecord.expiresAt)) {
       if (otpRecord) await EmailOtp.deleteOne({ _id: otpRecord._id });
       return res.status(400).json({
@@ -376,8 +388,9 @@ router.post('/email/verify-otp', authLimiter, async (req, res, next) => {
       });
     }
 
-    // OTP verified! Delete OTP record immediately so it can never be replayed
+    // OTP verified! Capture stored metadata and delete OTP record immediately so it can never be replayed
     const savedName = name || otpRecord.name || normalizedEmail.split('@')[0];
+    const savedPasswordHash = otpRecord.pendingPasswordHash || null;
     await EmailOtp.deleteOne({ _id: otpRecord._id });
 
     let user = await User.findOne({ email: normalizedEmail }).select('+passwordHash');
@@ -390,7 +403,9 @@ router.post('/email/verify-otp', authLimiter, async (req, res, next) => {
         onboardingCompleted: false,
         lastLoginAt: new Date()
       });
-      if (password && String(password).length >= 6) {
+      if (savedPasswordHash) {
+        user.passwordHash = savedPasswordHash;
+      } else if (password && String(password).length >= 6) {
         await user.setPassword(String(password));
       }
       await user.save();
@@ -401,7 +416,9 @@ router.post('/email/verify-otp', authLimiter, async (req, res, next) => {
       if (name && String(name).trim() && !user.name) {
         user.name = String(name).trim();
       }
-      if (password && String(password).length >= 6) {
+      if (savedPasswordHash && !user.passwordHash) {
+        user.passwordHash = savedPasswordHash;
+      } else if (password && String(password).length >= 6 && !user.passwordHash) {
         await user.setPassword(String(password));
       }
       user.lastLoginAt = new Date();
@@ -427,7 +444,7 @@ router.post('/email/verify-otp', authLimiter, async (req, res, next) => {
 });
 
 // @route   POST /api/auth/register
-// @desc    Create account with Name, Email & Password (fallback for users without Google OAuth popup)
+// @desc    Step 1 of Sign-Up: Validate Name, Email & Password and send 6-digit Email Verification OTP
 // @access  Public
 router.post('/register', authLimiter, async (req, res, next) => {
   try {
@@ -446,8 +463,14 @@ router.post('/register', authLimiter, async (req, res, next) => {
     }
 
     const normalizedEmail = String(email).trim().toLowerCase();
-    const existing = await User.findOne({ email: normalizedEmail }).select('+passwordHash');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please enter a valid email address.'
+      });
+    }
 
+    const existing = await User.findOne({ email: normalizedEmail }).select('+passwordHash');
     if (existing) {
       return res.status(400).json({
         success: false,
@@ -455,32 +478,46 @@ router.post('/register', authLimiter, async (req, res, next) => {
       });
     }
 
-    const user = new User({
-      name: String(name).trim(),
-      email: normalizedEmail,
-      authProvider: 'email',
-      onboardingCompleted: false,
-      lastLoginAt: new Date()
-    });
-    await user.setPassword(String(password));
-    await user.save();
+    // Hash password with bcrypt immediately so plaintext password is never stored
+    const salt = await bcrypt.genSalt(10);
+    const pendingPasswordHash = await bcrypt.hash(String(password), salt);
 
-    sendWelcomeEmail(user).catch((err) =>
-      console.error('[Auth] Welcome email warning:', err.message)
+    const otpCode = String(crypto.randomInt(100000, 999999));
+    const otpHash = hashEmailOtp(normalizedEmail, otpCode);
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes validity
+    const cleanName = String(name).trim().slice(0, 120);
+
+    await EmailOtp.findOneAndUpdate(
+      { email: normalizedEmail },
+      {
+        email: normalizedEmail,
+        name: cleanName,
+        purpose: 'register',
+        pendingPasswordHash,
+        otpHash,
+        attempts: 0,
+        lastSentAt: new Date(),
+        expiresAt
+      },
+      { upsert: true, new: true }
     );
 
-    await linkHistoricalBookings(user);
-    const subSummary = await getUserSubscriptionSummary(user._id);
-    const token = generateUserToken(user._id);
+    const delivery = await sendOtpEmail({
+      email: normalizedEmail,
+      otp: otpCode,
+      name: cleanName,
+      purpose: 'register'
+    });
 
-    const userObj = user.toObject();
-    delete userObj.passwordHash;
-
-    res.status(201).json({
+    res.status(200).json({
       success: true,
-      token,
-      user: userObj,
-      ...subSummary
+      requiresOtp: true,
+      purpose: 'register',
+      email: normalizedEmail,
+      expiresInSeconds: 600,
+      retryAfterSeconds: 45,
+      emailDelivered: delivery.delivered,
+      message: `A 6-digit email verification code has been sent to ${normalizedEmail}. Enter it below to verify your email and complete sign-up.`
     });
   } catch (error) {
     next(error);
@@ -488,7 +525,7 @@ router.post('/register', authLimiter, async (req, res, next) => {
 });
 
 // @route   POST /api/auth/login
-// @desc    Sign in with Email & Password
+// @desc    Step 1 of Sign-In: Verify Email & Password, then send 6-digit 2-Factor Auth (2FA) Email OTP
 // @access  Public
 router.post('/login', authLimiter, async (req, res, next) => {
   try {
@@ -525,21 +562,42 @@ router.post('/login', authLimiter, async (req, res, next) => {
       });
     }
 
-    user.lastLoginAt = new Date();
-    await user.save();
+    // Password verified! Send 6-digit 2FA OTP to user's email
+    const otpCode = String(crypto.randomInt(100000, 999999));
+    const otpHash = hashEmailOtp(normalizedEmail, otpCode);
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes validity
 
-    await linkHistoricalBookings(user);
-    const subSummary = await getUserSubscriptionSummary(user._id);
-    const token = generateUserToken(user._id);
+    await EmailOtp.findOneAndUpdate(
+      { email: normalizedEmail },
+      {
+        email: normalizedEmail,
+        name: user.name || '',
+        purpose: 'login_2fa',
+        pendingPasswordHash: null,
+        otpHash,
+        attempts: 0,
+        lastSentAt: new Date(),
+        expiresAt
+      },
+      { upsert: true, new: true }
+    );
 
-    const userObj = user.toObject();
-    delete userObj.passwordHash;
+    const delivery = await sendOtpEmail({
+      email: normalizedEmail,
+      otp: otpCode,
+      name: user.name || '',
+      purpose: 'login_2fa'
+    });
 
     res.status(200).json({
       success: true,
-      token,
-      user: userObj,
-      ...subSummary
+      requiresOtp: true,
+      purpose: 'login_2fa',
+      email: normalizedEmail,
+      expiresInSeconds: 600,
+      retryAfterSeconds: 45,
+      emailDelivered: delivery.delivered,
+      message: `Password verified! We sent a 6-digit 2-Factor Authentication (2FA) code to ${normalizedEmail}.`
     });
   } catch (error) {
     next(error);

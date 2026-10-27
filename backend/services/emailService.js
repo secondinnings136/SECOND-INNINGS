@@ -614,28 +614,36 @@ function renderBrandEmailLayout({
 }
 
 // ---------------------------------------------------------------------------
-// 1. Authentication & Email Verification OTP
+// 1. Authentication & Email Verification OTP (Sign-Up Verification + Login 2FA)
 // ---------------------------------------------------------------------------
-async function sendEmailOtp({ email, otp, name, idempotencyKey }) {
+async function sendEmailOtp({ email, otp, name, purpose = 'email_verify', idempotencyKey }) {
   const cleanName = name ? String(name).trim() : 'there';
-  const subject = 'Your Second Innings verification code';
+  const isLogin2FA = purpose === 'login_2fa';
+
+  const subject = isLogin2FA
+    ? 'Your Second Innings 2-Step Sign-In (2FA) Code'
+    : 'Verify your email address — Second Innings';
 
   const html = renderBrandEmailLayout({
-    eyebrow: 'ACCOUNT SECURITY',
-    title: 'Verify Your Email Address',
+    eyebrow: isLogin2FA ? '2-FACTOR AUTHENTICATION (2FA)' : 'EMAIL VERIFICATION',
+    title: isLogin2FA ? '2-Step Sign-In Verification Code' : 'Verify Your Email Address',
     greeting: `Hi ${cleanName},`,
-    introHtml: `<p style="margin: 0 0 12px 0;">Please use the single-use verification code below to verify your email address on Second Innings. This code expires in <strong>10 minutes</strong>.</p>`,
-    calloutTitle: 'One-Time Verification Code',
+    introHtml: isLogin2FA
+      ? `<p style="margin: 0 0 12px 0;">Your password was verified. Please enter the 6-digit <strong>2-Factor Authentication (2FA)</strong> code below to complete signing in to your Second Innings account. This code expires in <strong>10 minutes</strong>.</p>`
+      : `<p style="margin: 0 0 12px 0;">Please use the single-use 6-digit verification code below to confirm your email address and activate your Second Innings account. This code expires in <strong>10 minutes</strong>.</p>`,
+    calloutTitle: isLogin2FA ? '2FA Security Code' : 'One-Time Verification Code',
     calloutBodyHtml: `<p style="margin: 4px 0; font-size: 28px; font-weight: 700; letter-spacing: 0.25em; color: #1C1B18; font-family: 'Courier New', Courier, monospace;">${escapeHtml(
       otp
     )}</p>`,
-    closingHtml: `<p style="margin: 0;">For your security, never share this code with anyone. If you did not request this verification code, you can safely ignore this email.</p>`
+    closingHtml: `<p style="margin: 0;">For your security, never share this code with anyone. If you did not initiate this request, please ignore this email.</p>`
   });
 
   const text = [
     `Hi ${cleanName},`,
     '',
-    `Your Second Innings verification code is: ${otp}`,
+    isLogin2FA
+      ? `Your Second Innings 2-Factor Authentication (2FA) sign-in code is: ${otp}`
+      : `Your Second Innings email verification code is: ${otp}`,
     '',
     'This single-use code is valid for 10 minutes. For your security, do not share it with anyone.',
     'If you did not request this code, please ignore this email.',
@@ -653,7 +661,7 @@ async function sendEmailOtp({ email, otp, name, idempotencyKey }) {
     text,
     idempotencyKey:
       idempotencyKey || `auth_email_otp:${String(email).toLowerCase()}:${Date.now()}`,
-    metadata: { purpose: 'email_verification' }
+    metadata: { purpose: purpose || 'email_verification' }
   });
 }
 

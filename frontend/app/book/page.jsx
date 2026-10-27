@@ -28,6 +28,7 @@ import {
   Calendar,
   UserCheck,
   Edit3,
+  RefreshCw,
   User as UserIcon
 } from 'lucide-react';
 
@@ -61,6 +62,8 @@ export default function BookPage() {
     loginWithGoogle,
     loginWithEmail,
     registerWithEmail,
+    requestEmailOtp,
+    verifyEmailOtpAndLogin,
     refreshUser
   } = useUserAuth();
 
@@ -68,11 +71,16 @@ export default function BookPage() {
   const isSubmittingRef = useRef(false);
   const currentIdempotencyKeyRef = useRef(null);
 
-  // Inline Login / Register State (Shown when user is not logged in)
+  // Inline Login / Register + OTP / 2FA State (Shown when user is not logged in)
   const [authMode, setAuthMode] = useState('login'); // 'login' | 'register'
   const [authName, setAuthName] = useState('');
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
+  const [authOtpStep, setAuthOtpStep] = useState(false);
+  const [authOtpCode, setAuthOtpCode] = useState('');
+  const [authOtpPurpose, setAuthOtpPurpose] = useState('register'); // 'register' | 'login_2fa'
+  const [authOtpInfoMsg, setAuthOtpInfoMsg] = useState('');
+  const [authResendCooldown, setAuthResendCooldown] = useState(0);
   const [authSubmitting, setAuthSubmitting] = useState(false);
   const [authError, setAuthError] = useState('');
 
@@ -102,6 +110,14 @@ export default function BookPage() {
     plans: [],
     loaded: false
   });
+
+  useEffect(() => {
+    if (authResendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setAuthResendCooldown((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [authResendCooldown]);
 
   // Automatically redirect logged-in user to /onboarding if they haven't completed the 1-time post-login intake yet!
   useEffect(() => {
@@ -188,11 +204,72 @@ export default function BookPage() {
           password: authPassword
         });
       }
+
+      if (res.requiresOtp) {
+        setAuthOtpStep(true);
+        setAuthOtpCode('');
+        setAuthOtpPurpose(res.purpose || (authMode === 'register' ? 'register' : 'login_2fa'));
+        setAuthOtpInfoMsg(
+          res.message ||
+            `A 6-digit verification code has been sent to ${authEmail.trim().toLowerCase()}.`
+        );
+        setAuthResendCooldown(res.retryAfterSeconds || 45);
+        return;
+      }
+
       if (!res.user?.onboardingCompleted) {
         router.push('/onboarding?next=/book');
       }
     } catch (err) {
-      setAuthError(err.message || (authMode === 'register' ? 'Could not create account' : 'Invalid email or password'));
+      setAuthError(
+        err.message || (authMode === 'register' ? 'Could not create account' : 'Invalid email or password')
+      );
+    } finally {
+      setAuthSubmitting(false);
+    }
+  };
+
+  const handleVerifyAuthOtpSubmit = async (e) => {
+    e?.preventDefault();
+    setAuthError('');
+    const cleanOtp = authOtpCode.replace(/\D/g, '').slice(0, 6);
+    if (cleanOtp.length !== 6) {
+      setAuthError('Please enter the 6-digit verification code sent to your email.');
+      return;
+    }
+
+    setAuthSubmitting(true);
+    try {
+      const res = await verifyEmailOtpAndLogin({
+        email: authEmail.trim().toLowerCase(),
+        otp: cleanOtp,
+        name: authMode === 'register' ? authName.trim() : undefined
+      });
+      if (!res.user?.onboardingCompleted) {
+        router.push('/onboarding?next=/book');
+      }
+    } catch (err) {
+      setAuthError(err.message || 'Invalid or expired verification code');
+    } finally {
+      setAuthSubmitting(false);
+    }
+  };
+
+  const handleResendAuthOtp = async () => {
+    if (authResendCooldown > 0 || authSubmitting) return;
+    setAuthError('');
+    setAuthSubmitting(true);
+    try {
+      const res = await requestEmailOtp({
+        email: authEmail.trim().toLowerCase(),
+        name: authMode === 'register' ? authName.trim() : undefined
+      });
+      setAuthOtpInfoMsg(
+        res.message || `A fresh 6-digit code has been sent to ${authEmail.trim().toLowerCase()}.`
+      );
+      setAuthResendCooldown(res.retryAfterSeconds || 45);
+    } catch (err) {
+      setAuthError(err.message || 'Could not resend verification code');
     } finally {
       setAuthSubmitting(false);
     }
@@ -396,9 +473,9 @@ export default function BookPage() {
                   <div className="p-4 rounded-xl bg-paper-2 border border-line flex items-start gap-3">
                     <span className="font-mono text-xs font-bold text-signal mt-0.5">01</span>
                     <div>
-                      <p className="font-semibold text-ink text-sm">Sign In with Google (or Email)</p>
+                      <p className="font-semibold text-ink text-sm">Sign In with Google (or Email + OTP)</p>
                       <p className="text-xs text-muted mt-0.5">
-                        Creates your secure Mentee Account in one click.
+                        Creates your secure Mentee Account with verified email &amp; 2FA protection.
                       </p>
                     </div>
                   </div>
@@ -433,7 +510,13 @@ export default function BookPage() {
                         Mentee Account
                       </span>
                       <h3 className="font-serif text-2xl text-ink mt-0.5">
-                        {authMode === 'register' ? 'Create Account' : 'Sign In to Book'}
+                        {authOtpStep
+                          ? authOtpPurpose === 'register'
+                            ? 'Verify Your Email'
+                            : '2-Step Verification'
+                          : authMode === 'register'
+                          ? 'Create Account'
+                          : 'Sign In to Book'}
                       </h3>
                     </div>
                     <div className="inline-flex p-1 rounded-xl bg-paper-2 border border-line">
@@ -441,6 +524,8 @@ export default function BookPage() {
                         type="button"
                         onClick={() => {
                           setAuthMode('login');
+                          setAuthOtpStep(false);
+                          setAuthOtpCode('');
                           setAuthError('');
                         }}
                         className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
@@ -455,6 +540,8 @@ export default function BookPage() {
                         type="button"
                         onClick={() => {
                           setAuthMode('register');
+                          setAuthOtpStep(false);
+                          setAuthOtpCode('');
                           setAuthError('');
                         }}
                         className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
@@ -469,25 +556,29 @@ export default function BookPage() {
                   </div>
 
                   {/* Google 1-Click Login */}
-                  <div className="mb-6">
-                    <GoogleSignInButton
-                      text={authMode === 'register' ? 'Sign up with Google' : 'Sign in with Google'}
-                      onSuccess={handleGoogleLoginSuccess}
-                      onError={(msg) => setAuthError(msg)}
-                      onFallbackClick={() => {
-                        const el = document.getElementById('book-auth-email');
-                        el?.focus();
-                      }}
-                    />
-                  </div>
+                  {!authOtpStep && (
+                    <>
+                      <div className="mb-6">
+                        <GoogleSignInButton
+                          text={authMode === 'register' ? 'Sign up with Google' : 'Sign in with Google'}
+                          onSuccess={handleGoogleLoginSuccess}
+                          onError={(msg) => setAuthError(msg)}
+                          onFallbackClick={() => {
+                            const el = document.getElementById('book-auth-email');
+                            el?.focus();
+                          }}
+                        />
+                      </div>
 
-                  <div className="relative flex py-2 items-center mb-6">
-                    <div className="flex-grow border-t border-line"></div>
-                    <span className="flex-shrink mx-3 text-[11px] font-mono uppercase tracking-widest text-muted">
-                      Or with Email &amp; Password
-                    </span>
-                    <div className="flex-grow border-t border-line"></div>
-                  </div>
+                      <div className="relative flex py-2 items-center mb-6">
+                        <div className="flex-grow border-t border-line"></div>
+                        <span className="flex-shrink mx-3 text-[11px] font-mono uppercase tracking-widest text-muted">
+                          Or with Email, Password &amp; OTP
+                        </span>
+                        <div className="flex-grow border-t border-line"></div>
+                      </div>
+                    </>
+                  )}
 
                   {authError && (
                     <div className="mb-4 p-3.5 rounded-xl bg-signal/10 border border-signal/30 text-signal text-xs font-medium">
@@ -495,90 +586,167 @@ export default function BookPage() {
                     </div>
                   )}
 
-                  <form onSubmit={handleEmailAuthSubmit} className="space-y-4">
-                    {authMode === 'register' && (
+                  {authOtpStep ? (
+                    <form onSubmit={handleVerifyAuthOtpSubmit} className="space-y-4">
+                      <div className="p-4 rounded-xl bg-sprout/10 border border-sprout/30 text-xs text-ink-2 space-y-1">
+                        <span className="font-mono text-[10px] uppercase tracking-widest text-sprout font-bold block">
+                          {authOtpPurpose === 'register'
+                            ? 'Step 2 of 2 • Legitimate Email Verification'
+                            : 'Step 2 of 2 • 2-Factor Authentication (2FA)'}
+                        </span>
+                        <p className="text-ink font-medium">{authOtpInfoMsg}</p>
+                      </div>
+
                       <div>
                         <label className="block text-xs font-mono uppercase tracking-wider text-ink-2 mb-1.5">
-                          Your Full Name <span className="text-signal">*</span>
+                          6-Digit Verification Code <span className="text-signal">*</span>
                         </label>
                         <input
                           type="text"
+                          inputMode="numeric"
+                          autoFocus
                           required
-                          value={authName}
-                          onChange={(e) => setAuthName(e.target.value)}
-                          placeholder="e.g., Aarav Sharma"
-                          className="field"
+                          maxLength={6}
+                          value={authOtpCode}
+                          onChange={(e) => setAuthOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          placeholder="123456"
+                          className="field text-center font-mono text-2xl tracking-[0.35em] py-3"
                         />
                       </div>
-                    )}
 
-                    <div>
-                      <label className="block text-xs font-mono uppercase tracking-wider text-ink-2 mb-1.5">
-                        Email Address <span className="text-signal">*</span>
-                      </label>
-                      <input
-                        id="book-auth-email"
-                        type="email"
-                        required
-                        value={authEmail}
-                        onChange={(e) => setAuthEmail(e.target.value)}
-                        placeholder="yourname@gmail.com"
-                        className="field"
-                      />
-                    </div>
+                      <button
+                        type="submit"
+                        disabled={authSubmitting || authOtpCode.length !== 6}
+                        className="btn-editorial w-full justify-center py-3.5 text-sm disabled:opacity-50"
+                      >
+                        <span>
+                          {authSubmitting
+                            ? 'Verifying Code...'
+                            : authOtpPurpose === 'register'
+                            ? 'Verify Email & Create Account'
+                            : 'Verify 2FA Code & Sign In'}
+                        </span>
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
 
-                    <div>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <label className="block text-xs font-mono uppercase tracking-wider text-ink-2">
-                          Password <span className="text-signal">*</span>
-                        </label>
-                        {authMode === 'register' && (
-                          <span className="text-[10px] text-muted font-mono">Min 6 characters</span>
-                        )}
+                      <div className="flex items-center justify-between pt-2 text-xs">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAuthOtpStep(false);
+                            setAuthOtpCode('');
+                            setAuthError('');
+                          }}
+                          className="text-muted hover:text-ink font-medium"
+                        >
+                          ← Change Email / Back
+                        </button>
+
+                        <button
+                          type="button"
+                          disabled={authResendCooldown > 0 || authSubmitting}
+                          onClick={handleResendAuthOtp}
+                          className="inline-flex items-center gap-1.5 font-semibold text-signal disabled:text-muted"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          <span>
+                            {authResendCooldown > 0
+                              ? `Resend Code in ${authResendCooldown}s`
+                              : 'Resend Verification Code'}
+                          </span>
+                        </button>
                       </div>
-                      <input
-                        type="password"
-                        required
-                        minLength={6}
-                        value={authPassword}
-                        onChange={(e) => setAuthPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="field"
-                      />
-                    </div>
+                    </form>
+                  ) : (
+                    <>
+                      <form onSubmit={handleEmailAuthSubmit} className="space-y-4">
+                        {authMode === 'register' && (
+                          <div>
+                            <label className="block text-xs font-mono uppercase tracking-wider text-ink-2 mb-1.5">
+                              Your Full Name <span className="text-signal">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={authName}
+                              onChange={(e) => setAuthName(e.target.value)}
+                              placeholder="e.g., Aarav Sharma"
+                              className="field"
+                            />
+                          </div>
+                        )}
 
-                    <button
-                      type="submit"
-                      disabled={authSubmitting}
-                      className="btn-editorial w-full justify-center py-3.5 text-sm disabled:opacity-50"
-                    >
-                      <span>
-                        {authSubmitting
-                          ? authMode === 'register'
-                            ? 'Creating Account...'
-                            : 'Signing In...'
-                          : authMode === 'register'
-                          ? 'Create Account & Continue'
-                          : 'Sign In to Book'}
-                      </span>
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  </form>
+                        <div>
+                          <label className="block text-xs font-mono uppercase tracking-wider text-ink-2 mb-1.5">
+                            Email Address <span className="text-signal">*</span>
+                          </label>
+                          <input
+                            id="book-auth-email"
+                            type="email"
+                            required
+                            value={authEmail}
+                            onChange={(e) => setAuthEmail(e.target.value)}
+                            placeholder="yourname@gmail.com"
+                            className="field"
+                          />
+                        </div>
 
-                  <div className="mt-4 text-center">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAuthMode(authMode === 'register' ? 'login' : 'register');
-                        setAuthError('');
-                      }}
-                      className="text-xs text-muted hover:text-signal transition-colors font-medium"
-                    >
-                      {authMode === 'register'
-                        ? 'Already have an account? Sign in here →'
-                        : "Don't have an account yet? Create one here →"}
-                    </button>
-                  </div>
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <label className="block text-xs font-mono uppercase tracking-wider text-ink-2">
+                              Password <span className="text-signal">*</span>
+                            </label>
+                            {authMode === 'register' && (
+                              <span className="text-[10px] text-muted font-mono">Min 6 characters</span>
+                            )}
+                          </div>
+                          <input
+                            type="password"
+                            required
+                            minLength={6}
+                            value={authPassword}
+                            onChange={(e) => setAuthPassword(e.target.value)}
+                            placeholder="••••••••"
+                            className="field"
+                          />
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={authSubmitting}
+                          className="btn-editorial w-full justify-center py-3.5 text-sm disabled:opacity-50"
+                        >
+                          <span>
+                            {authSubmitting
+                              ? authMode === 'register'
+                                ? 'Sending Verification OTP...'
+                                : 'Verifying & Sending 2FA Code...'
+                              : authMode === 'register'
+                              ? 'Verify Email & Create Account'
+                              : 'Continue with 2FA Verification'}
+                          </span>
+                          <ArrowRight className="w-4 h-4" />
+                        </button>
+                      </form>
+
+                      <div className="mt-4 text-center">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAuthMode(authMode === 'register' ? 'login' : 'register');
+                            setAuthOtpStep(false);
+                            setAuthOtpCode('');
+                            setAuthError('');
+                          }}
+                          className="text-xs text-muted hover:text-signal transition-colors font-medium"
+                        >
+                          {authMode === 'register'
+                            ? 'Already have an account? Sign in here →'
+                            : "Don't have an account yet? Create one here →"}
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
