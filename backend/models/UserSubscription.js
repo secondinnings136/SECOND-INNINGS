@@ -71,6 +71,16 @@ const userSubscriptionSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  couponCode: {
+    type: String,
+    trim: true,
+    uppercase: true,
+    default: null
+  },
+  discountAmount: {
+    type: Number,
+    default: 0
+  },
   status: {
     type: String,
     enum: ['pending_payment', 'active', 'exhausted', 'expired', 'cancelled'],

@@ -14,16 +14,23 @@ const {
   cancelBookingCalendarEvent
 } = require('../services/googleMeetService');
 const { generateSessionSummaryForBooking } = require('../services/sessionSummaryService');
+const {
+  getPaymentSettings,
+  evaluateUserFreeSessionEligibility,
+  validateAndComputeCoupon,
+  recordCouponRedemption
+} = require('../services/couponService');
 const { protectAdmin, optionalAuth } = require('../middleware/auth');
 const { publicFormLimiter, computeDedupFingerprint } = require('../middleware/security');
 
-// POST /api/bookings - Create booking (Complimentary Public Intake OR Admin Manual Entry)
+// POST /api/bookings - Create booking (Complimentary Introductory Session, 100% Coupon Waiver, OR Admin Manual Entry)
 router.post('/', publicFormLimiter, optionalAuth, async (req, res, next) => {
   try {
     const isAdminManual = Boolean(req.admin);
     const user = req.user || null;
+    let appliedCouponInfo = null;
 
-    // 1. If NOT an Admin manual entry, require authenticated & onboarded user + check payment bypass
+    // 1. If NOT an Admin manual entry, require authenticated & onboarded user + check free session / coupon eligibility
     if (!isAdminManual) {
       if (!user) {
         return res.status(401).json({
@@ -38,14 +45,30 @@ router.post('/', publicFormLimiter, optionalAuth, async (req, res, next) => {
         });
       }
 
-      const enabledDoc = await Setting.findOne({ key: 'paymentsEnabled' });
-      const paymentsEnabled = enabledDoc ? Boolean(enabledDoc.value) : false;
+      const settings = await getPaymentSettings();
+      const rawCouponCode = req.body.couponCode ? String(req.body.couponCode).trim() : '';
 
-      if (paymentsEnabled) {
-        return res.status(402).json({
-          success: false,
-          error: 'Online session payment or an active subscription credit is required to confirm a booking.'
+      if (rawCouponCode) {
+        appliedCouponInfo = await validateAndComputeCoupon({
+          code: rawCouponCode,
+          user,
+          planCode: 'SINGLE_SESSION',
+          baseAmount: settings.sessionFee
         });
+        if (!appliedCouponInfo.isFreeWithCoupon) {
+          return res.status(402).json({
+            success: false,
+            error: `Coupon "${appliedCouponInfo.code}" reduces the fee to ₹${appliedCouponInfo.finalAmount}. Please proceed through online payment to complete booking.`
+          });
+        }
+      } else {
+        const eligibility = await evaluateUserFreeSessionEligibility(user, settings);
+        if (!eligibility.canBookFree) {
+          return res.status(402).json({
+            success: false,
+            error: eligibility.reason
+          });
+        }
       }
     }
 
@@ -104,7 +127,11 @@ router.post('/', publicFormLimiter, optionalAuth, async (req, res, next) => {
     const bookingPayload = {
       userId: user ? user._id : null,
       sessionNumber: prevCount + 1,
-      bookingMode: isAdminManual ? 'admin_manual' : 'free_intro',
+      bookingMode: isAdminManual
+        ? 'admin_manual'
+        : appliedCouponInfo
+        ? 'coupon_waiver'
+        : 'free_intro',
       idempotencyKey: dedupKey,
       name: resolvedName,
       email: String(user?.email || req.body.email || '').trim().toLowerCase(),
@@ -139,7 +166,13 @@ router.post('/', publicFormLimiter, optionalAuth, async (req, res, next) => {
       paymentRequired: isAdminManual ? Boolean(req.body.paymentRequired) : false,
       paymentStatus: isAdminManual && req.body.paymentStatus ? req.body.paymentStatus : 'not_required',
       paymentAmount: isAdminManual ? Number(req.body.paymentAmount || 0) : 0,
-      paymentMode: isAdminManual ? req.body.paymentMode || 'DIRECT_UPI' : undefined,
+      couponCode: appliedCouponInfo ? appliedCouponInfo.code : null,
+      discountAmount: appliedCouponInfo ? appliedCouponInfo.discountAmount : 0,
+      paymentMode: isAdminManual
+        ? req.body.paymentMode || 'DIRECT_UPI'
+        : appliedCouponInfo
+        ? `COUPON (${appliedCouponInfo.code})`
+        : 'COMPLIMENTARY_INTRO',
       paymentTime: isAdminManual ? req.body.paymentTime || null : null,
       notes: isAdminManual ? req.body.notes || '' : ''
     };
@@ -148,6 +181,13 @@ router.post('/', publicFormLimiter, optionalAuth, async (req, res, next) => {
     if (user && !user.hasUsedFreeSession && bookingPayload.bookingMode === 'free_intro') {
       user.hasUsedFreeSession = true;
       await user.save();
+    }
+    if (appliedCouponInfo) {
+      await recordCouponRedemption({
+        couponCode: appliedCouponInfo.code,
+        user,
+        bookingId: booking._id
+      });
     }
 
     // Generate Google Calendar event + unique Google Meet link BEFORE sending confirmation email

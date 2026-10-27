@@ -61,7 +61,17 @@ const paymentTransactionSchema = new mongoose.Schema({
   expectedAmount: {
     type: Number,
     required: true,
-    min: 1
+    min: 0
+  },
+  couponCode: {
+    type: String,
+    trim: true,
+    uppercase: true,
+    default: null
+  },
+  discountAmount: {
+    type: Number,
+    default: 0
   },
   paidAmount: {
     type: Number,

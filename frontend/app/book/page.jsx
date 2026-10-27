@@ -6,6 +6,7 @@ import Link from 'next/link';
 import {
   submitBooking,
   getPaymentConfig,
+  validateCouponCode,
   createPaymentOrder,
   bookWithSubscriptionCredit,
   generateIdempotencyKey
@@ -106,10 +107,21 @@ export default function BookPage() {
   const [paymentConfig, setPaymentConfig] = useState({
     paymentsEnabled: false,
     sessionFee: 500,
+    firstSessionFreeEnabled: true,
+    limitOneFreeSessionPerUser: true,
+    feeNotice: '',
+    canBookFreeSession: true,
+    hasAlreadyBookedFirstSession: false,
     currency: 'INR',
     plans: [],
     loaded: false
   });
+
+  // Coupon state
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState('');
 
   useEffect(() => {
     if (authResendCooldown <= 0) return;
@@ -133,6 +145,17 @@ export default function BookPage() {
           setPaymentConfig({
             paymentsEnabled: Boolean(res.data.paymentsEnabled),
             sessionFee: res.data.sessionFee ?? 500,
+            firstSessionFreeEnabled:
+              res.data.firstSessionFreeEnabled !== undefined
+                ? Boolean(res.data.firstSessionFreeEnabled)
+                : true,
+            limitOneFreeSessionPerUser:
+              res.data.limitOneFreeSessionPerUser !== undefined
+                ? Boolean(res.data.limitOneFreeSessionPerUser)
+                : true,
+            feeNotice: res.data.feeNotice || '',
+            canBookFreeSession: Boolean(res.data.canBookFreeSession),
+            hasAlreadyBookedFirstSession: Boolean(res.data.hasAlreadyBookedFirstSession),
             currency: res.data.currency || 'INR',
             plans: res.data.plans || [],
             loaded: true
@@ -142,7 +165,13 @@ export default function BookPage() {
       .catch(() => {
         setPaymentConfig((prev) => ({ ...prev, loaded: true }));
       });
-  }, []);
+  }, [isAuthenticated, sessionCount]);
+
+  // Clear or re-validate coupon if selected plan changes
+  useEffect(() => {
+    setAppliedCoupon(null);
+    setCouponError('');
+  }, [selectedBookingFactor]);
 
   // Automatically select 'CREDIT' mode if user has active subscription credits
   useEffect(() => {
@@ -287,6 +316,47 @@ export default function BookPage() {
     (p) => p.code === selectedBookingFactor
   );
 
+  // Determine whether this user has already used their 1st complimentary session
+  const hasUsedFirstFreeSession =
+    Boolean(user?.hasUsedFreeSession) ||
+    Number(sessionCount || 0) >= 1 ||
+    Boolean(paymentConfig.hasAlreadyBookedFirstSession);
+
+  // Determine whether a Single Session is free (without coupon) for this user right now
+  const isSingleSessionFreeWithoutCoupon = !hasUsedFirstFreeSession
+    ? !paymentConfig.paymentsEnabled || paymentConfig.firstSessionFreeEnabled
+    : !paymentConfig.limitOneFreeSessionPerUser && !paymentConfig.paymentsEnabled;
+
+  const singleSessionBaseFee = Number(paymentConfig.sessionFee || 500);
+
+  const handleApplyCoupon = async () => {
+    const cleanCode = couponInput.trim().toUpperCase();
+    if (!cleanCode) {
+      setCouponError('Please enter a coupon code.');
+      return;
+    }
+    setCouponLoading(true);
+    setCouponError('');
+    try {
+      const targetPlanCode =
+        selectedBookingFactor === 'MONTHLY_4' || selectedBookingFactor === 'QUARTERLY_8'
+          ? selectedBookingFactor
+          : 'SINGLE_SESSION';
+      const res = await validateCouponCode({
+        code: cleanCode,
+        planCode: targetPlanCode
+      });
+      if (res?.data) {
+        setAppliedCoupon(res.data);
+      }
+    } catch (err) {
+      setAppliedCoupon(null);
+      setCouponError(err.message || 'Invalid or expired coupon code');
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
   // Main Session / Subscription Booking Submit Handler (Only accessible after Login + Onboarding)
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
@@ -353,6 +423,7 @@ export default function BookPage() {
           {
             purpose: 'subscription_purchase',
             planCode: selectedBookingFactor,
+            couponCode: appliedCoupon?.code || undefined,
             bookingData: {
               topic: sessionForm.topic,
               usefulGoal: sessionForm.usefulGoal,
@@ -364,9 +435,18 @@ export default function BookPage() {
           idempKey
         );
 
-        const { paymentSessionId, environment, alreadyPaid, orderId } = orderRes.data;
+        const { paymentSessionId, environment, alreadyPaid, couponWaived, booking, orderId } = orderRes.data;
         if (alreadyPaid) {
           await refreshUser();
+          if (couponWaived && booking) {
+            setStatus({
+              loading: false,
+              success: true,
+              error: null,
+              confirmedBooking: booking
+            });
+            return;
+          }
           router.push(`/book/status?order_id=${orderId}`);
           return;
         }
@@ -375,7 +455,7 @@ export default function BookPage() {
       }
 
       // =====================================================================
-      // CASE C: SINGLE SESSION (PAID IF PAYMENTS ENABLED, ELSE COMPLIMENTARY)
+      // CASE C: SINGLE SESSION (COMPLIMENTARY 1ST SESSION, COUPON WAIVER, OR PAID)
       // =====================================================================
       const payload = {
         topic: sessionForm.topic,
@@ -383,21 +463,36 @@ export default function BookPage() {
         usefulGoal: sessionForm.usefulGoal,
         preferredDate: sessionForm.preferredDate || undefined,
         preferredTime: sessionForm.preferredTime || undefined,
-        aiNotesConsent: Boolean(sessionForm.aiNotesConsent)
+        aiNotesConsent: Boolean(sessionForm.aiNotesConsent),
+        couponCode: appliedCoupon?.code || undefined
       };
 
-      if (paymentConfig.paymentsEnabled && paymentConfig.sessionFee > 0) {
+      const requiresPaidCheckout =
+        !isSingleSessionFreeWithoutCoupon && !appliedCoupon?.isFreeWithCoupon;
+
+      if (requiresPaidCheckout) {
         const orderRes = await createPaymentOrder(
           {
             purpose: 'single_booking',
             planCode: 'SINGLE_SESSION',
+            couponCode: appliedCoupon?.code || undefined,
             bookingData: payload
           },
           idempKey
         );
 
-        const { paymentSessionId, environment, alreadyPaid, orderId } = orderRes.data;
+        const { paymentSessionId, environment, alreadyPaid, couponWaived, booking, orderId } = orderRes.data;
         if (alreadyPaid) {
+          await refreshUser();
+          if (couponWaived && booking) {
+            setStatus({
+              loading: false,
+              success: true,
+              error: null,
+              confirmedBooking: booking
+            });
+            return;
+          }
           router.push(`/book/status?order_id=${orderId}`);
           return;
         }
@@ -405,7 +500,7 @@ export default function BookPage() {
         return;
       }
 
-      // Complimentary Session (Profile details are pulled automatically from req.user on the backend!)
+      // Complimentary 1st Session OR 100% Coupon Waiver
       const freeRes = await submitBooking(payload, idempKey);
       await refreshUser();
       setStatus({
@@ -987,19 +1082,34 @@ export default function BookPage() {
                             }`}
                           >
                             <div>
-                              <span className="text-[10px] font-mono uppercase tracking-wider opacity-75 block">
-                                Single Session
-                              </span>
+                              <div className="flex items-center justify-between gap-1">
+                                <span className="text-[10px] font-mono uppercase tracking-wider opacity-75 block">
+                                  Single Session
+                                </span>
+                                {!isSingleSessionFreeWithoutCoupon && hasUsedFirstFreeSession && (
+                                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-signal/20 text-signal font-mono uppercase font-bold">
+                                    Session #{Number(sessionCount || 1) + 1}
+                                  </span>
+                                )}
+                              </div>
                               <p className="font-serif text-xl mt-0.5">1 Session</p>
                               <p className="text-xs mt-1 opacity-80 leading-snug">
-                                One focused 30–45 min conversation + 7-Day Next Step
+                                {isSingleSessionFreeWithoutCoupon && !hasUsedFirstFreeSession
+                                  ? 'Your 1st introductory conversation with Deepak Sir is complimentary'
+                                  : 'One focused 30–45 min conversation + 7-Day Next Step'}
                               </p>
                             </div>
                             <div className="mt-4 pt-2.5 border-t border-current/15 flex items-baseline justify-between">
                               <span className="font-serif text-xl">
-                                {paymentConfig.paymentsEnabled ? `₹${paymentConfig.sessionFee}` : 'Complimentary'}
+                                {isSingleSessionFreeWithoutCoupon
+                                  ? 'Complimentary'
+                                  : `₹${singleSessionBaseFee}`}
                               </span>
-                              <span className="text-[10px] font-mono opacity-75">1 Session</span>
+                              <span className="text-[10px] font-mono opacity-75">
+                                {isSingleSessionFreeWithoutCoupon && !hasUsedFirstFreeSession
+                                  ? '1st Intro Free'
+                                  : '1 Session'}
+                              </span>
                             </div>
                           </button>
 
@@ -1062,6 +1172,82 @@ export default function BookPage() {
                             </div>
                           </button>
                         </div>
+
+                        {!isSingleSessionFreeWithoutCoupon && hasUsedFirstFreeSession && selectedBookingFactor === 'SINGLE_SESSION' && (
+                          <div className="p-3.5 rounded-xl bg-paper-2 border border-line text-xs text-ink-2 flex items-center justify-between gap-3">
+                            <span>
+                              You have already used your <strong>1st Complimentary Introductory Session</strong>. For Session #{Number(sessionCount || 1) + 1}, you can pay the session fee (₹{singleSessionBaseFee}), choose a Monthly Plan, or apply an Admin Coupon Code below.
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Coupon Code Box (Shown whenever booking a paid single session or subscription plan, or if user wants to enter a coupon) */}
+                        {selectedBookingFactor !== 'CREDIT' &&
+                          (!isSingleSessionFreeWithoutCoupon ||
+                            selectedBookingFactor === 'MONTHLY_4' ||
+                            selectedBookingFactor === 'QUARTERLY_8') && (
+                            <div className="p-4 rounded-xl bg-paper-2 border border-line space-y-2.5">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                                <label className="text-xs font-mono uppercase tracking-wider text-ink-2 font-semibold">
+                                  Have an Admin Coupon Code?
+                                </label>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="text"
+                                    value={couponInput}
+                                    onChange={(e) => {
+                                      setCouponInput(e.target.value.toUpperCase());
+                                      setCouponError('');
+                                    }}
+                                    placeholder="e.g. FREE100 or MENTOR50"
+                                    className="px-3 py-1.5 rounded-lg border border-line bg-white text-xs font-mono uppercase text-ink focus:outline-none focus:border-ink"
+                                  />
+                                  {appliedCoupon ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setAppliedCoupon(null);
+                                        setCouponInput('');
+                                        setCouponError('');
+                                      }}
+                                      className="px-3 py-1.5 rounded-lg border border-line bg-white text-xs font-semibold text-signal hover:bg-paper"
+                                    >
+                                      Remove
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      disabled={couponLoading || !couponInput.trim()}
+                                      onClick={handleApplyCoupon}
+                                      className="px-3.5 py-1.5 rounded-lg bg-ink text-paper text-xs font-semibold hover:opacity-90 disabled:opacity-50"
+                                    >
+                                      {couponLoading ? 'Checking...' : 'Apply Coupon'}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+
+                              {couponError && (
+                                <p className="text-xs text-signal font-medium">{couponError}</p>
+                              )}
+
+                              {appliedCoupon && (
+                                <div className="p-2.5 rounded-lg bg-sprout/10 border border-sprout/30 text-xs text-ink flex flex-wrap items-center justify-between gap-2">
+                                  <span>
+                                    ✓ Coupon <strong className="font-mono">{appliedCoupon.code}</strong> applied (
+                                    {appliedCoupon.discountType === 'PERCENTAGE'
+                                      ? `${appliedCoupon.discountValue}% OFF`
+                                      : `₹${appliedCoupon.discountValue} OFF`}
+                                    )
+                                  </span>
+                                  <span className="font-mono font-bold text-sprout">
+                                    <s>₹{appliedCoupon.originalAmount}</s> → ₹{appliedCoupon.finalAmount}{' '}
+                                    {appliedCoupon.isFreeWithCoupon ? '(100% Free Waiver!)' : ''}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          )}
                       </div>
 
                       {/* 2. Session Focus & Slot (Only 2 inputs!) */}
@@ -1182,6 +1368,16 @@ export default function BookPage() {
                             </span>
                             <ArrowUpRight className="w-4 h-4" />
                           </>
+                        ) : appliedCoupon?.isFreeWithCoupon ? (
+                          <>
+                            <Sparkles className="w-4 h-4" />
+                            <span>
+                              {status.loading
+                                ? 'Confirming with Coupon...'
+                                : `Confirm with 100% Coupon (${appliedCoupon.code} • ₹0)`}
+                            </span>
+                            <ArrowUpRight className="w-4 h-4" />
+                          </>
                         ) : selectedBookingFactor === 'MONTHLY_4' ? (
                           <>
                             <CreditCard className="w-4 h-4" />
@@ -1189,7 +1385,11 @@ export default function BookPage() {
                               {status.loading
                                 ? 'Opening Secure Checkout...'
                                 : `Subscribe (4 Sessions / Month • ₹${
-                                    selectedPlanObj?.code === 'MONTHLY_4' ? selectedPlanObj.price : 1600
+                                    appliedCoupon
+                                      ? appliedCoupon.finalAmount
+                                      : selectedPlanObj?.code === 'MONTHLY_4'
+                                      ? selectedPlanObj.price
+                                      : 1600
                                   }) & Book Session`}
                             </span>
                             <ArrowUpRight className="w-4 h-4" />
@@ -1201,24 +1401,36 @@ export default function BookPage() {
                               {status.loading
                                 ? 'Opening Secure Checkout...'
                                 : `Activate 8-Session Pack (₹${
-                                    selectedPlanObj?.code === 'QUARTERLY_8' ? selectedPlanObj.price : 2800
+                                    appliedCoupon
+                                      ? appliedCoupon.finalAmount
+                                      : selectedPlanObj?.code === 'QUARTERLY_8'
+                                      ? selectedPlanObj.price
+                                      : 2800
                                   }) & Book Session`}
                             </span>
                             <ArrowUpRight className="w-4 h-4" />
                           </>
-                        ) : paymentConfig.paymentsEnabled && paymentConfig.sessionFee > 0 ? (
+                        ) : !isSingleSessionFreeWithoutCoupon ? (
                           <>
                             <CreditCard className="w-4 h-4" />
                             <span>
                               {status.loading
                                 ? 'Opening Secure Checkout...'
-                                : `Pay ₹${paymentConfig.sessionFee} & Confirm Session`}
+                                : `Pay ₹${
+                                    appliedCoupon ? appliedCoupon.finalAmount : singleSessionBaseFee
+                                  } & Confirm Session`}
                             </span>
                             <ArrowUpRight className="w-4 h-4" />
                           </>
                         ) : (
                           <>
-                            <span>{status.loading ? 'Confirming...' : 'Confirm Session Request'}</span>
+                            <span>
+                              {status.loading
+                                ? 'Confirming...'
+                                : !hasUsedFirstFreeSession
+                                ? 'Confirm 1st Complimentary Session'
+                                : 'Confirm Session Request'}
+                            </span>
                             <ArrowUpRight className="w-4 h-4" />
                           </>
                         )}

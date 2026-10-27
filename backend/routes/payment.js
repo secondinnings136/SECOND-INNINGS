@@ -7,6 +7,7 @@ const SubscriptionPlan = require('../models/SubscriptionPlan');
 const UserSubscription = require('../models/UserSubscription');
 const PaymentTransaction = require('../models/PaymentTransaction');
 const WebhookEvent = require('../models/WebhookEvent');
+const Coupon = require('../models/Coupon');
 const { protectAdmin, optionalAuth } = require('../middleware/auth');
 const {
   paymentLimiter,
@@ -14,6 +15,12 @@ const {
   computeDedupFingerprint
 } = require('../middleware/security');
 const { ensureDefaultPlans } = require('./subscriptions');
+const {
+  getPaymentSettings,
+  evaluateUserFreeSessionEligibility,
+  validateAndComputeCoupon,
+  recordCouponRedemption
+} = require('../services/couponService');
 const {
   createCashfreeOrder,
   fetchCashfreeOrder,
@@ -30,21 +37,6 @@ const {
   ensureBookingCalendarAndMeet,
   updateBookingCalendarEvent
 } = require('../services/googleMeetService');
-
-/**
- * Helper to read payment settings from MongoDB with defaults
- */
-async function getPaymentSettings() {
-  const [enabledDoc, feeDoc] = await Promise.all([
-    Setting.findOne({ key: 'paymentsEnabled' }),
-    Setting.findOne({ key: 'sessionFee' })
-  ]);
-
-  return {
-    paymentsEnabled: enabledDoc ? Boolean(enabledDoc.value) : false,
-    sessionFee: feeDoc && Number(feeDoc.value) >= 0 ? Number(feeDoc.value) : 500
-  };
-}
 
 /**
  * Unified Atomic Order Reconciliation Engine
@@ -332,6 +324,20 @@ async function reconcileOrderPayment(orderId, verifiedBySource = 'verify_endpoin
     booking = await Booking.findById(booking._id).select('+slotUpdateToken');
   }
 
+  // Record coupon redemption if a coupon was used on this paid order
+  const redeemedCouponCode = tx?.couponCode || booking?.couponCode || activatedSub?.couponCode;
+  if (redeemedCouponCode) {
+    await recordCouponRedemption({
+      couponCode: redeemedCouponCode,
+      user: {
+        _id: tx?.userId || booking?.userId || activatedSub?.userId || null,
+        email: tx?.customerEmail || booking?.email || ''
+      },
+      orderId: cleanOrderId,
+      bookingId: booking?._id || null
+    }).catch(() => null);
+  }
+
   // 8. Dispatch idempotent payment receipt + booking confirmation emails (never blocks or rolls back payment)
   await sendPaymentSuccessEmails({
     orderId: cleanOrderId,
@@ -361,9 +367,9 @@ async function reconcileOrderPayment(orderId, verifiedBySource = 'verify_endpoin
 }
 
 // @route   GET /api/payment/config
-// @desc    Get public payment configuration + active subscription plans
-// @access  Public
-router.get('/config', async (req, res, next) => {
+// @desc    Get public payment configuration + active subscription plans + user free-session eligibility
+// @access  Public (with optionalAuth)
+router.get('/config', optionalAuth, async (req, res, next) => {
   try {
     await ensureDefaultPlans();
     const [settings, plans] = await Promise.all([
@@ -371,17 +377,78 @@ router.get('/config', async (req, res, next) => {
       SubscriptionPlan.find({ isActive: true }).sort({ sortOrder: 1 })
     ]);
 
+    const eligibility = await evaluateUserFreeSessionEligibility(req.user || null, settings);
+
     res.status(200).json({
       success: true,
       data: {
         paymentsEnabled: settings.paymentsEnabled,
         sessionFee: settings.sessionFee,
+        firstSessionFreeEnabled: settings.firstSessionFreeEnabled,
+        limitOneFreeSessionPerUser: settings.limitOneFreeSessionPerUser,
+        feeNotice: settings.feeNotice,
+        canBookFreeSession: eligibility.canBookFree,
+        hasAlreadyBookedFirstSession: eligibility.hasAlreadyBookedFirstSession,
+        prevBookingsCount: eligibility.prevBookingsCount,
         currency: 'INR',
         plans
       }
     });
   } catch (error) {
     next(error);
+  }
+});
+
+// @route   POST /api/payment/validate-coupon
+// @desc    Validate an admin-created coupon code and return exact discount breakdown
+// @access  Public / Authenticated User
+router.post('/validate-coupon', optionalAuth, async (req, res) => {
+  try {
+    await ensureDefaultPlans();
+    const settings = await getPaymentSettings();
+    const { code, planCode = 'SINGLE_SESSION' } = req.body;
+
+    let baseAmount = settings.sessionFee > 0 ? settings.sessionFee : 500;
+    if (planCode && planCode !== 'SINGLE_SESSION') {
+      const plan = await SubscriptionPlan.findOne({
+        code: String(planCode).toUpperCase(),
+        isActive: true
+      });
+      if (!plan) {
+        return res.status(404).json({
+          success: false,
+          error: 'Selected subscription plan not found.'
+        });
+      }
+      baseAmount = Number(plan.price);
+    }
+
+    const result = await validateAndComputeCoupon({
+      code,
+      user: req.user || null,
+      planCode: String(planCode || 'SINGLE_SESSION').toUpperCase(),
+      baseAmount
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        code: result.code,
+        description: result.description,
+        discountType: result.discountType,
+        discountValue: result.discountValue,
+        applicableTo: result.applicableTo,
+        originalAmount: result.originalAmount,
+        discountAmount: result.discountAmount,
+        finalAmount: result.finalAmount,
+        isFreeWithCoupon: result.isFreeWithCoupon
+      }
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 400).json({
+      success: false,
+      error: error.message || 'Invalid coupon code'
+    });
   }
 });
 
@@ -398,6 +465,7 @@ router.post('/create-order', paymentLimiter, optionalAuth, async (req, res, next
       purpose: rawPurpose,
       planCode,
       customAmount,
+      couponCode: rawCouponCode,
       idempotencyKey: bodyIdempKey
     } = req.body;
 
@@ -468,6 +536,25 @@ router.post('/create-order', paymentLimiter, optionalAuth, async (req, res, next
       });
     }
 
+    // Validate & apply admin coupon code if provided
+    let appliedCouponInfo = null;
+    if (rawCouponCode && String(rawCouponCode).trim()) {
+      try {
+        appliedCouponInfo = await validateAndComputeCoupon({
+          code: String(rawCouponCode).trim(),
+          user,
+          planCode: selectedPlan ? selectedPlan.code : 'SINGLE_SESSION',
+          baseAmount: resolvedAmount
+        });
+        resolvedAmount = appliedCouponInfo.finalAmount;
+      } catch (couponErr) {
+        return res.status(couponErr.statusCode || 400).json({
+          success: false,
+          error: couponErr.message || 'Invalid coupon code'
+        });
+      }
+    }
+
     // Compute 5-minute deduplication fingerprint to block double-clicks even if client changes idempotencyKey
     const fiveMinBucket = Math.floor(Date.now() / (5 * 60 * 1000));
     const dedupFingerprint = computeDedupFingerprint([
@@ -475,11 +562,198 @@ router.post('/create-order', paymentLimiter, optionalAuth, async (req, res, next
       purpose,
       selectedPlan?.code || 'SINGLE',
       resolvedAmount,
+      appliedCouponInfo?.code || '',
       bookingData.topic || '',
       fiveMinBucket
     ]);
 
     const effectiveIdempKey = rawIdempKey || `IDEMP_${dedupFingerprint}`;
+
+    // =========================================================================
+    // SPECIAL CASE: 100% DISCOUNT COUPON (finalAmount === 0) -> INSTANT ACTIVATION
+    // =========================================================================
+    if (appliedCouponInfo && appliedCouponInfo.isFreeWithCoupon) {
+      const couponOrderId = `COUPON_${appliedCouponInfo.code}_${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+      const now = new Date();
+      let activatedSub = null;
+      let confirmedBooking = null;
+
+      if (purpose === 'subscription_purchase' && selectedPlan && user) {
+        const durationDays = selectedPlan.durationDays || (selectedPlan.code === 'QUARTERLY_8' ? 90 : 30);
+        const expiresAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
+        const initialTopic = bookingData.topic ? String(bookingData.topic).trim() : '';
+        const initialUsed = initialTopic ? 1 : 0;
+        const initialRemaining = Math.max(0, selectedPlan.sessionsCount - initialUsed);
+
+        activatedSub = await UserSubscription.create({
+          userId: user._id,
+          planId: selectedPlan._id,
+          planCode: selectedPlan.code,
+          planName: selectedPlan.name,
+          planType: selectedPlan.planType,
+          totalCredits: selectedPlan.sessionsCount,
+          usedCredits: initialUsed,
+          remainingCredits: initialRemaining,
+          amountPaid: 0,
+          couponCode: appliedCouponInfo.code,
+          discountAmount: appliedCouponInfo.discountAmount,
+          status: initialRemaining > 0 ? 'active' : 'exhausted',
+          startsAt: now,
+          expiresAt,
+          cashfreeOrderId: couponOrderId,
+          cashfreePaymentId: couponOrderId,
+          creditLedger: [
+            {
+              action: 'CREDITED',
+              creditsDelta: selectedPlan.sessionsCount,
+              balanceAfter: selectedPlan.sessionsCount,
+              note: `Activated ${selectedPlan.name} with 100% Coupon (${appliedCouponInfo.code})`,
+              timestamp: now
+            }
+          ]
+        });
+
+        if (initialTopic) {
+          const prevCount = await Booking.countDocuments({
+            userId: user._id,
+            status: { $ne: 'cancelled' }
+          });
+
+          confirmedBooking = await Booking.create({
+            userId: user._id,
+            sessionNumber: prevCount + 1,
+            bookingMode: 'subscription_credit',
+            userSubscriptionId: activatedSub._id,
+            planCode: selectedPlan.code,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            whatsapp: user.whatsapp || user.phone,
+            userType: user.userType || 'student',
+            age: user.age,
+            ageGroup: user.ageGroup,
+            isUnder18: user.isUnder18,
+            parentName: user.parentName,
+            parentPhone: user.parentPhone,
+            parentEmail: user.parentEmail,
+            parentConsentConfirmed: user.parentConsentConfirmed,
+            whereCurrently: user.whereCurrently,
+            currentStage: user.whereCurrently,
+            institutionOrOrg: user.institutionOrOrg,
+            city: user.city,
+            source: user.source || `Subscription Coupon (${appliedCouponInfo.code})`,
+            referredBy: user.referredBy,
+            topic: initialTopic,
+            concern: initialTopic,
+            usefulGoal: bookingData.usefulGoal || '',
+            preferredDate: bookingData.preferredDate || undefined,
+            preferredTime: bookingData.preferredTime || undefined,
+            aiNotesConsent: Boolean(bookingData.aiNotesConsent),
+            aiNotesConsentAt: bookingData.aiNotesConsent ? now : null,
+            status: 'confirmed',
+            paymentRequired: false,
+            paymentStatus: 'paid',
+            paymentAmount: 0,
+            couponCode: appliedCouponInfo.code,
+            discountAmount: appliedCouponInfo.discountAmount,
+            cashfreeOrderId: couponOrderId,
+            paymentMode: `COUPON (${appliedCouponInfo.code})`,
+            paymentTime: now
+          });
+
+          activatedSub.initialBookingId = confirmedBooking._id;
+          activatedSub.creditLedger.push({
+            action: 'CONSUMED',
+            bookingId: confirmedBooking._id,
+            creditsDelta: -1,
+            balanceAfter: initialRemaining,
+            note: `Session #${confirmedBooking.sessionNumber} booked on plan activation`,
+            timestamp: now
+          });
+          await activatedSub.save();
+        }
+      } else {
+        const prevCount = user
+          ? await Booking.countDocuments({ userId: user._id, status: { $ne: 'cancelled' } })
+          : 0;
+        const resolvedUserType = user?.userType || bookingData.userType || 'student';
+        const parsedAge = user?.age || (bookingData.age ? Number(bookingData.age) : undefined);
+        const isUnder18 = resolvedUserType === 'student' && parsedAge && parsedAge < 18;
+
+        confirmedBooking = await Booking.create({
+          userId: user ? user._id : null,
+          sessionNumber: prevCount + 1,
+          bookingMode: 'coupon_waiver',
+          planCode: 'SINGLE_SESSION',
+          idempotencyKey: effectiveIdempKey,
+          name: customerName,
+          email: customerEmail,
+          phone: customerPhone,
+          whatsapp: user?.whatsapp || bookingData.whatsapp || customerPhone,
+          userType: resolvedUserType,
+          age: parsedAge,
+          ageGroup: user?.ageGroup || bookingData.ageGroup || 'other',
+          isUnder18: Boolean(user?.isUnder18 ?? isUnder18),
+          parentName: user?.parentName || bookingData.parentName,
+          parentPhone: user?.parentPhone || bookingData.parentPhone,
+          parentEmail: user?.parentEmail || bookingData.parentEmail,
+          parentConsentConfirmed: Boolean(user?.parentConsentConfirmed ?? bookingData.parentConsentConfirmed),
+          whereCurrently: user?.whereCurrently || bookingData.whereCurrently || '',
+          currentStage: user?.whereCurrently || bookingData.whereCurrently || '',
+          institutionOrOrg: user?.institutionOrOrg || bookingData.institutionOrOrg || '',
+          city: user?.city || bookingData.city || '',
+          topic: bookingData.topic || bookingData.concern || 'Mentoring Session',
+          concern: bookingData.topic || bookingData.concern || 'Mentoring Session',
+          usefulGoal: bookingData.usefulGoal || '',
+          preferredDate: bookingData.preferredDate || undefined,
+          preferredTime: bookingData.preferredTime || undefined,
+          aiNotesConsent: Boolean(bookingData.aiNotesConsent),
+          aiNotesConsentAt: bookingData.aiNotesConsent ? now : null,
+          source: user?.source || bookingData.source || '',
+          referredBy: user?.referredBy || bookingData.referredBy || '',
+          status: 'confirmed',
+          paymentRequired: false,
+          paymentStatus: 'paid',
+          paymentAmount: 0,
+          couponCode: appliedCouponInfo.code,
+          discountAmount: appliedCouponInfo.discountAmount,
+          cashfreeOrderId: couponOrderId,
+          paymentMode: `COUPON (${appliedCouponInfo.code})`,
+          paymentTime: now
+        });
+      }
+
+      await recordCouponRedemption({
+        couponCode: appliedCouponInfo.code,
+        user,
+        orderId: couponOrderId,
+        bookingId: confirmedBooking?._id || null
+      });
+
+      if (confirmedBooking && confirmedBooking.status === 'confirmed') {
+        await ensureBookingCalendarAndMeet(confirmedBooking);
+        confirmedBooking = await Booking.findById(confirmedBooking._id);
+        await sendBookingConfirmationEmails(confirmedBooking, { stage: 'confirmed' });
+      }
+
+      return res.status(200).json({
+        success: true,
+        alreadyPaid: true,
+        couponWaived: true,
+        message: `Coupon ${appliedCouponInfo.code} applied! Confirmed at ₹0.`,
+        data: {
+          alreadyPaid: true,
+          couponWaived: true,
+          bookingId: confirmedBooking?._id || null,
+          subscriptionId: activatedSub?._id || null,
+          booking: confirmedBooking || null,
+          subscription: activatedSub || null,
+          orderId: couponOrderId,
+          amount: 0,
+          environment: process.env.CASHFREE_ENVIRONMENT || 'PRODUCTION'
+        }
+      });
+    }
 
     // =========================================================================
     // STEP 1: CHECK FOR EXISTING TRANSACTION (IDEMPOTENCY & LIVE PRE-CHECK)
@@ -558,6 +832,8 @@ router.post('/create-order', paymentLimiter, optionalAuth, async (req, res, next
         usedCredits: 0,
         remainingCredits: selectedPlan.sessionsCount,
         amountPaid: resolvedAmount,
+        couponCode: appliedCouponInfo ? appliedCouponInfo.code : null,
+        discountAmount: appliedCouponInfo ? appliedCouponInfo.discountAmount : 0,
         status: 'pending_payment',
         pendingInitialBookingData: initialTopic
           ? {
@@ -655,6 +931,8 @@ router.post('/create-order', paymentLimiter, optionalAuth, async (req, res, next
           paymentRequired: true,
           paymentStatus: 'pending',
           paymentAmount: resolvedAmount,
+          couponCode: appliedCouponInfo ? appliedCouponInfo.code : null,
+          discountAmount: appliedCouponInfo ? appliedCouponInfo.discountAmount : 0,
           status: 'pending'
         });
       }
@@ -715,6 +993,8 @@ router.post('/create-order', paymentLimiter, optionalAuth, async (req, res, next
       customerPhone,
       customerEmail,
       expectedAmount: resolvedAmount,
+      couponCode: appliedCouponInfo ? appliedCouponInfo.code : null,
+      discountAmount: appliedCouponInfo ? appliedCouponInfo.discountAmount : 0,
       currency: 'INR',
       status: 'ACTIVE'
     });
@@ -964,7 +1244,8 @@ router.get('/admin/settings', protectAdmin, async (req, res, next) => {
       plans,
       subscriptions,
       recentTransactions,
-      duplicateAlerts
+      duplicateAlerts,
+      coupons
     ] = await Promise.all([
       Booking.find({ paymentStatus: 'paid' }).sort({ paymentTime: -1, updatedAt: -1 }),
       Booking.countDocuments({ paymentStatus: 'pending', paymentRequired: true }),
@@ -984,7 +1265,8 @@ router.get('/admin/settings', protectAdmin, async (req, res, next) => {
       PaymentTransaction.find().sort({ createdAt: -1 }).limit(100),
       PaymentTransaction.find({ status: { $in: ['DUPLICATE_PAID_NEEDS_REFUND', 'AMOUNT_MISMATCH_HOLD'] } }).sort({
         createdAt: -1
-      })
+      }),
+      Coupon.find().sort({ createdAt: -1 })
     ]);
 
     const paidTransactions = recentTransactions.filter((t) => t.status === 'PAID');
@@ -1011,9 +1293,13 @@ router.get('/admin/settings', protectAdmin, async (req, res, next) => {
     const settingsPayload = {
       paymentsEnabled: settings.paymentsEnabled,
       sessionFee: settings.sessionFee,
+      firstSessionFreeEnabled: settings.firstSessionFreeEnabled,
+      limitOneFreeSessionPerUser: settings.limitOneFreeSessionPerUser,
+      feeNotice: settings.feeNotice,
       environment: process.env.CASHFREE_ENVIRONMENT || 'PRODUCTION',
       stats: statsObj,
       plans,
+      coupons,
       subscriptions,
       duplicateAlerts,
       recentTransactions: recentPaymentBookings,
@@ -1037,11 +1323,17 @@ router.get('/admin/settings', protectAdmin, async (req, res, next) => {
 });
 
 // @route   PUT /api/payment/admin/settings
-// @desc    Update payment settings (enable/disable payments & update session fee)
+// @desc    Update payment settings (enable/disable payments, 1st session free rules & update session fee)
 // @access  Private (Admin)
 router.put('/admin/settings', protectAdmin, async (req, res, next) => {
   try {
-    const { paymentsEnabled, sessionFee } = req.body;
+    const {
+      paymentsEnabled,
+      sessionFee,
+      firstSessionFreeEnabled,
+      limitOneFreeSessionPerUser,
+      feeNotice
+    } = req.body;
 
     if (typeof paymentsEnabled === 'boolean') {
       await Setting.findOneAndUpdate(
@@ -1050,6 +1342,42 @@ router.put('/admin/settings', protectAdmin, async (req, res, next) => {
           key: 'paymentsEnabled',
           value: paymentsEnabled,
           description: 'Whether online Cashfree payment is required for session bookings'
+        },
+        { upsert: true, new: true }
+      );
+    }
+
+    if (typeof firstSessionFreeEnabled === 'boolean') {
+      await Setting.findOneAndUpdate(
+        { key: 'firstSessionFreeEnabled' },
+        {
+          key: 'firstSessionFreeEnabled',
+          value: firstSessionFreeEnabled,
+          description: 'Whether a user gets their 1st introductory session complimentary'
+        },
+        { upsert: true, new: true }
+      );
+    }
+
+    if (typeof limitOneFreeSessionPerUser === 'boolean') {
+      await Setting.findOneAndUpdate(
+        { key: 'limitOneFreeSessionPerUser' },
+        {
+          key: 'limitOneFreeSessionPerUser',
+          value: limitOneFreeSessionPerUser,
+          description: 'Limit each user to maximum 1 complimentary introductory session'
+        },
+        { upsert: true, new: true }
+      );
+    }
+
+    if (typeof feeNotice === 'string') {
+      await Setting.findOneAndUpdate(
+        { key: 'feeNotice' },
+        {
+          key: 'feeNotice',
+          value: feeNotice.trim(),
+          description: 'Public fee notice displayed on the booking page'
         },
         { upsert: true, new: true }
       );
@@ -1086,6 +1414,140 @@ router.put('/admin/settings', protectAdmin, async (req, res, next) => {
       success: true,
       message: 'Payment settings updated successfully',
       data: updated
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ============================================================================
+// ADMIN COUPON MANAGEMENT ROUTES
+// ============================================================================
+
+// @route   GET /api/payment/admin/coupons
+// @desc    List all coupons (Admin)
+router.get('/admin/coupons', protectAdmin, async (req, res, next) => {
+  try {
+    const coupons = await Coupon.find().sort({ createdAt: -1 });
+    res.status(200).json({ success: true, count: coupons.length, data: coupons });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @route   POST /api/payment/admin/coupons
+// @desc    Create a new discount/waiver coupon code (Admin)
+router.post('/admin/coupons', protectAdmin, async (req, res, next) => {
+  try {
+    const {
+      code,
+      description,
+      discountType = 'PERCENTAGE',
+      discountValue,
+      applicableTo = 'ALL',
+      maxUses,
+      maxUsesPerUser = 1,
+      expiresAt,
+      isActive = true
+    } = req.body;
+
+    const cleanCode = String(code || '').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+    if (!cleanCode || cleanCode.length < 3) {
+      return res.status(400).json({
+        success: false,
+        error: 'Coupon code must be at least 3 alphanumeric characters (e.g. FREE100, MENTOR50).'
+      });
+    }
+
+    const numVal = Number(discountValue);
+    if (isNaN(numVal) || numVal < 1) {
+      return res.status(400).json({
+        success: false,
+        error: 'Discount value must be at least 1.'
+      });
+    }
+    if (discountType === 'PERCENTAGE' && numVal > 100) {
+      return res.status(400).json({
+        success: false,
+        error: 'Percentage discount cannot exceed 100%.'
+      });
+    }
+
+    const existing = await Coupon.findOne({ code: cleanCode });
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        error: `Coupon code "${cleanCode}" already exists.`
+      });
+    }
+
+    const coupon = await Coupon.create({
+      code: cleanCode,
+      description: description ? String(description).trim() : '',
+      discountType: discountType === 'FLAT' ? 'FLAT' : 'PERCENTAGE',
+      discountValue: numVal,
+      applicableTo: ['ALL', 'SINGLE_SESSION', 'SUBSCRIPTION'].includes(applicableTo)
+        ? applicableTo
+        : 'ALL',
+      maxUses: maxUses && Number(maxUses) > 0 ? Number(maxUses) : null,
+      maxUsesPerUser: maxUsesPerUser !== undefined && Number(maxUsesPerUser) >= 0 ? Number(maxUsesPerUser) : 1,
+      expiresAt: expiresAt ? new Date(expiresAt) : null,
+      isActive: Boolean(isActive)
+    });
+
+    res.status(201).json({
+      success: true,
+      message: `Coupon "${coupon.code}" created successfully!`,
+      data: coupon
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @route   PATCH /api/payment/admin/coupons/:id
+// @desc    Toggle active state or update coupon fields (Admin)
+router.patch('/admin/coupons/:id', protectAdmin, async (req, res, next) => {
+  try {
+    const coupon = await Coupon.findById(req.params.id);
+    if (!coupon) {
+      return res.status(404).json({ success: false, error: 'Coupon not found' });
+    }
+
+    const { isActive, description, discountType, discountValue, applicableTo, maxUses, maxUsesPerUser, expiresAt } = req.body;
+    if (typeof isActive === 'boolean') coupon.isActive = isActive;
+    if (description !== undefined) coupon.description = String(description).trim();
+    if (discountType && ['PERCENTAGE', 'FLAT'].includes(discountType)) coupon.discountType = discountType;
+    if (discountValue !== undefined && Number(discountValue) >= 1) coupon.discountValue = Number(discountValue);
+    if (applicableTo && ['ALL', 'SINGLE_SESSION', 'SUBSCRIPTION'].includes(applicableTo)) {
+      coupon.applicableTo = applicableTo;
+    }
+    if (maxUses !== undefined) coupon.maxUses = maxUses && Number(maxUses) > 0 ? Number(maxUses) : null;
+    if (maxUsesPerUser !== undefined) coupon.maxUsesPerUser = Number(maxUsesPerUser) >= 0 ? Number(maxUsesPerUser) : 1;
+    if (expiresAt !== undefined) coupon.expiresAt = expiresAt ? new Date(expiresAt) : null;
+
+    await coupon.save();
+    res.status(200).json({
+      success: true,
+      message: `Coupon "${coupon.code}" updated.`,
+      data: coupon
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @route   DELETE /api/payment/admin/coupons/:id
+// @desc    Delete a coupon (Admin)
+router.delete('/admin/coupons/:id', protectAdmin, async (req, res, next) => {
+  try {
+    const deleted = await Coupon.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ success: false, error: 'Coupon not found' });
+    }
+    res.status(200).json({
+      success: true,
+      message: `Coupon "${deleted.code}" deleted.`
     });
   } catch (error) {
     next(error);

@@ -14,7 +14,7 @@ const bookingSchema = new mongoose.Schema({
   },
   bookingMode: {
     type: String,
-    enum: ['free_intro', 'single_paid', 'subscription_credit', 'support_contribution', 'admin_manual'],
+    enum: ['free_intro', 'single_paid', 'subscription_credit', 'support_contribution', 'admin_manual', 'coupon_waiver'],
     default: 'single_paid'
   },
   userSubscriptionId: {
@@ -132,6 +132,8 @@ const bookingSchema = new mongoose.Schema({
     index: true
   },
   paymentAmount: { type: Number, default: 0 },
+  couponCode: { type: String, trim: true, uppercase: true, default: null },
+  discountAmount: { type: Number, default: 0 },
   cashfreeOrderId: { type: String, trim: true, index: true },
   cashfreePaymentSessionId: { type: String, trim: true },
   cashfreePaymentId: { type: String, trim: true },

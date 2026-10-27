@@ -117,6 +117,13 @@ export const deleteSupportTicket = (id) => adminFetch(`/support/${id}`, { method
 // Payments & Fees (Cashfree PG)
 export const getAdminPaymentSettings = () => adminFetch('/payment/admin/settings');
 export const updateAdminPaymentSettings = (data) => adminFetch('/payment/admin/settings', { method: 'PUT', body: JSON.stringify(data) });
+export const getAdminCoupons = () => adminFetch('/payment/admin/coupons');
+export const createAdminCoupon = (data) =>
+  adminFetch('/payment/admin/coupons', { method: 'POST', body: JSON.stringify(data) });
+export const updateAdminCoupon = (id, data) =>
+  adminFetch(`/payment/admin/coupons/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+export const deleteAdminCoupon = (id) =>
+  adminFetch(`/payment/admin/coupons/${id}`, { method: 'DELETE' });
 
 // Google Calendar & Meet Integration + Session Summaries & Continuity (Admin)
 export const getGoogleIntegrationStatus = () => adminFetch('/admin/google/status');

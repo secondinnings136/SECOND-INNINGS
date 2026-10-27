@@ -193,6 +193,13 @@ export async function getPaymentConfig() {
   return fetchAPI('/payment/config');
 }
 
+export async function validateCouponCode(payload) {
+  return fetchAPI('/payment/validate-coupon', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+}
+
 export async function createPaymentOrder(payload, idempotencyKey) {
   const key = idempotencyKey || payload?.idempotencyKey || generateIdempotencyKey('order');
   return fetchAPI('/payment/create-order', {

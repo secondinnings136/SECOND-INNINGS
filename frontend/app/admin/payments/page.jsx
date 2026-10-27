@@ -13,12 +13,17 @@ import {
   Lock,
   Copy,
   Check,
-  Plus
+  Plus,
+  Tag,
+  Trash2
 } from 'lucide-react';
 import {
   getAdminPaymentSettings,
   updateAdminPaymentSettings,
   updateAdminSubscriptionPlan,
+  createAdminCoupon,
+  updateAdminCoupon,
+  deleteAdminCoupon,
   getBookings,
   createBooking
 } from '../../../lib/adminApi';
@@ -32,7 +37,9 @@ export default function AdminPaymentsPage() {
 
   // Settings state
   const [paymentsEnabled, setPaymentsEnabled] = useState(false);
-  const [sessionFee, setSessionFee] = useState(0);
+  const [sessionFee, setSessionFee] = useState(500);
+  const [firstSessionFreeEnabled, setFirstSessionFreeEnabled] = useState(true);
+  const [limitOneFreeSessionPerUser, setLimitOneFreeSessionPerUser] = useState(true);
   const [feeNotice, setFeeNotice] = useState('');
   const [requirePaymentFor, setRequirePaymentFor] = useState(['student', 'parent', 'institution']);
 
@@ -46,8 +53,21 @@ export default function AdminPaymentsPage() {
   });
   const [recentBookings, setRecentBookings] = useState([]);
   const [plans, setPlans] = useState([]);
+  const [coupons, setCoupons] = useState([]);
   const [duplicateAlerts, setDuplicateAlerts] = useState([]);
   const [savingPlanId, setSavingPlanId] = useState(null);
+
+  // Admin Coupon creation state
+  const [creatingCoupon, setCreatingCoupon] = useState(false);
+  const [newCoupon, setNewCoupon] = useState({
+    code: '',
+    discountType: 'PERCENTAGE',
+    discountValue: 100,
+    applicableTo: 'ALL',
+    maxUses: '',
+    maxUsesPerUser: 1,
+    description: ''
+  });
 
   // Manual payment / booking recording state
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
@@ -135,12 +155,19 @@ export default function AdminPaymentsPage() {
       if (resSettings.success) {
         const s = resSettings.settings || resSettings.data || {};
         setPaymentsEnabled(Boolean(s.paymentsEnabled));
-        setSessionFee(s.sessionFee || 0);
+        setSessionFee(s.sessionFee ?? 500);
+        setFirstSessionFreeEnabled(
+          s.firstSessionFreeEnabled !== undefined ? Boolean(s.firstSessionFreeEnabled) : true
+        );
+        setLimitOneFreeSessionPerUser(
+          s.limitOneFreeSessionPerUser !== undefined ? Boolean(s.limitOneFreeSessionPerUser) : true
+        );
         setFeeNotice(s.feeNotice || '');
         setRequirePaymentFor(s.requirePaymentFor || ['student', 'parent', 'institution']);
         setGateway(resSettings.gateway || { environment: s.environment || 'PRODUCTION' });
         setStats(resSettings.stats || s.stats || {});
         setPlans(s.plans || []);
+        setCoupons(s.coupons || []);
         setDuplicateAlerts(s.duplicateAlerts || []);
       }
 
@@ -162,6 +189,8 @@ export default function AdminPaymentsPage() {
       const res = await updateAdminPaymentSettings({
         paymentsEnabled,
         sessionFee: Number(sessionFee),
+        firstSessionFreeEnabled,
+        limitOneFreeSessionPerUser,
         feeNotice,
         requirePaymentFor
       });
@@ -169,15 +198,78 @@ export default function AdminPaymentsPage() {
       if (res.success) {
         setFeedback({ 
           type: 'success', 
-          message: paymentsEnabled 
-            ? `Payment gateway activated! Session fee set to ₹${sessionFee}.`
-            : 'Payment gateway disabled. All sessions are now complimentary (Free).'
+          message: `Settings saved! Single Session Fee: ₹${sessionFee} • 1st Session Free: ${
+            firstSessionFreeEnabled ? 'ON' : 'OFF'
+          } • Max 1 Free Session/User: ${limitOneFreeSessionPerUser ? 'ON' : 'OFF'}.`
         });
       }
     } catch (err) {
       setFeedback({ type: 'error', message: err.message || 'Failed to update settings' });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleCreateCoupon = async (e) => {
+    e?.preventDefault();
+    if (!newCoupon.code.trim()) {
+      alert('Please enter a coupon code (e.g. FREE100, MENTOR50).');
+      return;
+    }
+    setCreatingCoupon(true);
+    setFeedback(null);
+    try {
+      const res = await createAdminCoupon({
+        code: newCoupon.code.trim().toUpperCase(),
+        discountType: newCoupon.discountType,
+        discountValue: Number(newCoupon.discountValue),
+        applicableTo: newCoupon.applicableTo,
+        maxUses: newCoupon.maxUses ? Number(newCoupon.maxUses) : null,
+        maxUsesPerUser: Number(newCoupon.maxUsesPerUser ?? 1),
+        description: newCoupon.description.trim()
+      });
+      if (res?.data) {
+        setCoupons((prev) => [res.data, ...prev]);
+        setNewCoupon({
+          code: '',
+          discountType: 'PERCENTAGE',
+          discountValue: 100,
+          applicableTo: 'ALL',
+          maxUses: '',
+          maxUsesPerUser: 1,
+          description: ''
+        });
+        setFeedback({
+          type: 'success',
+          message: `Coupon "${res.data.code}" created and active!`
+        });
+      }
+    } catch (err) {
+      setFeedback({ type: 'error', message: err.message || 'Failed to create coupon' });
+    } finally {
+      setCreatingCoupon(false);
+    }
+  };
+
+  const handleToggleCoupon = async (coupon) => {
+    try {
+      const res = await updateAdminCoupon(coupon._id, { isActive: !coupon.isActive });
+      if (res?.data) {
+        setCoupons((prev) => prev.map((c) => (c._id === coupon._id ? res.data : c)));
+      }
+    } catch (err) {
+      alert(err.message || 'Could not update coupon status');
+    }
+  };
+
+  const handleDeleteCoupon = async (coupon) => {
+    if (!window.confirm(`Delete coupon "${coupon.code}" permanently?`)) return;
+    try {
+      await deleteAdminCoupon(coupon._id);
+      setCoupons((prev) => prev.filter((c) => c._id !== coupon._id));
+      setFeedback({ type: 'success', message: `Coupon "${coupon.code}" deleted.` });
+    } catch (err) {
+      alert(err.message || 'Could not delete coupon');
     }
   };
 
@@ -378,6 +470,182 @@ export default function AdminPaymentsPage() {
         </div>
       )}
 
+      {/* Admin Discount & Waiver Coupon Manager */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-4">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Tag className="w-5 h-5 text-amber" />
+              <span>Discount &amp; 100% Waiver Coupon Codes</span>
+            </h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Create custom coupon codes (e.g., 100% Free Waiver for Session #2+, 50% OFF, or Flat ₹ Discount) that students can apply at booking.
+            </p>
+          </div>
+          <span className="text-xs font-semibold px-3 py-1 rounded-full bg-amber-50 text-amber-800">
+            {coupons.filter((c) => c.isActive).length} Active Coupons
+          </span>
+        </div>
+
+        {/* Create Coupon Form */}
+        <form onSubmit={handleCreateCoupon} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 bg-gray-50/80 p-4 rounded-xl border border-gray-200">
+          <div>
+            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+              Coupon Code *
+            </label>
+            <input
+              type="text"
+              required
+              value={newCoupon.code}
+              onChange={(e) => setNewCoupon({ ...newCoupon, code: e.target.value.toUpperCase() })}
+              placeholder="e.g. FREE100"
+              className="w-full px-3 py-2 text-xs font-mono uppercase font-bold border border-gray-300 rounded-lg bg-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+              Discount Type
+            </label>
+            <select
+              value={newCoupon.discountType}
+              onChange={(e) => setNewCoupon({ ...newCoupon, discountType: e.target.value })}
+              className="w-full px-3 py-2 text-xs font-semibold border border-gray-300 rounded-lg bg-white"
+            >
+              <option value="PERCENTAGE">Percentage (%)</option>
+              <option value="FLAT">Flat Amount (₹)</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+              {newCoupon.discountType === 'PERCENTAGE' ? 'Discount % (1-100)' : 'Flat ₹ Off'}
+            </label>
+            <input
+              type="number"
+              min="1"
+              max={newCoupon.discountType === 'PERCENTAGE' ? 100 : 100000}
+              required
+              value={newCoupon.discountValue}
+              onChange={(e) => setNewCoupon({ ...newCoupon, discountValue: e.target.value })}
+              className="w-full px-3 py-2 text-xs font-bold border border-gray-300 rounded-lg bg-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+              Applies To
+            </label>
+            <select
+              value={newCoupon.applicableTo}
+              onChange={(e) => setNewCoupon({ ...newCoupon, applicableTo: e.target.value })}
+              className="w-full px-3 py-2 text-xs font-semibold border border-gray-300 rounded-lg bg-white"
+            >
+              <option value="ALL">All (Sessions &amp; Plans)</option>
+              <option value="SINGLE_SESSION">Single Session Only</option>
+              <option value="SUBSCRIPTION">Subscription Plans Only</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+              Uses / Student (0 = Unlim)
+            </label>
+            <input
+              type="number"
+              min="0"
+              value={newCoupon.maxUsesPerUser}
+              onChange={(e) => setNewCoupon({ ...newCoupon, maxUsesPerUser: e.target.value })}
+              className="w-full px-3 py-2 text-xs font-bold border border-gray-300 rounded-lg bg-white"
+            />
+          </div>
+
+          <div className="flex items-end">
+            <button
+              type="submit"
+              disabled={creatingCoupon}
+              className="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-colors disabled:opacity-50"
+            >
+              <Plus className="w-4 h-4" />
+              <span>{creatingCoupon ? 'Creating...' : 'Create Coupon'}</span>
+            </button>
+          </div>
+        </form>
+
+        {/* Coupons List */}
+        {coupons.length === 0 ? (
+          <p className="text-xs text-gray-400 text-center py-4">
+            No coupon codes created yet. Create a coupon above (e.g., <code className="font-mono font-bold text-gray-600">FREE100</code> with 100% discount) to give students a free or discounted session.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-gray-600">
+              <thead className="bg-gray-50 text-[11px] font-mono uppercase text-gray-400 border-b border-gray-100">
+                <tr>
+                  <th className="px-4 py-2.5">Code</th>
+                  <th className="px-4 py-2.5">Discount</th>
+                  <th className="px-4 py-2.5">Applies To</th>
+                  <th className="px-4 py-2.5">Per User Limit</th>
+                  <th className="px-4 py-2.5">Times Used</th>
+                  <th className="px-4 py-2.5">Status</th>
+                  <th className="px-4 py-2.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {coupons.map((c) => (
+                  <tr key={c._id} className="hover:bg-gray-50/70">
+                    <td className="px-4 py-3 font-mono font-bold text-gray-900">
+                      {c.code}
+                    </td>
+                    <td className="px-4 py-3 font-semibold text-emerald-700">
+                      {c.discountType === 'PERCENTAGE'
+                        ? `${c.discountValue}% OFF${c.discountValue === 100 ? ' (100% Free)' : ''}`
+                        : `₹${c.discountValue} OFF`}
+                    </td>
+                    <td className="px-4 py-3">
+                      {c.applicableTo === 'ALL'
+                        ? 'All Sessions & Plans'
+                        : c.applicableTo === 'SINGLE_SESSION'
+                        ? 'Single Session'
+                        : 'Subscriptions'}
+                    </td>
+                    <td className="px-4 py-3">
+                      {c.maxUsesPerUser === 0 ? 'Unlimited' : `${c.maxUsesPerUser} / user`}
+                    </td>
+                    <td className="px-4 py-3 font-mono">
+                      {c.usedCount || 0} {c.maxUses ? `/ ${c.maxUses}` : 'uses'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleCoupon(c)}
+                        className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+                          c.isActive
+                            ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        {c.isActive ? 'Active (ON)' : 'Disabled (OFF)'}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCoupon(c)}
+                        className="text-red-600 hover:text-red-800 p-1"
+                        title="Delete Coupon"
+                      >
+                        <Trash2 className="w-4 h-4 inline" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
       {/* Primary Toggle & Status Card */}
       <div className={`rounded-2xl border p-6 transition-all duration-300 shadow-sm ${
         paymentsEnabled 
@@ -447,7 +715,7 @@ export default function AdminPaymentsPage() {
           <form onSubmit={handleSave} className="space-y-6">
             <div>
               <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Session Fee Amount (₹ INR)
+                Single Session Fee Amount (₹ INR)
               </label>
               <div className="relative rounded-lg shadow-sm max-w-xs">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -459,13 +727,50 @@ export default function AdminPaymentsPage() {
                   step="1"
                   value={sessionFee}
                   onChange={(e) => setSessionFee(e.target.value)}
-                  placeholder="e.g. 999"
+                  placeholder="e.g. 500"
                   className="block w-full rounded-lg border border-gray-300 pl-8 pr-4 py-2.5 text-gray-900 focus:border-amber focus:ring-amber sm:text-sm font-medium"
                 />
               </div>
               <p className="text-xs text-gray-500 mt-1.5">
-                Set to 0 or turn the toggle OFF above to offer complimentary sessions.
+                Charged when Paid Mode is ON, or for Session #2+ when &quot;Limit to 1 Complimentary Session Per User&quot; is active below.
               </p>
+            </div>
+
+            {/* Complimentary 1st Session & Anti-Duplicate Free Session Rules */}
+            <div className="p-4 rounded-xl bg-amber-50/50 border border-amber-200/80 space-y-3">
+              <p className="text-xs font-bold uppercase tracking-wider text-amber-900">
+                Complimentary Introductory Session Rules
+              </p>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={firstSessionFreeEnabled}
+                  onChange={(e) => setFirstSessionFreeEnabled(e.target.checked)}
+                  className="mt-0.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600 h-4 w-4"
+                />
+                <div className="text-xs text-gray-700">
+                  <span className="font-semibold text-gray-900 block">
+                    1st Introductory Session is Complimentary (₹0)
+                  </span>
+                  Allow every new student/parent to book their very first introductory session (#1) for free.
+                </div>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={limitOneFreeSessionPerUser}
+                  onChange={(e) => setLimitOneFreeSessionPerUser(e.target.checked)}
+                  className="mt-0.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600 h-4 w-4"
+                />
+                <div className="text-xs text-gray-700">
+                  <span className="font-semibold text-gray-900 block">
+                    Limit to Maximum 1 Complimentary Session Per User (Recommended)
+                  </span>
+                  Prevents the same user from booking multiple free sessions. From Session #2 onwards, the user must pay ₹{sessionFee || 500}, use a Subscription Credit, or apply an Admin Coupon Code.
+                </div>
+              </label>
             </div>
 
             <div>
