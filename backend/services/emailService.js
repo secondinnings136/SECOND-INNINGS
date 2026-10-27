@@ -472,7 +472,13 @@ function renderBrandEmailLayout({
   footerNote = 'This is an automated transactional message from Second Innings.'
 }) {
   const config = getEmailConfig();
-  const logoUrl = `${config.frontendUrl}/assets/logo/second-innings-logo.png`;
+  const publicAssetBaseUrl =
+    config.frontendUrl &&
+    !config.frontendUrl.includes('localhost') &&
+    !config.frontendUrl.includes('127.0.0.1')
+      ? config.frontendUrl
+      : 'https://www.second-innings.in';
+  const logoUrl = `${publicAssetBaseUrl}/logo.jpg`;
 
   const rowsHtml =
     detailsRows.length > 0
@@ -545,13 +551,13 @@ function renderBrandEmailLayout({
                       title
                     )}</h1>
                   </td>
-                  <td align="right" style="vertical-align: top;">
+                  <td align="right" style="vertical-align: top; padding-left: 16px;">
                     <a href="${escapeHtml(
-                      config.frontendUrl
-                    )}" style="text-decoration: none; color: #F8F6F0; font-size: 13px; font-weight: 600;">
+                      publicAssetBaseUrl
+                    )}" style="display: inline-block; text-decoration: none; color: #F8F6F0; font-size: 13px; font-weight: 600;">
                       <img src="${escapeHtml(
                         logoUrl
-                      )}" alt="Second Innings" width="42" height="42" style="display: block; border-radius: 8px; border: 0;" />
+                      )}" alt="Second Innings" width="52" height="52" style="display: block; width: 52px; height: 52px; object-fit: cover; border-radius: 10px; background-color: #FAF7F0; border: 1px solid rgba(248, 246, 240, 0.25);" />
                     </a>
                   </td>
                 </tr>
