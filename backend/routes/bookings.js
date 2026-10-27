@@ -20,11 +20,55 @@ const {
   validateAndComputeCoupon,
   recordCouponRedemption
 } = require('../services/couponService');
+const {
+  STANDARD_TIME_SLOTS,
+  acquireAtomicSlotLock,
+  bindAndConfirmSlotLock,
+  releaseSlotLock,
+  getAvailableSlotsForDate
+} = require('../services/slotLockService');
 const { protectAdmin, optionalAuth } = require('../middleware/auth');
 const { publicFormLimiter, computeDedupFingerprint } = require('../middleware/security');
 
+// GET /api/bookings/available-slots - Live time-slot availability for a date (prevents clashes)
+router.get('/available-slots', optionalAuth, async (req, res) => {
+  try {
+    const { date, excludeBookingId } = req.query;
+    if (!date) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          date: null,
+          timezone: 'Asia/Kolkata',
+          standardSlots: STANDARD_TIME_SLOTS,
+          slots: STANDARD_TIME_SLOTS.map((slot) => ({
+            slot,
+            available: true,
+            reason: 'available'
+          }))
+        }
+      });
+    }
+
+    const availability = await getAvailableSlotsForDate(date, excludeBookingId || null);
+    return res.status(200).json({
+      success: true,
+      data: {
+        ...availability,
+        standardSlots: STANDARD_TIME_SLOTS
+      }
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 400).json({
+      success: false,
+      error: error.message || 'Failed to check available time slots'
+    });
+  }
+});
+
 // POST /api/bookings - Create booking (Complimentary Introductory Session, 100% Coupon Waiver, OR Admin Manual Entry)
 router.post('/', publicFormLimiter, optionalAuth, async (req, res, next) => {
+  let acquiredLock = null;
   try {
     const isAdminManual = Boolean(req.admin);
     const user = req.user || null;
@@ -98,11 +142,19 @@ router.post('/', publicFormLimiter, optionalAuth, async (req, res, next) => {
       }
     }
 
+    // Require preferredDate and preferredTime for student bookings so no two sessions can clash
+    if (!isAdminManual && (!req.body.preferredDate || !req.body.preferredTime)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please select both a Preferred Date and an available Time Slot for your session.'
+      });
+    }
+
     // Deduplicate rapid double-clicks within 2 minutes for non-admin submissions
     const topicText = String(req.body.topic || req.body.concern || '').trim();
     const dedupKey = req.body.idempotencyKey
       ? String(req.body.idempotencyKey).trim()
-      : computeDedupFingerprint([user?._id || resolvedPhone, topicText, req.body.preferredDate]);
+      : computeDedupFingerprint([user?._id || resolvedPhone, topicText, req.body.preferredDate, req.body.preferredTime]);
 
     if (!isAdminManual) {
       const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
@@ -117,6 +169,21 @@ router.post('/', publicFormLimiter, optionalAuth, async (req, res, next) => {
           data: duplicateBooking
         });
       }
+    }
+
+    // 2. Atomically validate & lock the requested date + time slot (prevents double-booking & simultaneous race conditions)
+    let slotWindow = null;
+    if (req.body.preferredDate && req.body.preferredTime) {
+      const slotReservation = await acquireAtomicSlotLock({
+        preferredDate: req.body.preferredDate,
+        preferredTime: req.body.preferredTime,
+        duration: 45,
+        userId: user ? user._id : null,
+        status: 'confirmed',
+        isAdmin: isAdminManual
+      });
+      acquiredLock = slotReservation.lock;
+      slotWindow = slotReservation.slotWindow;
     }
 
     const prevCount = user
@@ -156,6 +223,8 @@ router.post('/', publicFormLimiter, optionalAuth, async (req, res, next) => {
       usefulGoal: req.body.usefulGoal ? String(req.body.usefulGoal).trim().slice(0, 500) : '',
       preferredDate: req.body.preferredDate || undefined,
       preferredTime: req.body.preferredTime ? String(req.body.preferredTime).trim() : undefined,
+      scheduledStartAt: slotWindow ? slotWindow.startDate : null,
+      scheduledEndAt: slotWindow ? slotWindow.endDate : null,
       source: user?.source || req.body.source || '',
       referredBy: user?.referredBy || req.body.referredBy || '',
       aiNotesConsent: Boolean(req.body.aiNotesConsent),
@@ -178,6 +247,14 @@ router.post('/', publicFormLimiter, optionalAuth, async (req, res, next) => {
     };
 
     let booking = await Booking.create(bookingPayload);
+    if (acquiredLock) {
+      await bindAndConfirmSlotLock({
+        lockId: acquiredLock._id,
+        bookingId: booking._id,
+        status: booking.status === 'confirmed' ? 'confirmed' : 'pending_payment'
+      });
+    }
+
     if (user && !user.hasUsedFreeSession && bookingPayload.bookingMode === 'free_intro') {
       user.hasUsedFreeSession = true;
       await user.save();
@@ -209,6 +286,16 @@ router.post('/', publicFormLimiter, optionalAuth, async (req, res, next) => {
       }
     });
   } catch (error) {
+    if (acquiredLock) {
+      await releaseSlotLock({ lockId: acquiredLock._id });
+    }
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        code: error.code || undefined,
+        error: error.message
+      });
+    }
     next(error);
   }
 });
@@ -332,6 +419,39 @@ router.patch('/:id', protectAdmin, async (req, res, next) => {
       }
     }
 
+    const slotChanged =
+      (updates.preferredDate !== undefined &&
+        String(updates.preferredDate || '') !== String(existing.preferredDate || '')) ||
+      (updates.preferredTime !== undefined &&
+        String(updates.preferredTime || '') !== String(existing.preferredTime || ''));
+
+    const targetStatus = updates.status || existing.status;
+
+    // If rescheduling to a new date/time and booking is not cancelled, verify no clash and move the atomic SlotLock
+    if (slotChanged && targetStatus !== 'cancelled') {
+      const nextDate = updates.preferredDate !== undefined ? updates.preferredDate : existing.preferredDate;
+      const nextTime = updates.preferredTime !== undefined ? updates.preferredTime : existing.preferredTime;
+      if (nextDate && nextTime) {
+        const slotReservation = await acquireAtomicSlotLock({
+          preferredDate: nextDate,
+          preferredTime: nextTime,
+          duration: existing.duration || 45,
+          userId: existing.userId || null,
+          bookingId: existing._id,
+          excludeBookingId: existing._id,
+          status: targetStatus === 'pending' ? 'pending_payment' : 'confirmed',
+          isAdmin: true
+        });
+        updates.scheduledStartAt = slotReservation.slotWindow.startDate;
+        updates.scheduledEndAt = slotReservation.slotWindow.endDate;
+      }
+    }
+
+    // If booking is being cancelled, release its SlotLock immediately so another student can book the slot
+    if (updates.status === 'cancelled' && existing.status !== 'cancelled') {
+      await releaseSlotLock({ bookingId: existing._id });
+    }
+
     // If a subscription-credit booking is being cancelled for the first time, automatically refund 1 credit to the student!
     if (
       updates.status === 'cancelled' &&
@@ -359,11 +479,7 @@ router.patch('/:id', protectAdmin, async (req, res, next) => {
     }
 
     const statusOrSlotChanged =
-      (updates.status !== undefined && updates.status !== existing.status) ||
-      (updates.preferredDate !== undefined &&
-        String(updates.preferredDate || '') !== String(existing.preferredDate || '')) ||
-      (updates.preferredTime !== undefined &&
-        String(updates.preferredTime || '') !== String(existing.preferredTime || ''));
+      (updates.status !== undefined && updates.status !== existing.status) || slotChanged;
 
     const followUpNotesChanged =
       (updates.actionAgreed !== undefined &&
@@ -377,12 +493,6 @@ router.patch('/:id', protectAdmin, async (req, res, next) => {
       new: true,
       runValidators: true
     });
-
-    const slotChanged =
-      (updates.preferredDate !== undefined &&
-        String(updates.preferredDate || '') !== String(existing.preferredDate || '')) ||
-      (updates.preferredTime !== undefined &&
-        String(updates.preferredTime || '') !== String(existing.preferredTime || ''));
 
     // Synchronize Google Calendar & Meet event BEFORE sending update emails
     if (updates.status === 'cancelled' && existing.status !== 'cancelled') {
@@ -422,6 +532,13 @@ router.patch('/:id', protectAdmin, async (req, res, next) => {
 
     res.status(200).json({ success: true, data: booking });
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        code: error.code || undefined,
+        error: error.message
+      });
+    }
     next(error);
   }
 });

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   submitBooking,
+  getAvailableBookingSlots,
   getPaymentConfig,
   validateCouponCode,
   createPaymentOrder,
@@ -44,10 +45,13 @@ const TOPIC_PROMPTS = [
 ];
 
 const TIME_SLOTS = [
-  'Morning (10:00 AM – 12:00 PM)',
-  'Afternoon (2:00 PM – 5:00 PM)',
-  'Evening (5:00 PM – 8:00 PM)',
-  'Weekend Slot (Flexible)'
+  '10:00 AM – 10:45 AM (Morning)',
+  '11:00 AM – 11:45 AM (Late Morning)',
+  '02:00 PM – 02:45 PM (Afternoon)',
+  '03:30 PM – 04:15 PM (Late Afternoon)',
+  '05:00 PM – 05:45 PM (Evening)',
+  '06:15 PM – 07:00 PM (Evening)',
+  '07:30 PM – 08:15 PM (Night)'
 ];
 
 export default function BookPage() {
@@ -122,6 +126,58 @@ export default function BookPage() {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState('');
+
+  // Live slot availability state for selected date (prevents double-booking & clashes)
+  const [slotAvailability, setSlotAvailability] = useState({
+    loading: false,
+    date: '',
+    slots: TIME_SLOTS.map((slot) => ({ slot, available: true, reason: 'available' }))
+  });
+
+  const refreshSlotsForDate = async (dateStr) => {
+    if (!dateStr) {
+      setSlotAvailability({
+        loading: false,
+        date: '',
+        slots: TIME_SLOTS.map((slot) => ({ slot, available: true, reason: 'available' }))
+      });
+      return;
+    }
+    setSlotAvailability((prev) => ({ ...prev, loading: true, date: dateStr }));
+    try {
+      const res = await getAvailableBookingSlots(dateStr);
+      const fetchedSlots = res?.data?.slots || [];
+      setSlotAvailability({
+        loading: false,
+        date: dateStr,
+        slots:
+          fetchedSlots.length > 0
+            ? fetchedSlots
+            : TIME_SLOTS.map((slot) => ({ slot, available: true, reason: 'available' }))
+      });
+      // If currently selected preferredTime is no longer available on this date, clear it
+      setSessionForm((prev) => {
+        if (!prev.preferredTime) return prev;
+        const found = fetchedSlots.find((s) => s.slot === prev.preferredTime);
+        if (found && !found.available) {
+          return { ...prev, preferredTime: '' };
+        }
+        return prev;
+      });
+    } catch {
+      setSlotAvailability({
+        loading: false,
+        date: dateStr,
+        slots: TIME_SLOTS.map((slot) => ({ slot, available: true, reason: 'available' }))
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (sessionForm.preferredDate) {
+      refreshSlotsForDate(sessionForm.preferredDate);
+    }
+  }, [sessionForm.preferredDate]);
 
   useEffect(() => {
     if (authResendCooldown <= 0) return;
@@ -381,6 +437,16 @@ export default function BookPage() {
       return;
     }
 
+    if (!sessionForm.preferredDate || !sessionForm.preferredTime) {
+      setStatus({
+        loading: false,
+        success: false,
+        error: 'Please select both a Preferred Date and an available Time Slot so we can reserve your non-clashing Google Meet session.',
+        confirmedBooking: null
+      });
+      return;
+    }
+
     isSubmittingRef.current = true;
     setStatus({ loading: true, success: false, error: null, confirmedBooking: null });
 
@@ -510,6 +576,12 @@ export default function BookPage() {
         confirmedBooking: freeRes.data
       });
     } catch (err) {
+      // If a concurrent user booked the same slot milliseconds earlier (409 Conflict), refresh slot availability immediately
+      if (sessionForm.preferredDate) {
+        refreshSlotsForDate(sessionForm.preferredDate);
+      }
+      // Reset idempotency key so the user can retry after choosing a new slot
+      currentIdempotencyKeyRef.current = null;
       setStatus({
         loading: false,
         success: false,
@@ -1293,36 +1365,85 @@ export default function BookPage() {
                           />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-4">
                           <div>
                             <label className="block text-xs font-mono uppercase tracking-wider text-ink-2 mb-1.5">
-                              Preferred Date (Optional)
+                              Preferred Date <span className="text-signal">*</span>
                             </label>
                             <input
                               type="date"
+                              required
                               min={new Date().toISOString().split('T')[0]}
                               value={sessionForm.preferredDate}
                               onChange={(e) => setSessionForm({ ...sessionForm, preferredDate: e.target.value })}
-                              className="field"
+                              className="field max-w-xs"
                             />
                           </div>
 
                           <div>
-                            <label className="block text-xs font-mono uppercase tracking-wider text-ink-2 mb-1.5">
-                              Preferred Time Window (Optional)
-                            </label>
-                            <select
-                              value={sessionForm.preferredTime}
-                              onChange={(e) => setSessionForm({ ...sessionForm, preferredTime: e.target.value })}
-                              className="field"
-                            >
-                              <option value="">Flexible / Any Time</option>
-                              {TIME_SLOTS.map((slot) => (
-                                <option key={slot} value={slot}>
-                                  {slot}
-                                </option>
-                              ))}
-                            </select>
+                            <div className="flex items-center justify-between mb-2">
+                              <label className="block text-xs font-mono uppercase tracking-wider text-ink-2">
+                                Select Non-Clashing Time Slot (45 Min • IST) <span className="text-signal">*</span>
+                              </label>
+                              {sessionForm.preferredDate && (
+                                <button
+                                  type="button"
+                                  onClick={() => refreshSlotsForDate(sessionForm.preferredDate)}
+                                  className="inline-flex items-center gap-1 text-[11px] font-mono text-ink-2 hover:text-signal"
+                                >
+                                  <RefreshCw className={`w-3 h-3 ${slotAvailability.loading ? 'animate-spin' : ''}`} />
+                                  <span>{slotAvailability.loading ? 'Checking slots...' : 'Refresh availability'}</span>
+                                </button>
+                              )}
+                            </div>
+
+                            {!sessionForm.preferredDate ? (
+                              <div className="p-4 rounded-xl border border-dashed border-line bg-paper-2 text-xs text-muted">
+                                Please select a <strong>Preferred Date</strong> above first to see live available time slots for that day.
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                {slotAvailability.slots.map((slotItem) => {
+                                  const isSelected = sessionForm.preferredTime === slotItem.slot;
+                                  const isAvailable = slotItem.available;
+                                  const isBooked = slotItem.reason === 'booked';
+                                  const isPast = slotItem.reason === 'past';
+
+                                  return (
+                                    <button
+                                      key={slotItem.slot}
+                                      type="button"
+                                      disabled={!isAvailable || slotAvailability.loading}
+                                      onClick={() =>
+                                        setSessionForm({ ...sessionForm, preferredTime: slotItem.slot })
+                                      }
+                                      className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between gap-2 ${
+                                        !isAvailable
+                                          ? 'border-line bg-paper-2/60 text-muted opacity-60 cursor-not-allowed'
+                                          : isSelected
+                                          ? 'border-ink bg-ink text-paper shadow-sm'
+                                          : 'border-line bg-paper hover:border-ink/40 text-ink'
+                                      }`}
+                                    >
+                                      <span className="text-xs font-medium">{slotItem.slot}</span>
+                                      <span
+                                        className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase font-bold shrink-0 ${
+                                          isBooked
+                                            ? 'bg-signal/15 text-signal'
+                                            : isPast
+                                            ? 'bg-stone/40 text-muted'
+                                            : isSelected
+                                            ? 'bg-sprout text-white'
+                                            : 'bg-sprout/15 text-sprout'
+                                        }`}
+                                      >
+                                        {isBooked ? 'Booked' : isPast ? 'Passed' : isSelected ? 'Selected' : 'Available'}
+                                      </span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
                         </div>
 

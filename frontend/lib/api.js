@@ -180,6 +180,14 @@ export async function getFeaturedTestimonials() {
   return fetchAPI('/testimonials/featured');
 }
 
+export async function getAvailableBookingSlots(date, excludeBookingId = '') {
+  const params = new URLSearchParams();
+  if (date) params.set('date', date);
+  if (excludeBookingId) params.set('excludeBookingId', excludeBookingId);
+  const qs = params.toString();
+  return fetchAPI(`/bookings/available-slots${qs ? `?${qs}` : ''}`);
+}
+
 export async function submitBooking(data, idempotencyKey) {
   const key = idempotencyKey || generateIdempotencyKey('free_book');
   return fetchAPI('/bookings', {

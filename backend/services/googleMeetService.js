@@ -481,9 +481,23 @@ function computeSessionWindow(booking) {
 
   if (rawSlot) {
     const lower = rawSlot.toLowerCase();
-    // Match explicit time like "4:30 PM" or "10:00 AM" or "16:30"
-    const timeMatch = rawSlot.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
-    if (lower.includes('morning')) {
+    // 1. Match explicit time like "11:00 AM", "03:30 PM", "10:00 AM" FIRST
+    const explicitAmPmMatch = rawSlot.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i);
+    const hhmmMatch = rawSlot.match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);
+    if (explicitAmPmMatch) {
+      let h = Number(explicitAmPmMatch[1]);
+      const m = Number(explicitAmPmMatch[2] || 0);
+      const meridiem = explicitAmPmMatch[3].toLowerCase();
+      if (meridiem === 'pm' && h < 12) h += 12;
+      if (meridiem === 'am' && h === 12) h = 0;
+      if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
+        hours = h;
+        minutes = m;
+      }
+    } else if (hhmmMatch) {
+      hours = Number(hhmmMatch[1]);
+      minutes = Number(hhmmMatch[2]);
+    } else if (lower.includes('morning')) {
       hours = 10;
       minutes = 0;
     } else if (lower.includes('afternoon')) {
@@ -492,19 +506,12 @@ function computeSessionWindow(booking) {
     } else if (lower.includes('evening')) {
       hours = 17;
       minutes = 0;
+    } else if (lower.includes('night')) {
+      hours = 19;
+      minutes = 30;
     } else if (lower.includes('weekend')) {
       hours = 11;
       minutes = 0;
-    } else if (timeMatch) {
-      let h = Number(timeMatch[1]);
-      const m = Number(timeMatch[2] || 0);
-      const meridiem = (timeMatch[3] || '').toLowerCase();
-      if (meridiem === 'pm' && h < 12) h += 12;
-      if (meridiem === 'am' && h === 12) h = 0;
-      if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
-        hours = h;
-        minutes = m;
-      }
     }
   }
 

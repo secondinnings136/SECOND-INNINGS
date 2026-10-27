@@ -6,6 +6,11 @@ const Booking = require('../models/Booking');
 const Setting = require('../models/Setting');
 const { sendBookingConfirmationEmails } = require('../services/emailService');
 const { ensureBookingCalendarAndMeet } = require('../services/googleMeetService');
+const {
+  acquireAtomicSlotLock,
+  bindAndConfirmSlotLock,
+  releaseSlotLock
+} = require('../services/slotLockService');
 const { protectUser, protectAdmin, optionalAdmin } = require('../middleware/auth');
 const { computeDedupFingerprint } = require('../middleware/security');
 
@@ -120,6 +125,7 @@ router.get('/plans', optionalAdmin, async (req, res, next) => {
 // @desc    Book a session instantaneously using 1 active Subscription Credit (Zero gateway checkout)
 // @access  Private (User)
 router.post('/book-with-credit', protectUser, async (req, res, next) => {
+  let acquiredLock = null;
   try {
     const user = req.user;
     if (!user.onboardingCompleted || !user.phone) {
@@ -134,6 +140,12 @@ router.post('/book-with-credit', protectUser, async (req, res, next) => {
       return res.status(400).json({
         success: false,
         error: 'Please share in a line or two what you would like to focus on in this session.'
+      });
+    }
+    if (!preferredDate || !preferredTime) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please select both a Preferred Date and an available Time Slot for your session.'
       });
     }
 
@@ -175,6 +187,18 @@ router.post('/book-with-credit', protectUser, async (req, res, next) => {
       });
     }
 
+    // Atomically lock the requested time slot BEFORE deducting any credit (prevents double-booking & simultaneous race conditions)
+    const slotReservation = await acquireAtomicSlotLock({
+      preferredDate,
+      preferredTime,
+      duration: 45,
+      userId: user._id,
+      userSubscriptionId: targetSub._id,
+      status: 'confirmed'
+    });
+    acquiredLock = slotReservation.lock;
+    const slotWindow = slotReservation.slotWindow;
+
     // Atomically decrement 1 credit
     const updatedSub = await UserSubscription.findOneAndUpdate(
       {
@@ -190,6 +214,8 @@ router.post('/book-with-credit', protectUser, async (req, res, next) => {
     );
 
     if (!updatedSub) {
+      await releaseSlotLock({ lockId: acquiredLock._id });
+      acquiredLock = null;
       return res.status(409).json({
         success: false,
         error: 'Could not reserve session credit due to a concurrent request. Please refresh and try again.'
@@ -239,6 +265,8 @@ router.post('/book-with-credit', protectUser, async (req, res, next) => {
         usefulGoal: usefulGoal ? String(usefulGoal).trim().slice(0, 500) : '',
         preferredDate: preferredDate || undefined,
         preferredTime: preferredTime ? String(preferredTime).trim() : undefined,
+        scheduledStartAt: slotWindow.startDate,
+        scheduledEndAt: slotWindow.endDate,
         aiNotesConsent: Boolean(req.body.aiNotesConsent),
         aiNotesConsentAt: req.body.aiNotesConsent ? now : null,
 
@@ -250,12 +278,23 @@ router.post('/book-with-credit', protectUser, async (req, res, next) => {
         paymentTime: now
       });
     } catch (createErr) {
-      // Rollback credit deduction if booking creation fails for any reason
+      // Rollback credit deduction & slot lock if booking creation fails for any reason
+      if (acquiredLock) {
+        await releaseSlotLock({ lockId: acquiredLock._id });
+        acquiredLock = null;
+      }
       await UserSubscription.findByIdAndUpdate(updatedSub._id, {
         $inc: { remainingCredits: 1, usedCredits: -1 }
       });
       throw createErr;
     }
+
+    await bindAndConfirmSlotLock({
+      lockId: acquiredLock._id,
+      bookingId: booking._id,
+      userSubscriptionId: updatedSub._id,
+      status: 'confirmed'
+    });
 
     // Record ledger entry and mark exhausted if 0 credits remain
     updatedSub.creditLedger.push({
@@ -290,6 +329,16 @@ router.post('/book-with-credit', protectUser, async (req, res, next) => {
       }
     });
   } catch (error) {
+    if (acquiredLock) {
+      await releaseSlotLock({ lockId: acquiredLock._id });
+    }
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        code: error.code || undefined,
+        error: error.message
+      });
+    }
     next(error);
   }
 });

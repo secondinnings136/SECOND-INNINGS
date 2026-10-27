@@ -37,6 +37,11 @@ const {
   ensureBookingCalendarAndMeet,
   updateBookingCalendarEvent
 } = require('../services/googleMeetService');
+const {
+  acquireAtomicSlotLock,
+  bindAndConfirmSlotLock,
+  releaseSlotLock
+} = require('../services/slotLockService');
 
 /**
  * Unified Atomic Order Reconciliation Engine
@@ -88,6 +93,12 @@ async function reconcileOrderPayment(orderId, verifiedBySource = 'verify_endpoin
     if (failedPayment && booking && booking.paymentStatus === 'pending') {
       booking.paymentStatus = 'failed';
       await booking.save();
+    }
+    if (failedPayment) {
+      await releaseSlotLock({
+        bookingId: booking?._id || null,
+        userSubscriptionId: userSub?._id || null
+      });
     }
 
     if (failedPayment && failedPayment.payment_status === 'FAILED') {
@@ -318,8 +329,13 @@ async function reconcileOrderPayment(orderId, verifiedBySource = 'verify_endpoin
     }
   }
 
-  // 7. Create Google Calendar event & unique Google Meet link BEFORE sending confirmation emails
+  // 7. Confirm atomic slot lock + Create Google Calendar event & unique Google Meet link BEFORE sending confirmation emails
   if (booking && booking.status === 'confirmed') {
+    await bindAndConfirmSlotLock({
+      bookingId: booking._id,
+      userSubscriptionId: activatedSub?._id || null,
+      status: 'confirmed'
+    });
     await ensureBookingCalendarAndMeet(booking);
     booking = await Booking.findById(booking._id).select('+slotUpdateToken');
   }
@@ -456,6 +472,7 @@ router.post('/validate-coupon', optionalAuth, async (req, res) => {
 // @desc    Create a Cashfree order with full Idempotency, Live Pre-Check & Duplicate Prevention
 // @access  Public / Authenticated User
 router.post('/create-order', paymentLimiter, optionalAuth, async (req, res, next) => {
+  let acquiredLock = null;
   try {
     await ensureDefaultPlans();
     const settings = await getPaymentSettings();
@@ -568,6 +585,31 @@ router.post('/create-order', paymentLimiter, optionalAuth, async (req, res, next
     ]);
 
     const effectiveIdempKey = rawIdempKey || `IDEMP_${dedupFingerprint}`;
+
+    // Validate & atomically reserve the requested time slot before creating any booking or checkout
+    const requiresSessionSlot =
+      purpose === 'single_booking' ||
+      (purpose === 'subscription_purchase' && bookingData.topic && String(bookingData.topic).trim());
+    let slotWindow = null;
+
+    if (requiresSessionSlot && !bookingId) {
+      if (!bookingData.preferredDate || !bookingData.preferredTime) {
+        return res.status(400).json({
+          success: false,
+          error: 'Please select both a Preferred Date and an available Time Slot for your session.'
+        });
+      }
+      const isInstantCouponFree = Boolean(appliedCouponInfo && appliedCouponInfo.isFreeWithCoupon);
+      const slotReservation = await acquireAtomicSlotLock({
+        preferredDate: bookingData.preferredDate,
+        preferredTime: bookingData.preferredTime,
+        duration: 45,
+        userId: user ? user._id : null,
+        status: isInstantCouponFree ? 'confirmed' : 'pending_payment'
+      });
+      acquiredLock = slotReservation.lock;
+      slotWindow = slotReservation.slotWindow;
+    }
 
     // =========================================================================
     // SPECIAL CASE: 100% DISCOUNT COUPON (finalAmount === 0) -> INSTANT ACTIVATION
@@ -729,6 +771,15 @@ router.post('/create-order', paymentLimiter, optionalAuth, async (req, res, next
         orderId: couponOrderId,
         bookingId: confirmedBooking?._id || null
       });
+
+      if (acquiredLock && (confirmedBooking || activatedSub)) {
+        await bindAndConfirmSlotLock({
+          lockId: acquiredLock._id,
+          bookingId: confirmedBooking?._id || null,
+          userSubscriptionId: activatedSub?._id || null,
+          status: 'confirmed'
+        });
+      }
 
       if (confirmedBooking && confirmedBooking.status === 'confirmed') {
         await ensureBookingCalendarAndMeet(confirmedBooking);
@@ -939,6 +990,15 @@ router.post('/create-order', paymentLimiter, optionalAuth, async (req, res, next
       entityShortId = booking._id.toString().slice(-8);
     }
 
+    if (acquiredLock && (booking || userSub)) {
+      await bindAndConfirmSlotLock({
+        lockId: acquiredLock._id,
+        bookingId: booking?._id || null,
+        userSubscriptionId: userSub?._id || null,
+        status: 'pending_payment'
+      });
+    }
+
     // =========================================================================
     // STEP 3: CREATE CASHFREE ORDER & RECORD IN PAYMENT TRANSACTION LEDGER
     // =========================================================================
@@ -1012,10 +1072,14 @@ router.post('/create-order', paymentLimiter, optionalAuth, async (req, res, next
         environment: process.env.CASHFREE_ENVIRONMENT || 'PRODUCTION'
       }
     });
-  } catch (error) {
+    } catch (error) {
+    if (acquiredLock) {
+      await releaseSlotLock({ lockId: acquiredLock._id });
+    }
     console.error('Cashfree Create Order Error:', error?.response?.data || error.message);
-    res.status(500).json({
+    res.status(error.statusCode || 500).json({
       success: false,
+      code: error.code || undefined,
       error: error?.response?.data?.message || error.message || 'Failed to initiate payment order'
     });
   }
@@ -1108,8 +1172,22 @@ router.patch('/slot-preference/:bookingId', optionalAuth, async (req, res, next)
       });
     }
 
+    // Atomically verify & lock the new slot (prevents clashing with any other student's session)
+    const slotReservation = await acquireAtomicSlotLock({
+      preferredDate,
+      preferredTime,
+      duration: booking.duration || 45,
+      userId: booking.userId || null,
+      bookingId: booking._id,
+      excludeBookingId: booking._id,
+      status: booking.status === 'confirmed' ? 'confirmed' : 'pending_payment',
+      isAdmin
+    });
+
     booking.preferredDate = preferredDate;
     booking.preferredTime = String(preferredTime).trim().slice(0, 100);
+    booking.scheduledStartAt = slotReservation.slotWindow.startDate;
+    booking.scheduledEndAt = slotReservation.slotWindow.endDate;
     if (topic && (!booking.topic || booking.topic === 'Mentoring Session' || booking.topic === 'Support / Session Contribution')) {
       booking.topic = String(topic).trim().slice(0, 1000);
       booking.concern = String(topic).trim().slice(0, 1000);
@@ -1134,6 +1212,13 @@ router.patch('/slot-preference/:bookingId', optionalAuth, async (req, res, next)
       data: safeBooking
     });
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        code: error.code || undefined,
+        error: error.message
+      });
+    }
     next(error);
   }
 });
