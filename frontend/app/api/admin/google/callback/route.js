@@ -46,7 +46,7 @@ export async function GET(request) {
 
     const emailParam = data.data?.connectedEmail || '';
     return NextResponse.redirect(
-      `${origin}/admin?google_connected=true&email=${encodeURIComponent(emailParam)}`
+      `${origin}/admin?google_connected=true&google_email=${encodeURIComponent(emailParam)}`
     );
   } catch (err) {
     return NextResponse.redirect(

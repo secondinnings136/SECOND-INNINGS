@@ -11,6 +11,10 @@ const EmailOtp = require('../models/EmailOtp');
 const PhoneOtp = require('../models/PhoneOtp');
 const { sendOtpEmail } = require('../services/emailOtp');
 const { sendWelcomeEmail } = require('../services/emailService');
+const {
+  getGoogleIntegrationStatus,
+  ensureBookingCalendarAndMeet
+} = require('../services/googleMeetService');
 const { normalizePhone10, sendPhoneOtpSms, isSmsGatewayConfigured } = require('../services/phoneOtp');
 const { protectUser, protectAdmin } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/security');
@@ -870,6 +874,19 @@ router.put('/onboarding', protectUser, async (req, res, next) => {
 router.get('/my-sessions', protectUser, async (req, res, next) => {
   try {
     await linkHistoricalBookings(req.user);
+
+    // Auto-provision Google Meet links for any confirmed sessions missing a meetingLink when Google Calendar is connected
+    const gStatus = await getGoogleIntegrationStatus().catch(() => null);
+    if (gStatus?.connected) {
+      const unlinkedSessions = await Booking.find({
+        userId: req.user._id,
+        status: 'confirmed',
+        $or: [{ meetingLink: null }, { meetingLink: '' }]
+      }).limit(10);
+      for (const s of unlinkedSessions) {
+        await ensureBookingCalendarAndMeet(s).catch(() => null);
+      }
+    }
 
     const sessions = await Booking.find({ userId: req.user._id })
       .select('-notes -slotUpdateToken -calendarLastError') // Never expose private mentor notes to client

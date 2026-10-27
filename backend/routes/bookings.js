@@ -182,6 +182,21 @@ router.get('/', protectAdmin, async (req, res, next) => {
     if (userType) query.userType = userType;
     if (userId) query.userId = userId;
 
+    // Auto-provision Google Meet links for any confirmed bookings missing a meetingLink when Google Calendar is connected
+    const { getGoogleIntegrationStatus } = require('../services/googleMeetService');
+    const gStatus = await getGoogleIntegrationStatus().catch(() => null);
+    if (gStatus?.connected) {
+      const missingMeetBookings = await Booking.find({
+        status: 'confirmed',
+        $or: [{ meetingLink: null }, { meetingLink: '' }]
+      })
+        .sort({ createdAt: -1 })
+        .limit(10);
+      for (const mb of missingMeetBookings) {
+        await ensureBookingCalendarAndMeet(mb).catch(() => null);
+      }
+    }
+
     const bookings = await Booking.find(query).sort({ createdAt: -1 }).lean();
 
     // Group past sessions by userId or phone/email so Admin can see student's full session history

@@ -14,9 +14,9 @@ import {
   User as UserIcon,
   LogOut,
   Edit3,
-  MessageCircle,
   ShieldCheck,
-  Layers
+  Layers,
+  Video
 } from 'lucide-react';
 import { useUserAuth } from '../../context/UserAuthContext';
 import {
@@ -393,6 +393,9 @@ export default function MenteeDashboardPage() {
               sessions.map((session, idx) => {
                 const isEditing = editingSessionId === session._id;
                 const displayNum = sessions.length - idx;
+                const bookingRef = session._id
+                  ? `#${String(session._id).slice(-6).toUpperCase()}`
+                  : '';
 
                 return (
                   <div
@@ -404,6 +407,11 @@ export default function MenteeDashboardPage() {
                         <span className="px-3 py-1 rounded-full bg-ink text-paper font-mono text-xs font-bold">
                           Session #{displayNum}
                         </span>
+                        {bookingRef && (
+                          <span className="px-2.5 py-1 rounded-full bg-paper border border-stone/60 text-ink font-mono text-xs font-bold">
+                            Ref: {bookingRef}
+                          </span>
+                        )}
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
                             session.status === 'completed'
@@ -495,9 +503,16 @@ export default function MenteeDashboardPage() {
 
                       <div className="md:col-span-4 flex flex-col justify-between p-4 rounded-xl bg-paper border border-stone/40 space-y-4">
                         <div className="space-y-2 text-xs">
-                          <span className="font-mono text-[10px] uppercase tracking-widest text-ash block">
-                            Session Slot &amp; Meeting Link
-                          </span>
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-[10px] uppercase tracking-widest text-ash block">
+                              Session Slot &amp; Meeting Link
+                            </span>
+                            {bookingRef && (
+                              <span className="font-mono text-[10px] font-bold text-ink">
+                                {bookingRef}
+                              </span>
+                            )}
+                          </div>
                           {session.preferredDate ? (
                             <p className="font-semibold text-ink flex items-center gap-1.5">
                               <Calendar className="w-3.5 h-3.5 text-terracotta" />
@@ -509,7 +524,7 @@ export default function MenteeDashboardPage() {
                               })}
                             </p>
                           ) : (
-                            <p className="text-charcoal">Date to be coordinated on WhatsApp</p>
+                            <p className="text-charcoal">Date to be scheduled with mentor</p>
                           )}
                           {session.preferredTime && (
                             <p className="text-charcoal flex items-center gap-1.5">
@@ -522,23 +537,30 @@ export default function MenteeDashboardPage() {
                           </p>
 
                           {session.meetingLink &&
-                            session.meetingLink.startsWith('https://meet.google.com/') &&
-                            session.status !== 'cancelled' && (
-                              <div className="pt-2">
-                                <a
-                                  href={session.meetingLink}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="w-full py-2.5 px-3 rounded-lg bg-sage text-white text-xs font-semibold flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity shadow-xs"
-                                >
-                                  <span>Join Google Meet Session</span>
-                                  <ArrowUpRight className="w-3.5 h-3.5" />
-                                </a>
-                                <p className="text-[10px] text-ash mt-1 break-all text-center">
-                                  {session.meetingLink}
-                                </p>
+                          session.meetingLink.startsWith('https://meet.google.com/') &&
+                          session.status !== 'cancelled' ? (
+                            <div className="pt-2 space-y-1.5">
+                              <a
+                                href={session.meetingLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full py-2.5 px-3 rounded-lg bg-sage text-white text-xs font-semibold flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity shadow-xs"
+                              >
+                                <Video className="w-3.5 h-3.5" />
+                                <span>Join Google Meet Session</span>
+                                <ArrowUpRight className="w-3.5 h-3.5" />
+                              </a>
+                              <p className="text-[10px] text-ash break-all text-center font-mono">
+                                {session.meetingLink}
+                              </p>
+                            </div>
+                          ) : session.status === 'confirmed' ? (
+                            <div className="pt-2">
+                              <div className="p-2.5 rounded-lg bg-warm/60 border border-stone/40 text-[11px] text-charcoal leading-snug">
+                                Google Meet link will appear here automatically once the mentor calendar is synced.
                               </div>
-                            )}
+                            </div>
+                          ) : null}
                         </div>
 
                         <div className="space-y-2 pt-2 border-t border-stone/30">
@@ -555,18 +577,6 @@ export default function MenteeDashboardPage() {
                               ? 'Close Editor'
                               : 'Update 7-Day Progress / Reflection'}
                           </button>
-
-                          <a
-                            href={`https://wa.me/917737220724?text=${encodeURIComponent(
-                              `Hi Deepak Sir, I am writing regarding my Session #${displayNum} (${user.name}).`
-                            )}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full py-2 px-3 rounded-lg bg-[#25D366]/15 hover:bg-[#25D366]/25 text-ink text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
-                          >
-                            <MessageCircle className="w-3.5 h-3.5 text-[#1DA851]" />
-                            <span>Message on WhatsApp</span>
-                          </a>
                         </div>
                       </div>
                     </div>

@@ -47,7 +47,7 @@ export default function AdminDashboard() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const connected = params.get('google_connected');
-      const email = params.get('google_email');
+      const email = params.get('google_email') || params.get('email');
       const gErr = params.get('google_error');
       if (connected === 'true') {
         setGoogleNotice({
@@ -98,12 +98,15 @@ export default function AdminDashboard() {
         if (host === 'localhost' || host === '127.0.0.1') {
           preferredRedirectUri = 'http://localhost:5000/api/admin/google/callback';
         } else {
-          preferredRedirectUri = `${window.location.origin}/api/admin/google/callback`;
+          preferredRedirectUri = 'https://www.second-innings.in/api/admin/google/callback';
         }
       }
       const res = await getGoogleConnectUrl(preferredRedirectUri);
-      if (res?.authUrl) {
-        window.location.href = res.authUrl;
+      const authUrl = res?.authUrl || res?.data?.authUrl;
+      if (authUrl) {
+        window.location.href = authUrl;
+      } else {
+        throw new Error('Could not generate Google OAuth redirect URL.');
       }
     } catch (err) {
       setGoogleNotice({
@@ -410,43 +413,67 @@ export default function AdminDashboard() {
             <table className="w-full text-left text-sm text-gray-600">
               <thead className="bg-gray-50/80 text-[11px] font-mono uppercase text-gray-400 border-b border-gray-100">
                 <tr>
-                  <th className="px-6 py-3 font-semibold">Student</th>
-                  <th className="px-6 py-3 font-semibold">Type</th>
+                  <th className="px-6 py-3 font-semibold">Student &amp; Ref</th>
                   <th className="px-6 py-3 font-semibold">Payment</th>
-                  <th className="px-6 py-3 font-semibold">Status</th>
+                  <th className="px-6 py-3 font-semibold">Status &amp; Meet</th>
                   <th className="px-6 py-3 font-semibold">Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-xs">
                 {data?.recentBookings?.length > 0 ? (
-                  data.recentBookings.map((b) => (
-                    <tr 
-                      key={b._id} 
-                      className="hover:bg-gray-50/80 cursor-pointer transition-colors" 
-                      onClick={() => router.push('/admin/bookings')}
-                    >
-                      <td className="px-6 py-3.5 font-semibold text-gray-900">{b.name}</td>
-                      <td className="px-6 py-3.5 capitalize text-gray-500">{b.userType || b.type || 'Student'}</td>
-                      <td className="px-6 py-3.5">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                          b.paymentStatus === 'paid' 
-                            ? 'bg-green-100 text-green-800' 
-                            : b.paymentStatus === 'pending'
-                            ? 'bg-amber-100 text-amber-800'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}>
-                          {b.paymentStatus === 'paid' ? 'Paid' : b.paymentStatus === 'pending' ? 'Payment Due' : 'Free'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-3.5"><StatusBadge status={b.status} /></td>
-                      <td className="px-6 py-3.5 text-gray-400 font-mono">
-                        {b.createdAt ? new Date(b.createdAt).toLocaleDateString('en-IN') : '—'}
-                      </td>
-                    </tr>
-                  ))
+                  data.recentBookings.map((b) => {
+                    const bookingRef = b._id ? `#${String(b._id).slice(-6).toUpperCase()}` : '';
+                    return (
+                      <tr 
+                        key={b._id} 
+                        className="hover:bg-gray-50/80 cursor-pointer transition-colors" 
+                        onClick={() => router.push('/admin/bookings')}
+                      >
+                        <td className="px-6 py-3.5">
+                          <div className="font-semibold text-gray-900">{b.name}</div>
+                          {bookingRef && (
+                            <span className="inline-block mt-0.5 text-[10px] font-mono text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                              Ref: {bookingRef}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-3.5">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            b.paymentStatus === 'paid' 
+                              ? 'bg-green-100 text-green-800' 
+                              : b.paymentStatus === 'pending'
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-gray-100 text-gray-700'
+                          }`}>
+                            {b.paymentStatus === 'paid' ? 'Paid' : b.paymentStatus === 'pending' ? 'Payment Due' : 'Free'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-3.5">
+                          <div className="flex flex-col items-start gap-1">
+                            <StatusBadge status={b.status} />
+                            {b.meetingLink && b.meetingLink.startsWith('https://meet.google.com/') && (
+                              <a
+                                href={b.meetingLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold hover:bg-emerald-100"
+                              >
+                                <Video className="w-3 h-3" />
+                                <span>Join Meet</span>
+                              </a>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-3.5 text-gray-400 font-mono">
+                          {b.createdAt ? new Date(b.createdAt).toLocaleDateString('en-IN') : '—'}
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
-                    <td colSpan={5} className="px-6 py-10 text-center text-gray-400">
+                    <td colSpan={4} className="px-6 py-10 text-center text-gray-400">
                       No bookings recorded yet.
                     </td>
                   </tr>

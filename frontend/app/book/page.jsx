@@ -866,6 +866,16 @@ export default function BookPage() {
                       </p>
 
                       <div className="p-5 rounded-xl bg-paper-2 border border-line text-left text-sm space-y-2">
+                        {status.confirmedBooking?._id && (
+                          <div className="flex items-center justify-between pb-2 mb-1 border-b border-line">
+                            <span className="text-xs font-mono uppercase tracking-wider text-muted">
+                              Booking Reference
+                            </span>
+                            <span className="px-2.5 py-0.5 rounded bg-ink text-paper font-mono text-xs font-bold">
+                              #{String(status.confirmedBooking._id).slice(-6).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
                         <p><strong>Focus:</strong> {status.confirmedBooking?.topic || sessionForm.topic}</p>
                         {(status.confirmedBooking?.preferredDate || sessionForm.preferredDate) && (
                           <p>

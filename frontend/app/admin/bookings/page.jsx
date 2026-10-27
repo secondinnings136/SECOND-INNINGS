@@ -351,30 +351,38 @@ export default function BookingsPage() {
   const columns = [
     { 
       key: 'name', 
-      label: 'Name & Session #',
-      render: (val, row) => (
-        <div>
-          <div className="flex items-center gap-1.5">
-            <span className="font-semibold text-gray-900">{val}</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-bold">
-              #{row.sessionNumber || 1}
-            </span>
-            {row.participantTotalSessions > 1 && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 font-semibold">
-                {row.participantTotalSessions} Sessions
+      label: 'Name, Ref & Session #',
+      render: (val, row) => {
+        const bookingRef = row._id ? `#${String(row._id).slice(-6).toUpperCase()}` : '';
+        return (
+          <div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="font-semibold text-gray-900">{val}</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-bold">
+                Session #{row.sessionNumber || 1}
+              </span>
+              {bookingRef && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-700 font-mono font-semibold">
+                  Ref: {bookingRef}
+                </span>
+              )}
+              {row.participantTotalSessions > 1 && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 font-semibold">
+                  {row.participantTotalSessions} Sessions
+                </span>
+              )}
+            </div>
+            {row.isUnder18 ? (
+              <span className="inline-block text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-medium">Under 18</span>
+            ) : (
+              <span className="text-[11px] text-gray-500">
+                {row.age ? `${row.age} yrs` : ''}
+                {row.bookingMode === 'subscription_credit' ? ' • Subscription Credit' : ''}
               </span>
             )}
           </div>
-          {row.isUnder18 ? (
-            <span className="inline-block text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-medium">Under 18</span>
-          ) : (
-            <span className="text-[11px] text-gray-500">
-              {row.age ? `${row.age} yrs` : ''}
-              {row.bookingMode === 'subscription_credit' ? ' • Subscription Credit' : ''}
-            </span>
-          )}
-        </div>
-      )
+        );
+      }
     },
     { 
       key: 'phone', 
@@ -535,9 +543,16 @@ export default function BookingsPage() {
             {/* Complete Submitted Intake Information (All 11 Questions from Doc 2) */}
             <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4 shadow-sm">
               <div className="flex items-center justify-between border-b pb-3">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <h3 className="font-semibold text-gray-900 text-base">Intake Information</h3>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium">11 Questions</span>
+                  {selectedBooking._id && (
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-gray-900 text-white font-mono font-bold">
+                      Ref: #{String(selectedBooking._id).slice(-6).toUpperCase()}
+                    </span>
+                  )}
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium">
+                    Session #{selectedBooking.sessionNumber || 1}
+                  </span>
                 </div>
                 <div>
                   {selectedBooking.isUnder18 ? (

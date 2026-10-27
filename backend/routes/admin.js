@@ -157,6 +157,16 @@ router.get('/dashboard', protectAdmin, async (req, res, next) => {
       SupportTicket.find().sort({ createdAt: -1 }).limit(5)
     ]);
 
+    // Auto-provision Google Meet links for any confirmed recent bookings if Google Calendar is connected
+    const gStatus = await getGoogleIntegrationStatus().catch(() => null);
+    if (gStatus?.connected && Array.isArray(recentBookings)) {
+      for (const b of recentBookings) {
+        if (b.status === 'confirmed' && !b.meetingLink) {
+          await ensureBookingCalendarAndMeet(b).catch(() => null);
+        }
+      }
+    }
+
     const enquiryStatusMap = {};
     enquiriesByStatus.forEach((item) => {
       enquiryStatusMap[item._id] = item.count;
@@ -361,6 +371,9 @@ router.get('/google/connect-url', protectAdmin, async (req, res, next) => {
 
     res.status(200).json({
       success: true,
+      authUrl: result.authUrl,
+      redirectUri: result.redirectUri,
+      scopes: result.scopes,
       data: result
     });
   } catch (error) {
@@ -387,6 +400,24 @@ router.get('/google/callback', async (req, res) => {
     const { code, state } = req.query;
     const result = await handleAdminGoogleCallback({ code, state });
 
+    // Automatically generate Google Calendar events & Meet links for any existing confirmed bookings missing a Meet link
+    try {
+      const pendingMeetBookings = await Booking.find({
+        status: 'confirmed',
+        $or: [{ meetingLink: null }, { meetingLink: '' }]
+      })
+        .sort({ createdAt: -1 })
+        .limit(20);
+
+      for (const b of pendingMeetBookings) {
+        await ensureBookingCalendarAndMeet(b).catch((e) =>
+          console.warn('[Auto-Meet Backfill Warning]:', e.message)
+        );
+      }
+    } catch (backfillErr) {
+      console.warn('[Auto-Meet Backfill Error]:', backfillErr.message);
+    }
+
     if (wantsJson) {
       return res.status(200).json({
         success: true,
@@ -395,7 +426,7 @@ router.get('/google/callback', async (req, res) => {
     }
 
     return res.redirect(
-      `${frontendUrl}/admin?google_connected=true&email=${encodeURIComponent(
+      `${frontendUrl}/admin?google_connected=true&google_email=${encodeURIComponent(
         result.connectedEmail || ''
       )}`
     );
