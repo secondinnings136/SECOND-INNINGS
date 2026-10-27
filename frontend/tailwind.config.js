@@ -31,6 +31,22 @@ module.exports = {
         sky: { DEFAULT: '#2B6A8F', soft: '#EAF3F8', border: '#B5D8EB', deep: '#1B4D6B' },
         coral: { DEFAULT: '#C85236', soft: '#FBF0EC', border: '#F2C2B5', deep: '#9B3921' },
 
+        // Admin & brand amber alias (ensures bg-amber, text-amber, border-amber work alongside amber-50..950)
+        amber: {
+          DEFAULT: '#F59E0B',
+          50: '#FFFBEB',
+          100: '#FEF3C7',
+          200: '#FDE68A',
+          300: '#FCD34D',
+          400: '#FBBF24',
+          500: '#F59E0B',
+          600: '#D97706',
+          700: '#B45309',
+          800: '#92400E',
+          900: '#78350F',
+          950: '#451A03',
+        },
+
         // Editorial semantic aliases used across booking, login, onboarding & dashboard
         terracotta: signal,
         sage: '#38784E',

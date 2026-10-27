@@ -159,11 +159,17 @@ router.get('/dashboard', protectAdmin, async (req, res, next) => {
 
     // Auto-provision Google Meet links for any confirmed recent bookings if Google Calendar is connected
     const gStatus = await getGoogleIntegrationStatus().catch(() => null);
+    let updatedRecentBookings = recentBookings;
     if (gStatus?.connected && Array.isArray(recentBookings)) {
+      let anyProvisioned = false;
       for (const b of recentBookings) {
         if (b.status === 'confirmed' && !b.meetingLink) {
           await ensureBookingCalendarAndMeet(b).catch(() => null);
+          anyProvisioned = true;
         }
+      }
+      if (anyProvisioned) {
+        updatedRecentBookings = await Booking.find().sort({ createdAt: -1 }).limit(8);
       }
     }
 
@@ -172,43 +178,69 @@ router.get('/dashboard', protectAdmin, async (req, res, next) => {
       enquiryStatusMap[item._id] = item.count;
     });
 
+    const flatStats = {
+      totalBookings,
+      pendingBookings,
+      confirmedBookings,
+      completedBookings,
+      totalUsers,
+      activeSubscriptions: activeSubscriptionsCount,
+      activeOpportunities,
+      publishedResources,
+      totalContacts,
+      newContacts,
+      institutionalEnquiries: totalEnquiries,
+      approvedTestimonials,
+      newsletterSubscribers: activeSubscribers,
+      totalSupport: totalSupportTickets,
+      openSupport: openSupportTickets,
+      bookings: {
+        total: totalBookings,
+        pending: pendingBookings,
+        confirmed: confirmedBookings,
+        completed: completedBookings
+      },
+      contacts: {
+        total: totalContacts,
+        new: newContacts,
+        read: readContacts,
+        replied: repliedContacts
+      },
+      institutions: {
+        total: totalEnquiries,
+        byStatus: enquiryStatusMap
+      },
+      support: {
+        total: totalSupportTickets,
+        open: openSupportTickets,
+        investigating: investigatingSupportTickets,
+        resolved: resolvedSupportTickets
+      },
+      users: {
+        total: totalUsers,
+        activeSubscriptions: activeSubscriptionsCount
+      },
+      opportunities: { active: activeOpportunities },
+      resources: { published: publishedResources },
+      testimonials: { approved: approvedTestimonials },
+      newsletter: { active: activeSubscribers }
+    };
+
     res.json({
       success: true,
+      stats: flatStats,
+      recentBookings: updatedRecentBookings,
+      recentContacts,
+      recentInstitutions: recentEnquiries,
+      recentSupport: recentSupportTickets,
       data: {
-        stats: {
-          bookings: {
-            total: totalBookings,
-            pending: pendingBookings,
-            confirmed: confirmedBookings,
-            completed: completedBookings
-          },
-          contacts: {
-            total: totalContacts,
-            new: newContacts,
-            read: readContacts,
-            replied: repliedContacts
-          },
-          institutions: {
-            total: totalEnquiries,
-            byStatus: enquiryStatusMap
-          },
-          support: {
-            total: totalSupportTickets,
-            open: openSupportTickets,
-            investigating: investigatingSupportTickets,
-            resolved: resolvedSupportTickets
-          },
-          users: {
-            total: totalUsers,
-            activeSubscriptions: activeSubscriptionsCount
-          },
-          opportunities: { active: activeOpportunities },
-          resources: { published: publishedResources },
-          testimonials: { approved: approvedTestimonials },
-          newsletter: { active: activeSubscribers }
-        },
+        stats: flatStats,
+        recentBookings: updatedRecentBookings,
+        recentContacts,
+        recentInstitutions: recentEnquiries,
+        recentSupport: recentSupportTickets,
         recent: {
-          bookings: recentBookings,
+          bookings: updatedRecentBookings,
           contacts: recentContacts,
           institutions: recentEnquiries,
           support: recentSupportTickets
