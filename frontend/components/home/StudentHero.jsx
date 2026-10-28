@@ -14,9 +14,9 @@ export default function StudentHero() {
   };
 
   return (
-    <section className="relative w-full min-h-[100dvh] lg:h-[100dvh] lg:max-h-[1080px] bg-[#F5F1E8] flex flex-col justify-between pt-16 sm:pt-20 lg:pt-20 pb-4 sm:pb-5 px-5 sm:px-8 lg:px-12 xl:px-14 overflow-x-clip">
+    <section className="relative w-full min-h-[100dvh] lg:h-[100dvh] lg:max-h-[1080px] bg-[#F5F1E8] flex flex-col justify-between pt-16 sm:pt-20 lg:pt-20 pb-4 sm:pb-5 px-5 sm:px-8 lg:px-10 xl:px-14 overflow-x-clip">
       {/* Main 2-Column Hero Grid: Left Typography + Right Artistic Collage */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-6 xl:gap-10 items-center flex-1 min-h-0 my-auto max-w-7xl mx-auto w-full z-10 py-2 lg:py-0">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 xl:gap-12 items-center flex-1 min-h-0 my-auto max-w-[1400px] xl:max-w-[1440px] mx-auto w-full z-10 py-1 lg:py-0">
         {/* Left Column: Eyebrow, Monumental Serif Headline, Lede & Actions */}
         <div className="lg:col-span-6 xl:col-span-6 flex flex-col justify-center text-left pt-2 lg:pt-0">
           {/* Eyebrow Meta Header */}
@@ -24,11 +24,11 @@ export default function StudentHero() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="font-mono text-[0.6875rem] sm:text-[0.75rem] uppercase tracking-[0.16em] text-[#786653] leading-relaxed mb-4 lg:mb-5 xl:mb-6"
+            className="font-mono text-[0.6875rem] sm:text-[0.75rem] uppercase tracking-[0.16em] text-[#786653] leading-relaxed mb-4 sm:mb-5 lg:mb-6"
           >
             <div className="flex items-center gap-3">
               <span>Young minds. New perspectives. Wider possibilities.</span>
-              <span className="hidden sm:inline-block w-10 md:w-14 h-px bg-[#5B4632]/25" />
+              <span className="hidden sm:inline-block w-12 sm:w-16 h-px bg-[#5B4632]/25" />
             </div>
             <div className="mt-1">
               <span>Jaipur, India &nbsp;—&nbsp; Ages 16 to 25</span>
@@ -40,7 +40,7 @@ export default function StudentHero() {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
-            className="font-serif text-[clamp(2.25rem,4vw,4.35rem)] xl:text-[4.85rem] font-normal leading-[1.04] tracking-[-0.025em] text-[#23180F] mb-4 lg:mb-5 xl:mb-6"
+            className="font-serif text-[clamp(2.5rem,4.4vw,4.85rem)] xl:text-[5.25rem] font-normal leading-[1.04] tracking-[-0.025em] text-[#23180F] mb-4 sm:mb-5 lg:mb-6"
           >
             Somewhere between<br />
             ‘I don’t know’<br />
@@ -53,7 +53,7 @@ export default function StudentHero() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
-            className="text-[0.9375rem] sm:text-[1rem] lg:text-[1.0625rem] text-[#443324] leading-[1.6] max-w-[42ch] mb-6 lg:mb-7 xl:mb-8 font-sans"
+            className="text-[1rem] sm:text-[1.0625rem] lg:text-[1.125rem] text-[#443324] leading-[1.62] max-w-[43ch] mb-6 sm:mb-7 lg:mb-8 font-sans"
           >
             Second Innings is a space for young people to talk openly, understand themselves better, explore possibilities and find their own way forward.
           </motion.p>
@@ -67,7 +67,7 @@ export default function StudentHero() {
           >
             <Link
               href="/book"
-              className="group inline-flex items-center gap-3 rounded-full bg-[#23180F] px-6 sm:px-7 py-3 sm:py-3.5 text-[0.875rem] sm:text-[0.9375rem] font-medium text-[#FAF6EE] shadow-sm hover:bg-[#3D2C1E] active:scale-[0.98] transition-all duration-300"
+              className="group inline-flex items-center gap-3.5 rounded-full bg-[#23180F] px-6 sm:px-7 py-3 sm:py-3.5 text-[0.9375rem] font-medium text-[#FAF6EE] shadow-sm hover:bg-[#3D2C1E] active:scale-[0.98] transition-all duration-300"
             >
               <span>Start a Conversation</span>
               <span className="transition-transform duration-300 ease-editorial group-hover:translate-x-1">→</span>
@@ -76,7 +76,7 @@ export default function StudentHero() {
             <Link
               href="#crossroads"
               onClick={scrollToNext}
-              className="inline-flex items-center gap-1.5 text-[0.875rem] sm:text-[0.9375rem] font-medium text-[#23180F] hover:text-[#C8792C] transition-colors duration-200 group cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-[0.9375rem] font-medium text-[#23180F] hover:text-[#C8792C] transition-colors duration-200 group cursor-pointer"
             >
               <span>Explore How It Works</span>
               <span className="transition-transform duration-300 ease-editorial group-hover:translate-y-0.5">↓</span>
@@ -84,18 +84,18 @@ export default function StudentHero() {
           </motion.div>
         </div>
 
-        {/* Right Column: Visual World Artistic Collage (Height & Viewport Constrained) */}
-        <div className="lg:col-span-6 xl:col-span-6 relative flex items-center justify-center lg:justify-end z-10 min-h-0 max-h-[48vh] sm:max-h-[50vh] lg:max-h-[56vh] xl:max-h-[60vh]">
+        {/* Right Column: Visual World Artistic Collage (Properly Sized & Viewport Calibrated) */}
+        <div className="lg:col-span-6 xl:col-span-6 relative flex items-center justify-center lg:justify-end z-10 min-h-0 w-full">
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.9, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-[400px] sm:max-w-[450px] lg:max-w-[480px] xl:max-w-[530px] aspect-[856/813] max-h-full flex items-center justify-center select-none"
+            className="relative w-full max-w-[500px] sm:max-w-[540px] lg:max-w-[590px] xl:max-w-[660px] aspect-[856/813] max-h-[min(650px,calc(100dvh-175px))] flex items-center justify-center lg:justify-end select-none"
           >
             <motion.div
               animate={{ y: [-2, 3, -2] }}
               transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-              className="w-full h-full relative flex items-center justify-center"
+              className="w-full h-full relative flex items-center justify-center lg:justify-end"
             >
               <Image
                 src="/assets/hero-composition-transparent@2x.png"
@@ -103,7 +103,7 @@ export default function StudentHero() {
                 width={856}
                 height={813}
                 priority
-                className="w-auto h-auto max-w-full max-h-[44vh] sm:max-h-[48vh] lg:max-h-[52vh] xl:max-h-[56vh] object-contain filter drop-shadow-[0_4px_24px_rgba(91,70,50,0.07)] pointer-events-none"
+                className="w-full h-full max-h-[min(650px,calc(100dvh-175px))] object-contain filter drop-shadow-[0_4px_24px_rgba(91,70,50,0.07)] pointer-events-none"
               />
             </motion.div>
           </motion.div>
@@ -111,7 +111,7 @@ export default function StudentHero() {
       </div>
 
       {/* Docked Viewport Bottom Bar: Proof Badges (Left) & Scroll Indicator (Right) */}
-      <div className="w-full max-w-7xl mx-auto pt-3 sm:pt-4 border-t border-[#5B4632]/10 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 mt-auto shrink-0 z-10">
+      <div className="w-full max-w-[1400px] xl:max-w-[1440px] mx-auto pt-3 sm:pt-4 border-t border-[#5B4632]/10 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 mt-auto shrink-0 z-10">
         {/* Left Side: Three Credibility Badges with Hairline Dividers */}
         <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-6 text-[0.8125rem] sm:text-[0.875rem] text-[#443324]">
           <div className="flex items-center gap-2">
