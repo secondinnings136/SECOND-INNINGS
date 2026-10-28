@@ -14,9 +14,9 @@ export default function StudentHero() {
   };
 
   return (
-    <section className="relative w-full min-h-[100dvh] lg:h-[100dvh] lg:max-h-[1080px] bg-[#F5F1E8] flex flex-col justify-between pt-16 sm:pt-20 lg:pt-20 pb-4 sm:pb-5 px-5 sm:px-8 lg:px-10 xl:px-14 overflow-x-clip">
+    <section className="relative w-full min-h-[100dvh] bg-[#F5F1E8] flex flex-col justify-between pt-20 sm:pt-24 lg:pt-20 pb-5 px-5 sm:px-8 lg:px-10 xl:px-14 overflow-x-clip">
       {/* Main 2-Column Hero Grid: Left Typography + Right Artistic Collage */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 xl:gap-12 items-center flex-1 min-h-0 my-auto max-w-[1400px] xl:max-w-[1440px] mx-auto w-full z-10 py-1 lg:py-0">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 xl:gap-12 items-center flex-1 my-auto max-w-[1400px] xl:max-w-[1440px] mx-auto w-full z-10 py-4 lg:py-2">
         {/* Left Column: Eyebrow, Monumental Serif Headline, Lede & Actions */}
         <div className="lg:col-span-6 xl:col-span-6 flex flex-col justify-center text-left pt-2 lg:pt-0">
           {/* Eyebrow Meta Header */}
@@ -40,7 +40,7 @@ export default function StudentHero() {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
-            className="font-serif text-[clamp(2.5rem,4.4vw,4.85rem)] xl:text-[5.25rem] font-normal leading-[1.04] tracking-[-0.025em] text-[#23180F] mb-4 sm:mb-5 lg:mb-6"
+            className="font-serif text-[clamp(2.15rem,4.2vw,4.65rem)] xl:text-[5rem] font-normal leading-[1.05] tracking-[-0.025em] text-[#23180F] mb-4 sm:mb-5 lg:mb-6"
           >
             Somewhere between<br />
             ‘I don’t know’<br />
@@ -53,7 +53,7 @@ export default function StudentHero() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
-            className="text-[1rem] sm:text-[1.0625rem] lg:text-[1.125rem] text-[#443324] leading-[1.62] max-w-[43ch] mb-6 sm:mb-7 lg:mb-8 font-sans"
+            className="text-[0.9375rem] sm:text-[1.0625rem] lg:text-[1.125rem] text-[#443324] leading-[1.62] max-w-[43ch] mb-6 sm:mb-7 lg:mb-8 font-sans"
           >
             Second Innings is a space for young people to talk openly, understand themselves better, explore possibilities and find their own way forward.
           </motion.p>
@@ -84,13 +84,13 @@ export default function StudentHero() {
           </motion.div>
         </div>
 
-        {/* Right Column: Visual World Artistic Collage (Properly Sized & Viewport Calibrated) */}
-        <div className="lg:col-span-6 xl:col-span-6 relative flex items-center justify-center lg:justify-end z-10 min-h-0 w-full">
+        {/* Right Column: Visual World Artistic Collage */}
+        <div className="lg:col-span-6 xl:col-span-6 relative flex items-center justify-center lg:justify-end z-10 w-full mt-6 lg:mt-0">
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.9, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-[500px] sm:max-w-[540px] lg:max-w-[590px] xl:max-w-[660px] aspect-[856/813] max-h-[min(650px,calc(100dvh-175px))] flex items-center justify-center lg:justify-end select-none"
+            className="relative w-full max-w-[380px] sm:max-w-[480px] lg:max-w-[580px] xl:max-w-[650px] aspect-[856/813] max-h-[min(620px,calc(100dvh-190px))] flex items-center justify-center lg:justify-end select-none"
           >
             <motion.div
               animate={{ y: [-2, 3, -2] }}
@@ -103,7 +103,7 @@ export default function StudentHero() {
                 width={856}
                 height={813}
                 priority
-                className="w-full h-full max-h-[min(650px,calc(100dvh-175px))] object-contain filter drop-shadow-[0_4px_24px_rgba(91,70,50,0.07)] pointer-events-none"
+                className="w-full h-full max-h-[min(620px,calc(100dvh-190px))] object-contain filter drop-shadow-[0_4px_24px_rgba(91,70,50,0.07)] pointer-events-none"
               />
             </motion.div>
           </motion.div>
@@ -111,7 +111,7 @@ export default function StudentHero() {
       </div>
 
       {/* Docked Viewport Bottom Bar: Proof Badges (Left) & Scroll Indicator (Right) */}
-      <div className="w-full max-w-[1400px] xl:max-w-[1440px] mx-auto pt-3 sm:pt-4 border-t border-[#5B4632]/10 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 mt-auto shrink-0 z-10">
+      <div className="w-full max-w-[1400px] xl:max-w-[1440px] mx-auto pt-4 pb-1 border-t border-[#5B4632]/10 flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 sm:mt-10 lg:mt-auto shrink-0 z-10">
         {/* Left Side: Three Credibility Badges with Hairline Dividers */}
         <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-6 text-[0.8125rem] sm:text-[0.875rem] text-[#443324]">
           <div className="flex items-center gap-2">
