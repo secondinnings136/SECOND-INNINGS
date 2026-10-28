@@ -1,251 +1,195 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import Button from '../ui/Button';
-import Arrow from '../ui/Arrow';
-
-const DILEMMAS = [
-  {
-    id: 'career',
-    label: '“I don’t know what career to choose”',
-    pillColor: 'bg-sun-soft border-sun-border text-sun',
-    activePill: 'bg-sun text-paper border-sun shadow-md',
-    bg: 'bg-sun-soft/60',
-    border: 'border-sun-border',
-    text: 'text-sun',
-    question: '“Everyone else seems to have a clear roadmap. Where do I even begin?”',
-    insight: 'Career confusion can come from different places—too many choices, limited exposure, expectations from others, or simply not knowing yourself well enough yet. Understanding where your confusion is coming from can be a useful first step. Perhaps this is where a conversation can begin.',
-    invitation: 'Perhaps this is where a conversation can begin.'
-  },
-  {
-    id: 'confidence',
-    label: '“Good at studies, but low on confidence”',
-    pillColor: 'bg-coral-soft border-coral-border text-coral',
-    activePill: 'bg-coral text-paper border-coral shadow-md',
-    bg: 'bg-coral-soft/60',
-    border: 'border-coral-border',
-    text: 'text-coral',
-    question: '“I get good marks, but in interviews or group settings, I freeze.”',
-    insight: 'Academic performance and personal confidence often develop differently. Scoring well is one skill; trusting your voice in unfamiliar rooms is another. Recognizing where the hesitation comes from is often where real self-belief begins to take shape.',
-    invitation: 'A safe, non-judgmental space to understand and build confidence.'
-  },
-  {
-    id: 'parents',
-    label: '“Parents want one thing, I want another”',
-    pillColor: 'bg-sky-soft border-sky-border text-sky',
-    activePill: 'bg-sky text-paper border-sky shadow-md',
-    bg: 'bg-sky-soft/60',
-    border: 'border-sky-border',
-    text: 'text-sky',
-    question: '“How do I pursue my interests without causing conflict at home?”',
-    insight: 'Differences with family often stem from care and concern rather than a desire to control. Finding ways to understand their perspective while clarifying your own can help transform tension into constructive dialogue.',
-    invitation: 'Explore how to bridge expectations with personal clarity.'
-  },
-  {
-    id: 'exposure',
-    label: '“I have no exposure beyond my classroom”',
-    pillColor: 'bg-sprout-soft border-sprout-border text-sprout',
-    activePill: 'bg-sprout text-paper border-sprout shadow-md',
-    bg: 'bg-sprout-soft/60',
-    border: 'border-sprout-border',
-    text: 'text-sprout',
-    question: '“How do I discover fellowships, startups, and unconventional opportunities?”',
-    insight: 'Most meaningful opportunities and career pathways are rarely discussed inside a standard syllabus. Discovering what exists begins with curiosity, asking better questions, and connecting with people beyond familiar circles.',
-    invitation: 'Open your perspective to opportunities you haven’t yet encountered.'
-  },
-  {
-    id: 'transition',
-    label: '“About to graduate, don’t know what comes next”',
-    pillColor: 'bg-coral-soft border-coral-border text-signal-deep',
-    activePill: 'bg-signal-deep text-paper border-signal-deep shadow-md',
-    bg: 'bg-coral-soft/60',
-    border: 'border-coral-border',
-    text: 'text-signal-deep',
-    question: '“College is ending, and the real world feels overwhelming.”',
-    insight: 'Reaching the end of university without a definitive roadmap is far more common than people admit. Transition is not about having the next twenty years mapped out—it is about seeing your very next step clearly and taking it with confidence.',
-    invitation: 'One conversation can help bring focus to what comes next.'
-  }
-];
+import Image from 'next/image';
+import { motion } from 'framer-motion';
 
 export default function StudentHero() {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const activeDilemma = DILEMMAS[activeIndex];
+  const scrollToNext = (e) => {
+    e?.preventDefault();
+    const target = document.getElementById('crossroads') || document.getElementById('how-it-works');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
-    <section className="relative pt-32 md:pt-44 pb-20 md:pb-28 overflow-hidden">
-      <div className="page-x relative z-10">
-        {/* Eyebrow Meta Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-wrap items-center gap-2.5 sm:gap-4 text-[0.6875rem] sm:text-[0.75rem] font-mono uppercase tracking-[0.18em] text-muted mb-8 sm:mb-12"
-        >
-          <span>Young minds. New perspectives. Wider possibilities.</span>
-          <span className="text-line">—</span>
-          <span>Jaipur, India</span>
-          <span className="text-line">—</span>
-          <span>Ages 16 to 25</span>
-        </motion.div>
-
-        {/* Monumental Editorial Headline with Inline Deepak Sogani Pill */}
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.85, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="font-serif text-[clamp(2.75rem,6.2vw,5.75rem)] font-normal leading-[1.06] tracking-[-0.03em] text-ink text-left"
-        >
-          Sometimes, you don’t need<br />
-          another answer.{' '}
-          <span className="inline-flex items-center align-middle mx-1.5 sm:mx-3 h-[0.72em] w-[2.2em] rounded-full overflow-hidden border border-line bg-paper-2 relative shadow-inner translate-y-[-0.04em]">
-            <img
-              src="/deepaksogani.jpeg"
-              alt="Deepak Sogani, Founder of Second Innings"
-              width="48"
-              height="48"
-              loading="eager"
-              className="w-1/2 h-full object-cover object-top grayscale contrast-125 brightness-95"
-            />
-            <div className="w-1/2 h-full bg-[#E2DBD0] flex items-center justify-center relative overflow-hidden">
-              <div
-                className="absolute inset-0 opacity-40"
-                style={{
-                  backgroundImage: 'radial-gradient(#1C1B18 1px, transparent 1px)',
-                  backgroundSize: '4px 4px',
-                }}
-              />
+    <section className="relative w-full min-h-[100dvh] lg:h-[100dvh] lg:max-h-[1080px] bg-[#F5F1E8] flex flex-col justify-between pt-20 sm:pt-24 lg:pt-24 pb-6 px-5 sm:px-8 lg:px-14 overflow-hidden">
+      {/* Main 2-Column Hero Grid: Left Typography + Right Artistic Collage */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 xl:gap-12 items-center flex-1 my-auto max-w-7xl mx-auto w-full z-10">
+        {/* Left Column: Eyebrow, Monumental Serif Headline, Lede & Actions */}
+        <div className="lg:col-span-6 xl:col-span-6 flex flex-col justify-center text-left pt-4 lg:pt-0">
+          {/* Eyebrow Meta Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className="font-mono text-[0.6875rem] sm:text-[0.75rem] uppercase tracking-[0.16em] text-[#786653] leading-relaxed mb-6 sm:mb-8"
+          >
+            <div className="flex items-center gap-3">
+              <span>Young minds. New perspectives. Wider possibilities.</span>
+              <span className="hidden sm:inline-block w-12 md:w-16 h-px bg-[#5B4632]/25" />
             </div>
-          </span>{' '}
-          You<br />
-          need the{' '}
-          <span className="italic text-coral font-normal">
-            right conversation.
-          </span>
-        </motion.h1>
-
-        {/* Right-Aligned Sub-Lede & Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.85, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-12 sm:mt-18 grid grid-cols-1 md:grid-cols-12 gap-6"
-        >
-          <div className="md:col-span-7 md:col-start-6 lg:col-span-6 lg:col-start-7 text-left">
-            <p className="text-[1.0625rem] sm:text-[1.1875rem] text-ink-2 leading-relaxed font-sans mb-8">
-              Second Innings is a space for young people to talk openly, understand themselves better, explore possibilities and find their own way forward.
-            </p>
-            <div className="flex flex-wrap items-center gap-6">
-              <Button href="/book">Start a Conversation</Button>
-              <Link
-                href="/#how-it-works"
-                onClick={(e) => {
-                  const el = document.getElementById('how-it-works');
-                  if (el) {
-                    e.preventDefault();
-                    el.scrollIntoView({ behavior: 'smooth' });
-                    window.history.pushState(null, '', '#how-it-works');
-                  }
-                }}
-                className="inline-flex items-center gap-2 text-ink text-[0.9375rem] font-medium hover:text-coral transition-colors group cursor-pointer"
-              >
-                <span>Explore Second Innings</span>
-                <Arrow direction="down" className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-y-0.5" />
-              </Link>
+            <div className="mt-1">
+              <span>Jaipur, India &nbsp;—&nbsp; Ages 16 to 25</span>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
 
-        {/* Interactive Student Crossroads Navigator */}
-        <div className="mt-16 sm:mt-20 pt-8 border-t border-line text-left max-w-4xl mx-auto">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-            <p className="meta text-muted">
-              ✦ Click any question to see how a conversation begins:
-            </p>
-            <span className="meta text-sun font-semibold">
-              Interactive Student Navigator
-            </span>
-          </div>
+          {/* Monumental Editorial Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.85, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="font-serif text-[clamp(2.5rem,4.5vw,4.85rem)] xl:text-[5.25rem] font-normal leading-[1.04] tracking-[-0.025em] text-[#23180F] mb-6 sm:mb-7"
+          >
+            Somewhere between<br />
+            ‘I don’t know’<br />
+            and <span className="italic font-normal text-[#C8792C]">‘What comes next?’</span><br />
+            there is <span className="italic font-normal text-[#C8792C]">a conversation.</span>
+          </motion.h1>
 
-          {/* Dilemma Selector Chips */}
-          <div className="flex flex-wrap gap-2.5 sm:gap-3">
-            {DILEMMAS.map((d, i) => {
-              const isActive = i === activeIndex;
-              return (
-                <button
-                  key={d.id}
-                  type="button"
-                  onClick={() => setActiveIndex(i)}
-                  className={`px-4 py-2 rounded-full text-xs font-medium transition-all duration-300 ${
-                    isActive
-                      ? `${d.activePill} scale-[1.03]`
-                      : `border border-line bg-paper text-ink hover:border-ink/30 hover:${d.pillColor}`
-                  }`}
-                >
-                  {d.label}
-                </button>
-              );
-            })}
-          </div>
+          {/* Sub-Lede Body Copy */}
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.85, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="text-[1.0625rem] sm:text-[1.125rem] text-[#443324] leading-[1.65] max-w-[43ch] mb-8 sm:mb-10 font-sans"
+          >
+            Second Innings is a space for young people to talk openly, understand themselves better, explore possibilities and find their own way forward.
+          </motion.p>
 
-          {/* Dynamic Perspective Box */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeDilemma.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className={`mt-6 p-6 sm:p-8 rounded-[1.75rem] border ${activeDilemma.border} ${activeDilemma.bg} transition-colors duration-500 relative overflow-hidden`}
+          {/* Call to Actions */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.85, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-wrap items-center gap-6 sm:gap-8"
+          >
+            <Link
+              href="/book"
+              className="group inline-flex items-center gap-3 rounded-full bg-[#23180F] px-6 sm:px-7 py-3 sm:py-3.5 text-[0.9375rem] font-medium text-[#FAF6EE] shadow-sm hover:bg-[#3D2C1E] active:scale-[0.98] transition-all duration-300"
             >
-              <div className="flex items-center gap-2 mb-3">
-                <span className={`px-2.5 py-0.5 rounded-full text-xs font-mono border bg-paper ${activeDilemma.border} ${activeDilemma.text}`}>
-                  {activeDilemma.label.replace(/[“”]/g, '')}
-                </span>
-                <span className="text-xs font-mono text-muted">• Mentor Perspective</span>
-              </div>
-              <h3 className="font-serif text-[1.5rem] sm:text-[1.875rem] text-ink font-normal leading-snug mb-3">
-                {activeDilemma.question}
-              </h3>
-              <p className="text-[0.9375rem] sm:text-[1.0625rem] text-ink-2 leading-relaxed max-w-3xl">
-                {activeDilemma.insight}
-              </p>
-              <div className="mt-6 pt-5 border-t border-line/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <span className={`text-xs sm:text-[0.875rem] font-medium ${activeDilemma.text}`}>
-                  {activeDilemma.invitation}
-                </span>
-                <Link
-                  href="/book"
-                  className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-ink hover:text-coral transition-colors shrink-0"
-                >
-                  Start a conversation with Deepak
-                  <Arrow className="h-3 w-3" />
-                </Link>
-              </div>
-            </motion.div>
-          </AnimatePresence>
+              <span>Start a Conversation</span>
+              <span className="transition-transform duration-300 ease-editorial group-hover:translate-x-1">→</span>
+            </Link>
+
+            <Link
+              href="#crossroads"
+              onClick={scrollToNext}
+              className="inline-flex items-center gap-1.5 text-[0.9375rem] font-medium text-[#23180F] hover:text-[#C8792C] transition-colors duration-200 group cursor-pointer"
+            >
+              <span>Explore How It Works</span>
+              <span className="transition-transform duration-300 ease-editorial group-hover:translate-y-0.5">↓</span>
+            </Link>
+          </motion.div>
         </div>
 
-        {/* Minimalist 4-Column Proof & Reassurance Row */}
-        <div className="mt-14 pt-8 border-t border-line grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div>
-            <span className="block font-serif text-[1.75rem] text-ink font-normal leading-none mb-1">35+ Years</span>
-            <span className="meta text-muted text-[0.6875rem]">Across Corporate Life, Entrepreneurship &amp; Higher Education</span>
+        {/* Right Column: Visual World Artistic Collage */}
+        <div className="lg:col-span-6 xl:col-span-6 relative flex items-center justify-center lg:justify-end z-10">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.95, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+            className="relative w-full max-w-[480px] sm:max-w-[540px] lg:max-w-[570px] xl:max-w-[620px] aspect-[559/517] select-none"
+          >
+            <motion.div
+              animate={{ y: [-2, 3, -2] }}
+              transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+              className="w-full h-full relative"
+            >
+              <Image
+                src="/assets/hero-composition-transparent@2x.png"
+                alt="Second Innings — Somewhere between 'I don't know' and 'What comes next?' there is a conversation."
+                width={1118}
+                height={1034}
+                priority
+                className="w-full h-full object-contain filter drop-shadow-[0_4px_24px_rgba(91,70,50,0.07)] pointer-events-none"
+              />
+            </motion.div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Docked Viewport Bottom Bar: Proof Badges (Left) & Scroll Indicator (Right) */}
+      <div className="w-full max-w-7xl mx-auto pt-4 sm:pt-6 border-t border-[#5B4632]/10 flex flex-col sm:flex-row items-center justify-between gap-4 mt-auto z-10">
+        {/* Left Side: Three Credibility Badges with Hairline Dividers */}
+        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-6 text-[0.8125rem] sm:text-[0.875rem] text-[#443324]">
+          <div className="flex items-center gap-2">
+            <svg
+              className="w-4 h-4 text-[#5B4632] shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            <span>Human-led mentoring</span>
           </div>
-          <div>
-            <span className="block font-serif text-[1.75rem] text-ink font-normal leading-none mb-1">One-to-One</span>
-            <span className="meta text-muted text-[0.6875rem]">Private Conversations</span>
+
+          <div className="hidden sm:block h-4 w-px bg-[#5B4632]/25" />
+
+          <div className="flex items-center gap-2">
+            <svg
+              className="w-4 h-4 text-[#5B4632] shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <span>Jaipur, India</span>
           </div>
-          <div>
-            <span className="block font-serif text-[1.75rem] text-ink font-normal leading-none mb-1">Next Step</span>
-            <span className="meta text-muted text-[0.6875rem]">Agreed Action &amp; Follow-Through</span>
-          </div>
-          <div>
-            <span className="block font-serif text-[1.75rem] text-ink font-normal leading-none mb-1">No Prescriptions</span>
-            <span className="meta text-muted text-[0.6875rem]">No ready-made answers. No predetermined path.</span>
+
+          <div className="hidden sm:block h-4 w-px bg-[#5B4632]/25" />
+
+          <div className="flex items-center gap-2">
+            <svg
+              className="w-4 h-4 text-[#5B4632] shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            <span>Ages 16 – 25</span>
           </div>
         </div>
+
+        {/* Right Side: Scroll to Explore Pill Indicator */}
+        <button
+          type="button"
+          onClick={scrollToNext}
+          className="hidden sm:inline-flex items-center gap-2.5 text-[#786653] hover:text-[#23180F] transition-colors group cursor-pointer"
+          aria-label="Scroll to explore"
+        >
+          <div className="w-4 h-7 rounded-full border border-[#23180F]/45 flex justify-center pt-1 group-hover:border-[#23180F] transition-colors">
+            <motion.div
+              animate={{ y: [0, 5, 0] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+              className="w-1 h-1.5 rounded-full bg-[#23180F]/70"
+            />
+          </div>
+          <span className="font-mono text-[0.625rem] tracking-[0.22em] uppercase font-medium">
+            Scroll to explore
+          </span>
+        </button>
       </div>
     </section>
   );

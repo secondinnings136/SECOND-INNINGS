@@ -107,7 +107,7 @@
 
   /* Analog halftone dot-matrix (industrial-brutalist textural effect). */
   .halftone {
-    background-image: radial-gradient(circle at center, rgba(28, 27, 24, 0.55) 0.7px, transparent 1.3px);
+    background-image: radial-gradient(circle at center, rgba(91, 70, 50, 0.45) 0.7px, transparent 1.3px);
     background-size: 4px 4px;
     mix-blend-mode: multiply;
   }
@@ -140,15 +140,15 @@
   width: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #F4F2EC;
+  background: #FAF6EE;
 }
 ::-webkit-scrollbar-thumb {
-  background: #CFC9BC;
-  border: 3px solid #F4F2EC;
+  background: #E0D2C2;
+  border: 3px solid #FAF6EE;
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #1C1B18;
+  background: #5B4632;
 }
 
 @media (prefers-reduced-motion: reduce) {

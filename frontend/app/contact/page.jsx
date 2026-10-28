@@ -367,7 +367,7 @@ export default function Contact() {
                         <input 
                           type="checkbox" 
                           onChange={() => toggleInterest(item)}
-                          className="accent-[#1C1B18]" 
+                          className="accent-[#5B4632]" 
                         />
                         <span>{item}</span>
                       </label>

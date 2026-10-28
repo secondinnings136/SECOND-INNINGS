@@ -9,6 +9,7 @@ import { Reveal, RevealGroup, RevealItem } from '../components/ui/Reveal';
 import StepStack from '../components/home/StepStack';
 import StudentOutcomesGrid from '../components/home/StudentOutcomesGrid';
 import StudentHero from '../components/home/StudentHero';
+import StudentCrossroads from '../components/home/StudentCrossroads';
 
 export const metadata = {
   title: 'Second Innings | Young Minds. New Perspectives. Wider Possibilities. — Deepak Sogani',
@@ -74,6 +75,7 @@ export default function Home() {
     <div className="w-full">
       {/* 1. HERO: Student-centric sunrise canvas with animated Ensō & interactive crossroads */}
       <StudentHero />
+      <StudentCrossroads />
 
       {/* 2. HOOK: scrubbed paragraph + personal questions */}
       <section className="border-t border-line">

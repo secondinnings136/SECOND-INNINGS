@@ -55,7 +55,7 @@ export default function Navbar() {
             <Logo size="sm" showTagline={false} />
           </Link>
 
-          <nav className="hidden xl:flex items-center gap-1" aria-label="Primary">
+          <nav className="hidden lg:flex items-center gap-1" aria-label="Primary">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
@@ -117,7 +117,7 @@ export default function Navbar() {
               onClick={() => setIsOpen((v) => !v)}
               aria-label={isOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={isOpen}
-              className="xl:hidden relative flex h-10 w-10 items-center justify-center rounded-full border border-line bg-paper transition-transform active:scale-[0.96]"
+              className="lg:hidden relative flex h-10 w-10 items-center justify-center rounded-full border border-line bg-paper transition-transform active:scale-[0.96]"
             >
               <span
                 className={`absolute h-px w-4 bg-ink transition-transform duration-500 ease-editorial ${
@@ -142,7 +142,7 @@ export default function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, ease: EASE }}
-            className="fixed inset-0 z-overlay flex flex-col bg-paper/95 backdrop-blur-2xl xl:hidden overflow-y-auto"
+            className="fixed inset-0 z-overlay flex flex-col bg-paper/95 backdrop-blur-2xl lg:hidden overflow-y-auto"
           >
             <nav className="page-x flex flex-1 flex-col justify-center pt-24 pb-10" aria-label="Mobile">
               <ul className="border-t border-line">

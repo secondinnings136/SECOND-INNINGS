@@ -60,3 +60,7 @@ coverage/
 scratch/
 tmp/
 temp/
+
+# Demo Video & Media
+demo_video/
+demo-video/

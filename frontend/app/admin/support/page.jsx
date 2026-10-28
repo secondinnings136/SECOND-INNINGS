@@ -77,7 +77,7 @@ export default function AdminSupportPage() {
       label: 'Subject', 
       render: (val, row) => (
         <div className="max-w-[240px]">
-          <span className="font-semibold text-[#1C1B18] block truncate">{val}</span>
+          <span className="font-semibold text-[#5B4632] block truncate">{val}</span>
           <span className="text-xs text-gray-500 font-mono block">{formatCategory(row.category)}</span>
         </div>
       ) 
@@ -110,7 +110,7 @@ export default function AdminSupportPage() {
       {/* Header and Filter Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
         <div>
-          <h1 className="text-xl font-serif font-bold text-[#1C1B18]">Website Support &amp; Bug Tickets</h1>
+          <h1 className="text-xl font-serif font-bold text-[#5B4632]">Website Support &amp; Bug Tickets</h1>
           <p className="text-xs text-gray-500 mt-0.5">Manage user bug reports, technical queries, and platform issues.</p>
         </div>
         <div className="flex items-center gap-2">
@@ -121,7 +121,7 @@ export default function AdminSupportPage() {
               onClick={() => setStatusFilter(st)}
               className={`px-3 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider transition-colors ${
                 statusFilter === st
-                  ? 'bg-[#1C1B18] text-white font-bold'
+                  ? 'bg-[#5B4632] text-white font-bold'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -263,7 +263,7 @@ export default function AdminSupportPage() {
             <div className="pt-2 flex justify-end">
               <a
                 href={`mailto:${selectedTicket.email}?subject=${encodeURIComponent(`[Second Innings Support #${selectedTicket._id?.slice(-6)}] ${selectedTicket.subject}`)}`}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#1C1B18] text-white text-xs font-mono uppercase tracking-wider rounded-lg hover:bg-gray-800 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#5B4632] text-white text-xs font-mono uppercase tracking-wider rounded-lg hover:bg-gray-800 transition-colors"
               >
                 <Mail size={14} /> Reply via Direct Email
               </a>

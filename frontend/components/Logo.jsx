@@ -40,10 +40,10 @@ export default function Logo({
           <defs>
             {/* Soft watercolor sunrise radial gradient */}
             <radialGradient id="ensoSunGlow" cx="50%" cy="58%" r="48%" fx="50%" fy="55%">
-              <stop offset="0%" stopColor="#F5A623" stopOpacity="0.9" />
-              <stop offset="45%" stopColor="#E69138" stopOpacity="0.75" />
-              <stop offset="75%" stopColor="#D97724" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="#D97724" stopOpacity="0" />
+              <stop offset="0%" stopColor="#F4D9A0" stopOpacity="0.9" />
+              <stop offset="45%" stopColor="#E69F55" stopOpacity="0.75" />
+              <stop offset="75%" stopColor="#C8792C" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="#C8792C" stopOpacity="0" />
             </radialGradient>
           </defs>
 
@@ -53,7 +53,7 @@ export default function Logo({
           {/* Hand-drawn organic watercolor sunrise texture splashes */}
           <path
             d="M20 28C22 25 32 24 35 28C33 32 23 33 20 28Z"
-            fill="#E08A28"
+            fill="#C8792C"
             fillOpacity="0.3"
           />
 
@@ -61,7 +61,7 @@ export default function Logo({
           {/* Main brush body: Thick bottom-left foundation tapering gracefully to top-right */}
           <path
             d="M17.5 40.5C12 36.5 8.5 31.5 8.5 25.5C8.5 15.5 16.5 7.5 26.5 7.5C36 7.5 43.5 14.5 44.5 23.5C45.2 29.5 42 35.5 37 39.5"
-            stroke="#1C1B18"
+            stroke="#5B4632"
             strokeWidth="3.6"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -69,7 +69,7 @@ export default function Logo({
           {/* Secondary organic bristle stroke reinforcing hand-crafted ink texture */}
           <path
             d="M15 39C10.5 35 7.5 30 7.8 24.5C8.2 16 15.5 8.5 25.5 8.2C34.5 8 42 14.5 43.2 23"
-            stroke="#1C1B18"
+            stroke="#5B4632"
             strokeWidth="1.4"
             strokeLinecap="round"
             strokeOpacity="0.7"
@@ -77,14 +77,14 @@ export default function Logo({
           {/* Ink press foundation at bottom-left */}
           <path
             d="M13 37.5C14.5 40 18 42.5 22 43.5C26 44.5 29 44 31 43.5"
-            stroke="#1C1B18"
+            stroke="#5B4632"
             strokeWidth="2.4"
             strokeLinecap="round"
           />
 
           {/* Artisanal Terracotta Seal / Stamp (Hanko seal mark) */}
-          <rect x="37" y="36" width="7.5" height="7.5" rx="1.5" fill="#C85236" />
-          <path d="M39.5 38.5H42M40.75 38.5V41.5M39.5 41.5H42" stroke="#F4F2EC" strokeWidth="0.8" strokeLinecap="round" />
+          <rect x="37" y="36" width="7.5" height="7.5" rx="1.5" fill="#C8792C" />
+          <path d="M39.5 38.5H42M40.75 38.5V41.5M39.5 41.5H42" stroke="#FAF6EE" strokeWidth="0.8" strokeLinecap="round" />
         </svg>
       </div>
 

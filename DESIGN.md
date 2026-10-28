@@ -1,86 +1,75 @@
-# Second Innings Design System: "Editorial Paper"
+---
+version: alpha
+name: Second Innings Design System
+description: Editorial Luxury design system with Mocha Brown, Champagne Gold, and Burnt Amber brand tri-palette. Synthesized from UI Skills standards (better-colors, colorize, create-design-md).
+colors:
+  mocha:
+    base: "#5B4632"
+    deep: "#23180F"
+    dark: "#443324"
+    hover: "#4A3827"
+    muted: "#786653"
+  champagne:
+    base: "#F4D9A0"
+    paper: "#FAF6EE"
+    paper2: "#F3EBDD"
+    paper3: "#E8DEC9"
+    border: "#E8CA88"
+    deep: "#9E782F"
+  burntAmber:
+    base: "#C8792C"
+    deep: "#9B5113"
+    soft: "#FAF0E1"
+    border: "#EBB47E"
+---
 
-Synthesis of: redesign-existing-projects, minimalist-ui, high-end-visual-design,
-industrial-brutalist-ui, gpt-taste, design-taste-frontend-v1.
+# Second Innings Design System: "Editorial Champagne & Mocha"
 
-## Design plan (gpt-taste pre-flight)
+Official synthesis of: **UI Skills** (`better-colors`, `colorize`, `create-design-md`, `frontend-design`), `high-end-visual-design`, and `minimalist-ui`.
 
-```
->>> rng = seed(len(prompt) % 7)      # = 3
->>> hero        = "Artistic Asymmetry" (left-weighted H1, inline portrait pill, offset meta column)
->>> components  = ["Inline Typography Image", "Masonry testimonial wall", "Sticky card stack"]
->>> motion      = ["Scrubbing text reveal", "Image scale on scroll"]
->>> type        = Instrument Serif (display) / Hanken Grotesk (UI) / JetBrains Mono (meta)
-```
+## 1. Brand Color System (Official Tri-Palette)
 
-- **Vibe archetype (high-end):** Editorial Luxury. Warm paper, serif display, film grain.
-- **Layout archetype (high-end):** Editorial Split + Swiss hairline grids.
-- **Brutalist mode:** Swiss Industrial Print (light) ONLY. Never the CRT/terminal mode.
-- **Dials (taste-v1):** DESIGN_VARIANCE 7, MOTION_INTENSITY 6, VISUAL_DENSITY 3.
+Derived from the client brand swatches and calibrated through WCAG AA/AAA standards:
 
-## How conflicts between skills were resolved
+| Role | Primitive Name | Hex Code | Purpose & Application | Contrast Ratio (WCAG) |
+|---|---|---|---|---|
+| **Primary Grounding** | `mocha` | `#5B4632` | Editorial serif titles, dark button fills, luxury borders | 8.4:1 on `#FAF6EE` (AAA) |
+| **Deep Ink** | `mocha-deep` | `#23180F` | Primary body text & high-contrast typography (replaces pure black) | 15.2:1 on `#FAF6EE` (AAA) |
+| **Warm Canvas** | `champagne-paper` | `#FAF6EE` | Base page substrate; luminous, soft, eye-strain reducing | Canvas base |
+| **Warm Surface** | `champagne-paper-2`| `#F3EBDD` | Secondary bands, card backgrounds, footer fill | 1.1:1 on Canvas |
+| **Luminous Accent** | `champagne` | `#F4D9A0` | Official Champagne Gold; badges, card highlights, warm borders | 6.7:1 with Mocha `#5B4632` |
+| **Dynamic Signal** | `burntAmber` | `#C8792C` | Official Burnt Amber; primary accents, focal indicators, CTA highlight | 3.4:1 on White, 5.1:1 with deep variant |
+| **Action & Link Text**| `burntAmber-deep` | `#9B5113` | Deep Burnt Amber for accessible active links and interactive states | 5.2:1 on Canvas (AA) |
+| **Soft Wash** | `burntAmber-soft` | `#FAF0E1` | Subtle tint for tags, notifications, and dilemma cards | Soft container fill |
+| **Hairline Grid** | `line` | `rgba(91, 70, 50, 0.13)` | Mocha-tinted Swiss hairline dividers (never cold gray) | Subtle structural boundary |
 
-| Conflict | Decision |
-|---|---|
-| Brutalist "0 radius" vs high-end "rounded-[2rem]" | **Two-material rule.** The *grid* is paper: square corners, 1px hairlines (`gap-px` technique). *Objects* placed on it (portrait, form, buttons, nav) are rounded. Never round a grid cell; never square an object. |
-| gpt-taste "GSAP required" vs taste-v1 "default to Framer, never mix" | Framer Motion only (already installed). The gpt-taste paradigms are reproduced with `useScroll`/`useTransform` and CSS `position: sticky`. No GSAP. |
-| Minimalist "4-6px buttons" vs high-end "pill + button-in-button" | High-end wins for CTAs: ink pill with nested circular arrow. |
-| gpt-taste "ban meta labels" vs brutalist "ASCII framed labels" | Mono labels allowed only when they carry real information (location, sequence index, audience, read time). No decorative "SECTION 01". |
-| Icons: Lucide banned everywhere | Public pages use **no icon library**. Typographic glyphs (→ ↗ + ×) and the inline SVG in `components/ui/Arrow.jsx`. Admin dashboard keeps Lucide (out of scope). |
-| Dark hero sections (old site) | Banned. One substrate (paper) for the whole site. Depth via paper-2 bands, hairlines, grain, halftone. |
+## 2. Design Principles (UI Skills Standards)
 
-## Tokens
+1. **A system is ramps, not arbitrary colors:** One warm neutral ramp (`champagne`), one grounding dark ramp (`mocha`), and one vibrant accent ramp (`burntAmber`).
+2. **Hold the hue across the ramp:** No random saturation spikes or dissonant cold grays. All neutrals are warmed with organic mocha and champagne tones.
+3. **Fill exactly one action per view:** The primary CTA retains crisp prominence (`bg-ink` with nested arrow or `bg-signal` focal moments); secondary elements remain structural and calm.
+4. **Two-material rule:** Grids are paper (`gap-px` Swiss hairlines); interactive objects (buttons, badges, portrait pills) are smoothly contoured.
+5. **Brand Ensō & Sun Mark:** The logo brush stroke renders in Mocha Brown (`#5B4632`), glowing into a radiant Champagne Gold (`#F4D9A0`) to Burnt Amber (`#C8792C`) center, stamped with a Burnt Amber Hanko seal.
 
-| Token | Value | Use |
-|---|---|---|
-| `paper` | `#F4F2EC` | Canvas |
-| `paper-2` | `#EBE7DE` | Bands, footer, input fill |
-| `paper-3` | `#E0DBCF` | Pressed / hover fills |
-| `ink` | `#1C1B18` | Text, primary buttons (never #000) |
-| `ink-2` | `#3B3934` | Secondary headings |
-| `muted` | `#6F6B62` | Body secondary |
-| `line` | `rgba(28,27,24,0.12)` | Hairlines |
-| `signal` | `#B0442C` | The ONLY accent. Innings red. Saturation ~60%. |
-| `signal-soft` | `#F1E1D9` | Accent wash |
+## 3. Typography & Hierarchy
 
-Legacy names (`charcoal-blue`, `golden-pollen`, `tea-green`, `midnight-violet`, `primary`,
-`secondary`, `accent`) are remapped onto this palette in `tailwind.config.js` so the
-admin dashboard inherits the new look without edits.
+- **Display:** `font-serif` (Instrument Serif), `tracking-[-0.02em]`, `leading-[0.95]`.
+  - H1: `clamp(2.75rem, 5.4vw, 5.5rem)` in `max-w-[78rem]`.
+  - H2: `clamp(2.25rem, 4vw, 3.75rem)`.
+- **UI / Body:** `font-sans` (Hanken Grotesk), `text-[1.0625rem] leading-[1.65] text-ink-2`, `max-w-[65ch]`.
+- **Metadata:** `font-mono` (JetBrains Mono), `text-[0.6875rem] uppercase tracking-[0.14em] text-muted`.
 
-## Type scale
+## 4. Components & Tokens
 
-- Display: `font-serif` Instrument Serif, `tracking-[-0.02em]`, `leading-[0.95]`.
-  H1 `clamp(2.75rem,5.4vw,5.5rem)` inside `max-w-[78rem]` (2-3 lines max).
-  H2 `clamp(2.25rem,4vw,3.75rem)`.
-- UI/body: `font-sans` Hanken Grotesk, body `text-[1.0625rem] leading-[1.65] text-ink-2`, max `65ch`.
-- Meta: `font-mono` JetBrains Mono, `text-[0.6875rem] uppercase tracking-[0.14em] text-muted`.
-- Sentence case for headings. `text-wrap: balance` on headings.
+- `Button` (`variant="primary"`): Espresso mocha pill (`bg-ink`) + nested circular arrow (`hover:bg-mocha`).
+- `Button` (`variant="link"`): Text with underline hover in Burnt Amber (`hover:decoration-signal`).
+- `HairlineGrid`: `grid gap-px bg-line border border-line` where children paint `bg-paper`.
+- `Halftone`: Dot matrix tinted with Mocha Brown (`rgba(91, 70, 50, 0.45)`).
+- `Meta` / `Eyebrow`: Mono label in Burnt Amber (`text-signal`) or warm muted mocha (`text-muted`).
 
-## Spacing
+## 5. Prohibitions & Anti-Patterns
 
-- Sections: `py-28 md:py-40`. Container: `max-w-[84rem] mx-auto px-5 md:px-10`.
-- Bottom padding optically larger than top where a section ends on text.
-
-## Motion
-
-- Easing: `cubic-bezier(0.32,0.72,0,1)` (const `EASE` in `components/ui/motion.js`).
-- Entry: `y: 28, opacity: 0, filter: blur(8px)` → rest, 0.9s, `whileInView` once.
-- Stagger children 0.08s.
-- Only `transform`, `opacity`, `filter`. Blur only on entry, never on scrolling containers.
-- `prefers-reduced-motion`: all entry motion disabled.
-
-## Components (in `components/ui/`)
-
-- `Reveal` / `RevealGroup` / `RevealItem`: scroll entry.
-- `Button`: ink pill + nested arrow circle (`variant="primary"`), or text link (`variant="link"`).
-- `Meta`: mono label.
-- `ScrubText`: words scrub from 0.15 to 1 opacity with scroll.
-- `HairlineGrid`: `grid gap-px bg-line border border-line` wrapper; children are `bg-paper`.
-- `Halftone`: dot-matrix overlay for portraits (brutalist analog effect).
-- `PageHero`: shared interior-page hero (meta row + H1 + lede + hairline).
-
-## Bans (all skills combined)
-
-Inter, Roboto, Lucide on public pages, emojis, pure black, gradients on sections, purple/blue,
-`shadow-md/lg/xl`, three equal cards in a row, centered-everything heroes, `h-screen`,
-pill "New" badges, exclamation marks in success copy, "Elevate/Seamless/Unleash".
+- **No cold blues or generic purples.**
+- **No pure pitch black `#000000`:** always use warm deep espresso `#23180F`.
+- **No ungrounded gradients on sections:** substrate depth is created through `paper-2` bands, `line` hairlines, and warm grain.
+- **No low-contrast text:** all body text must maintain minimum 4.5:1 WCAG AA contrast against its rendered container.

@@ -1,14 +1,21 @@
 /** @type {import('tailwindcss').Config} */
 
-// Editorial Paper palette. See /DESIGN.md.
-const paper = '#F4F2EC';
-const paper2 = '#EBE7DE';
-const paper3 = '#E0DBCF';
-const ink = '#1C1B18';
-const ink2 = '#3B3934';
-const muted = '#6F6B62';
-const signal = '#B0442C';
-const signalSoft = '#F1E1D9';
+// Second Innings Brand Identity Palette: Mocha Brown, Champagne Gold, Burnt Amber
+// Derived and calibrated using UI Skills standards (better-colors, colorize, create-design-md).
+const mocha = '#5B4632';         // Official Swatch: MOCHA BROWN
+const champagne = '#F4D9A0';     // Official Swatch: CHAMPAGNE GOLD
+const burntAmber = '#C8792C';    // Official Swatch: BURNT AMBER
+
+// Semantic tokens calibrated for WCAG AAA/AA readability
+const paper = '#FAF6EE';         // Luminous champagne paper canvas
+const paper2 = '#F3EBDD';        // Warm champagne secondary surface / bands
+const paper3 = '#E8DEC9';        // Pressed fills / subtle accents
+const ink = '#23180F';           // Deep espresso mocha ink (15:1 contrast against paper)
+const ink2 = '#443324';          // Rich mocha secondary heading & body text
+const muted = '#786653';         // Mocha-toned metadata text
+const signal = burntAmber;       // Burnt Amber primary accent
+const signalSoft = '#FAF0E1';    // Soft amber tint for badge washes
+const signalDeep = '#9B5113';    // Deep burnt amber (AAA contrast for links and badges)
 
 module.exports = {
   content: [
@@ -19,51 +26,71 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Core editorial canvas & ink
         paper: { DEFAULT: paper, 2: paper2, 3: paper3 },
         ink: { DEFAULT: ink, 2: ink2 },
         muted,
-        line: 'rgba(28, 27, 24, 0.12)',
-        signal: { DEFAULT: signal, soft: signalSoft, deep: '#8E3522' },
+        line: 'rgba(91, 70, 50, 0.13)',
+        signal: { DEFAULT: signal, soft: signalSoft, deep: signalDeep },
 
-        // Student Vitality & Life palette (sun, sprout, sky, coral)
-        sun: { DEFAULT: '#D97724', soft: '#FDF6ED', border: '#F4CA98', deep: '#B85E14' },
-        sprout: { DEFAULT: '#38784E', soft: '#EEF6F0', border: '#BFE0C8', deep: '#265636' },
-        sky: { DEFAULT: '#2B6A8F', soft: '#EAF3F8', border: '#B5D8EB', deep: '#1B4D6B' },
-        coral: { DEFAULT: '#C85236', soft: '#FBF0EC', border: '#F2C2B5', deep: '#9B3921' },
-
-        // Admin & brand amber alias (ensures bg-amber, text-amber, border-amber work alongside amber-50..950)
-        amber: {
-          DEFAULT: '#F59E0B',
-          50: '#FFFBEB',
-          100: '#FEF3C7',
-          200: '#FDE68A',
-          300: '#FCD34D',
-          400: '#FBBF24',
-          500: '#F59E0B',
-          600: '#D97706',
-          700: '#B45309',
-          800: '#92400E',
-          900: '#78350F',
-          950: '#451A03',
+        // Exact brand tri-color primitives
+        mocha: {
+          DEFAULT: mocha,
+          deep: ink,
+          dark: ink2,
+          hover: '#4A3827',
+          light: '#7A624B',
+          muted: '#947C65',
+          soft: '#F4EFEA',
         },
+        champagne: {
+          DEFAULT: champagne,
+          paper,
+          soft: '#FDFBF7',
+          light: '#FAECD0',
+          border: '#E8CA88',
+          deep: '#9E782F',
+        },
+        amber: {
+          DEFAULT: burntAmber,
+          deep: signalDeep,
+          soft: signalSoft,
+          50: '#FFF9F2',
+          100: '#FDF0DF',
+          200: '#F9DCBE',
+          300: '#F4C293',
+          400: '#EEA161',
+          500: burntAmber,
+          600: '#B06520',
+          700: signalDeep,
+          800: '#7E3F0E',
+          900: '#62310C',
+          950: '#381804',
+        },
+
+        // Student Vitality & Life palette (sun, sprout, sky, coral) tuned to the new warm aesthetic
+        sun: { DEFAULT: burntAmber, soft: signalSoft, border: '#EBB47E', deep: signalDeep },
+        sprout: { DEFAULT: '#3D734F', soft: '#F0F6F2', border: '#C2DEC9', deep: '#285437' },
+        sky: { DEFAULT: '#356A88', soft: '#EFF5F8', border: '#BDD9E7', deep: '#214D66' },
+        coral: { DEFAULT: burntAmber, soft: signalSoft, border: '#EBB47E', deep: signalDeep },
 
         // Editorial semantic aliases used across booking, login, onboarding & dashboard
         terracotta: signal,
-        sage: '#38784E',
-        stone: '#D6D0C2',
+        sage: '#3D734F',
+        stone: '#E8DEC9',
         ash: muted,
         warm: paper2,
 
-        // Legacy names remapped so untouched screens (admin) adopt the new palette.
+        // Legacy names remapped so untouched screens inherit the new palette cleanly
         'charcoal-blue': ink,
-        'golden-pollen': signal,
+        'golden-pollen': champagne,
         'tea-green': paper3,
         'midnight-violet': ink2,
         charcoal: ink,
-        primary: { DEFAULT: ink, hover: '#2E2C28', light: ink2, dark: '#111110' },
-        secondary: { DEFAULT: signal, hover: '#9A3A25', light: '#C9654C', dark: '#8E3522' },
-        accent: { DEFAULT: paper3, hover: '#D6D0C2', light: paper2, dark: '#C9C2B2' },
-        violet: { DEFAULT: ink2, hover: ink, light: muted, dark: '#111110' },
+        primary: { DEFAULT: ink, hover: mocha, light: ink2, dark: '#160E08' },
+        secondary: { DEFAULT: signal, hover: signalDeep, light: '#DC8E44', dark: '#7E3F0E' },
+        accent: { DEFAULT: champagne, hover: '#E8CA88', light: paper2, dark: '#9E782F' },
+        violet: { DEFAULT: ink2, hover: ink, light: muted, dark: '#160E08' },
       },
       fontFamily: {
         sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
