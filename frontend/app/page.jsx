@@ -429,7 +429,7 @@ export default function Home() {
 
       {/* 10. FINAL INVITATION */}
       <section className="border-t border-line">
-        <div className="page-x py-18 sm:py-28 md:py-48">
+        <div className="page-x py-16 sm:py-24 md:py-36">
           <RevealGroup className="max-w-[60rem]">
             <RevealItem as="p" className="meta mb-8">Your first step</RevealItem>
             <RevealItem as="h2" className="font-serif text-[clamp(2.75rem,6vw,6rem)] leading-[0.95] tracking-[-0.025em] text-ink">

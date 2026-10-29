@@ -14,7 +14,7 @@ export default function StudentHero() {
   };
 
   return (
-    <section className="relative w-full min-h-[100dvh] bg-[#F5F1E8] flex flex-col justify-between pt-18 sm:pt-22 lg:pt-20 pb-4 sm:pb-5 px-4 sm:px-8 lg:px-10 xl:px-14 overflow-x-clip">
+    <section className="relative w-full min-h-[100dvh] bg-[#F5F1E8] flex flex-col justify-between pt-24 sm:pt-28 lg:pt-24 pb-4 sm:pb-5 px-4 sm:px-8 lg:px-10 xl:px-14 overflow-x-clip">
       {/* Main 2-Column Hero Grid: Left Typography + Right Artistic Collage */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 xl:gap-12 items-center flex-1 my-auto max-w-[1400px] xl:max-w-[1440px] mx-auto w-full z-10 py-3 sm:py-4 lg:py-2">
         {/* Left Column: Eyebrow, Monumental Serif Headline, Lede & Actions */}
