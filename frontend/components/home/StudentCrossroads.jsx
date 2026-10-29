@@ -73,22 +73,22 @@ export default function StudentCrossroads() {
   const activeDilemma = DILEMMAS[activeIndex];
 
   return (
-    <section id="crossroads" className="scroll-mt-24 border-t border-line bg-paper-2/40 py-24 md:py-32">
+    <section id="crossroads" className="scroll-mt-24 border-t border-line bg-paper-2/40 py-16 sm:py-24 md:py-32">
       <div className="page-x max-w-5xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div>
             <span className="meta block mb-2">Interactive Student Navigator</span>
-            <h2 className="font-serif text-[clamp(2rem,3.4vw,3.25rem)] text-ink font-normal leading-[1.08] tracking-[-0.02em]">
+            <h2 className="font-serif text-[clamp(1.75rem,3.4vw,3.25rem)] text-ink font-normal leading-[1.08] tracking-[-0.02em]">
               Where are you right now?
             </h2>
           </div>
-          <p className="text-[0.875rem] text-muted max-w-xs sm:text-right">
+          <p className="text-[0.8125rem] sm:text-[0.875rem] text-muted max-w-xs sm:text-right">
             Click any question below to see how a thoughtful conversation begins.
           </p>
         </div>
 
         {/* Dilemma Selector Chips */}
-        <div className="flex flex-wrap gap-2.5 sm:gap-3 mb-8">
+        <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 sm:mb-8">
           {DILEMMAS.map((d, i) => {
             const isActive = i === activeIndex;
             return (
@@ -96,7 +96,7 @@ export default function StudentCrossroads() {
                 key={d.id}
                 type="button"
                 onClick={() => setActiveIndex(i)}
-                className={`px-4 py-2 rounded-full text-xs font-medium transition-all duration-300 ease-editorial ${
+                className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full text-[0.75rem] sm:text-xs font-medium transition-all duration-300 ease-editorial min-h-[38px] sm:min-h-[42px] inline-flex items-center ${
                   isActive
                     ? `${d.activePill} scale-[1.02]`
                     : 'border border-line bg-paper text-ink hover:border-ink/40'
@@ -109,7 +109,7 @@ export default function StudentCrossroads() {
         </div>
 
         {/* Machined Double-Bezel Perspective Container */}
-        <div className="rounded-[2rem] p-1.5 sm:p-2 bg-mocha/5 border border-line ring-1 ring-black/5">
+        <div className="rounded-[1.5rem] sm:rounded-[2rem] p-1.5 sm:p-2 bg-mocha/5 border border-line ring-1 ring-black/5">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeDilemma.id}
@@ -117,30 +117,30 @@ export default function StudentCrossroads() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className={`rounded-[calc(2rem-0.375rem)] p-7 sm:p-10 border ${activeDilemma.border} ${activeDilemma.bg} shadow-[inset_0_1px_1px_rgba(255,255,255,0.6)] relative overflow-hidden`}
+              className={`rounded-[calc(1.5rem-0.375rem)] sm:rounded-[calc(2rem-0.375rem)] p-5 sm:p-8 md:p-10 border ${activeDilemma.border} ${activeDilemma.bg} shadow-[inset_0_1px_1px_rgba(255,255,255,0.6)] relative overflow-hidden`}
             >
-              <div className="flex items-center gap-2 mb-4">
-                <span className={`px-3 py-1 rounded-full text-xs font-mono font-medium border bg-paper ${activeDilemma.border} ${activeDilemma.text}`}>
+              <div className="flex flex-wrap items-center gap-2 mb-3 sm:mb-4">
+                <span className={`px-3 py-0.5 sm:py-1 rounded-full text-[0.6875rem] sm:text-xs font-mono font-medium border bg-paper ${activeDilemma.border} ${activeDilemma.text}`}>
                   {activeDilemma.label.replace(/[“”]/g, '')}
                 </span>
-                <span className="text-xs font-mono text-muted">• Mentor Perspective</span>
+                <span className="text-[0.6875rem] sm:text-xs font-mono text-muted">• Mentor Perspective</span>
               </div>
 
-              <h3 className="font-serif text-[1.625rem] sm:text-[2.125rem] text-ink font-normal leading-snug mb-4">
+              <h3 className="font-serif text-[1.375rem] sm:text-[1.85rem] md:text-[2.125rem] text-ink font-normal leading-snug mb-3 sm:mb-4">
                 {activeDilemma.question}
               </h3>
 
-              <p className="text-[1rem] sm:text-[1.0625rem] text-ink-2 leading-relaxed max-w-3xl">
+              <p className="text-[0.9375rem] sm:text-[1.0625rem] text-ink-2 leading-relaxed max-w-3xl">
                 {activeDilemma.insight}
               </p>
 
-              <div className="mt-8 pt-6 border-t border-line flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-line flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                 <span className={`text-xs sm:text-[0.875rem] font-medium ${activeDilemma.text}`}>
                   {activeDilemma.invitation}
                 </span>
                 <Link
                   href="/book"
-                  className="group inline-flex items-center gap-2 text-xs font-mono font-bold text-ink hover:text-signal transition-colors shrink-0"
+                  className="group inline-flex items-center gap-2 text-xs font-mono font-bold text-ink hover:text-signal transition-colors shrink-0 py-1"
                 >
                   <span>Start a conversation with Deepak</span>
                   <Arrow className="h-3 w-3 transition-transform duration-300 ease-editorial group-hover:translate-x-1" />

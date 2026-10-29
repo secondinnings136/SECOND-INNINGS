@@ -79,7 +79,7 @@ export default function Home() {
 
       {/* 2. HOOK: scrubbed paragraph + personal questions */}
       <section className="border-t border-line">
-        <div className="page-x py-28 md:py-40">
+        <div className="page-x py-16 sm:py-24 md:py-40">
           <div className="grid grid-cols-1 gap-12 md:grid-cols-12">
             <div className="md:col-span-4">
               <Reveal>
@@ -105,10 +105,10 @@ export default function Home() {
                 <RevealItem
                   as="li"
                   key={q}
-                  className="group grid grid-cols-12 items-baseline gap-4 border-b border-line py-6 md:py-8"
+                  className="group grid grid-cols-12 items-baseline gap-4 border-b border-line py-4 sm:py-6 md:py-8"
                 >
                   <span className="meta col-span-2 md:col-span-1">{String(i + 1).padStart(2, '0')}</span>
-                  <span className="col-span-10 md:col-span-11 font-serif italic text-[clamp(1.625rem,3.2vw,3rem)] leading-[1.05] tracking-[-0.015em] text-ink transition-transform duration-700 ease-editorial group-hover:translate-x-2">
+                  <span className="col-span-10 md:col-span-11 font-serif italic text-[clamp(1.35rem,4.5vw,3rem)] leading-[1.12] sm:leading-[1.05] tracking-[-0.015em] text-ink transition-transform duration-700 ease-editorial group-hover:translate-x-2">
                     {q}
                   </span>
                 </RevealItem>
@@ -182,7 +182,7 @@ export default function Home() {
 
       {/* 4. WHO IT IS FOR: Swiss hairline grid, 7 + 1 */}
       <section className="border-t border-line">
-        <div className="page-x py-28 md:py-40">
+        <div className="page-x py-16 sm:py-24 md:py-40">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:items-end">
             <SectionHead className="md:col-span-7" meta="Who it is for" title="You don't need to have everything figured out." />
             <Reveal className="md:col-span-4 md:col-start-9">
@@ -238,7 +238,7 @@ export default function Home() {
 
       {/* 5. HOW IT WORKS: sticky stacking cards */}
       <section id="how-it-works" className="scroll-mt-24 border-t border-line bg-paper-2">
-        <div className="page-x py-28 md:py-40">
+        <div className="page-x py-16 sm:py-24 md:py-40">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:items-end">
             <SectionHead className="md:col-span-7" meta="How it works" title="One conversation can be a beginning" />
             <Reveal className="md:col-span-4 md:col-start-9">
@@ -258,7 +258,7 @@ export default function Home() {
 
       {/* 5.5: 5 STUDENT OUTCOMES TRANSFORMATION GRID */}
       <section className="border-t border-line bg-paper">
-        <div className="page-x py-24 md:py-36">
+        <div className="page-x py-16 sm:py-24 md:py-36">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:items-end mb-14">
             <SectionHead
               className="md:col-span-8"
@@ -320,7 +320,7 @@ export default function Home() {
 
       {/* 7. STUDENT VOICES: masonry */}
       <section className="border-t border-line bg-paper-2">
-        <div className="page-x py-28 md:py-40">
+        <div className="page-x py-16 sm:py-24 md:py-40">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:items-end">
             <SectionHead className="md:col-span-6" meta="In their words" title="Student voices" />
             <Reveal className="md:col-span-5 md:col-start-8">
@@ -371,7 +371,7 @@ export default function Home() {
 
       {/* 8. IS / ISN'T: Swiss table */}
       <section className="border-t border-line">
-        <div className="page-x py-28 md:py-40">
+        <div className="page-x py-16 sm:py-24 md:py-40">
           <SectionHead meta="Clarity and expectations" title="What Second Innings is, and isn't" />
 
           <div className="mt-16 border-t border-ink">
@@ -382,10 +382,10 @@ export default function Home() {
             <RevealGroup>
               {WHAT_IT_IS_AND_ISNT.map((row) => (
                 <RevealItem key={row.is} className="grid grid-cols-2 border-b border-line">
-                  <p className="py-6 pr-4 font-serif text-[clamp(1.25rem,2.2vw,1.875rem)] leading-[1.15] text-ink md:py-8">
+                  <p className="py-4 sm:py-6 pr-2 sm:pr-4 font-serif text-[clamp(1.0625rem,2.2vw,1.875rem)] leading-[1.18] sm:leading-[1.15] text-ink md:py-8">
                     {row.is}
                   </p>
-                  <p className="border-l border-line py-6 pl-4 text-[0.9375rem] leading-[1.5] text-muted md:py-8 md:pl-8 md:text-[1.0625rem]">
+                  <p className="border-l border-line py-4 sm:py-6 pl-2 sm:pl-4 text-[0.875rem] sm:text-[0.9375rem] leading-[1.45] sm:leading-[1.5] text-muted md:py-8 md:pl-8 md:text-[1.0625rem]">
                     <span className="strike-signal">{row.isNot}</span>
                   </p>
                 </RevealItem>
@@ -429,7 +429,7 @@ export default function Home() {
 
       {/* 10. FINAL INVITATION */}
       <section className="border-t border-line">
-        <div className="page-x py-32 md:py-48">
+        <div className="page-x py-18 sm:py-28 md:py-48">
           <RevealGroup className="max-w-[60rem]">
             <RevealItem as="p" className="meta mb-8">Your first step</RevealItem>
             <RevealItem as="h2" className="font-serif text-[clamp(2.75rem,6vw,6rem)] leading-[0.95] tracking-[-0.025em] text-ink">

@@ -1,22 +1,21 @@
+import React from 'react';
 import Link from 'next/link';
 import Button from '../../components/ui/Button';
 import Arrow from '../../components/ui/Arrow';
 import PageHero from '../../components/ui/PageHero';
 import SectionHead from '../../components/ui/SectionHead';
 import { Reveal, RevealGroup, RevealItem } from '../../components/ui/Reveal';
-import Breadcrumbs from '../../components/ui/Breadcrumbs';
 
 export const metadata = {
-  title: 'How It Works | One Conversation Can Be a Beginning — Second Innings',
+  title: 'How It Works | The 5-Step Conversation Approach — Second Innings',
   description:
-    'Discover how every Second Innings conversation unfolds: Talk, Understand, Explore, Choose Your Next Step, and Follow Through. Listening first, followed by clear, owned actions.',
+    'Our 5-stage human-led approach: Talk, Understand, Explore, Choose Your Next Step, and Follow Through. No tests, scores, or sales pitches. Just thoughtful conversation.',
   keywords: [
-    'how Second Innings works',
-    'youth perspective framework',
-    'student conversation stages',
-    'human led approach',
-    'career guidance process India',
-    'next step action',
+    'mentoring process students',
+    'how career mentoring works',
+    'student conversation approach',
+    'one on one mentorship steps',
+    'youth guidance methodology India',
   ],
   alternates: {
     canonical: 'https://second-innings.in/how-it-works',
@@ -24,7 +23,7 @@ export const metadata = {
   openGraph: {
     title: 'How It Works — Second Innings',
     description:
-      'Listening and perspective before prescription. Explore the five-stage journey that turns uncertainty into clarity and action.',
+      'A structured yet open five-step approach to exploring possibilities and taking ownership of your next steps.',
     url: 'https://second-innings.in/how-it-works',
   },
 };
@@ -33,37 +32,37 @@ const HOW_IT_WORKS_STEPS = [
   {
     step: '01',
     name: 'Talk',
-    tagline: "What's on your mind?",
-    description: 'You don\'t need to arrive with a perfectly framed question. Sometimes even "I am confused" is enough to begin.',
-    detail: 'We start by creating a respectful, non-judgmental space where you can share your thoughts openly without worrying about being graded, evaluated or judged.',
+    tagline: 'What’s on your mind?',
+    description: 'You don’t need to arrive with a perfectly framed question. Sometimes even "I am confused" is enough to begin.',
+    detail: 'An open space without judgment, agendas, or preconceived notions. You share where you are, what you’re feeling, and what’s causing hesitation.',
   },
   {
     step: '02',
     name: 'Understand',
     tagline: 'We look beyond the immediate question.',
-    description: 'What matters to you? What are you experiencing? What are your concerns? What might be influencing your thinking? Understanding comes before advice.',
-    detail: 'We take the time to explore your strengths, pressures, values and real context before jumping to any conclusions or premature suggestions.',
+    description: 'What matters to you? What are you experiencing? What are your concerns? Understanding comes before advice.',
+    detail: 'We uncover the underlying factors: expectations, peer pressure, lack of exposure, or fear of making the wrong move.',
   },
   {
     step: '03',
     name: 'Explore',
-    tagline: "There may be possibilities you haven't considered yet.",
+    tagline: 'There may be possibilities you haven’t considered yet.',
     description: 'Together, we explore different perspectives, alternatives, opportunities and questions worth thinking about.',
-    detail: 'We look at wider pathways, internships, fellowships, new-age disciplines and options you may not have been exposed to yet.',
+    detail: 'Broadening your horizon beyond standard formulas. Introducing relevant industries, roles, experiences, and pathways.',
   },
   {
     step: '04',
-    name: 'Choose your next step',
-    tagline: "The objective isn't for someone else to make the decision for you.",
-    description: 'It is to help you move towards a next step that makes sense to you and that you are willing to own.',
-    detail: 'Your life, your choices. Our role is to help you see clearly so that you make decisions based on evidence and personal conviction.',
+    name: 'Choose Your Next Step',
+    tagline: 'You decide what makes sense for you.',
+    description: 'The objective isn’t for someone else to make the decision for you. It is to help you move towards a step you are willing to own.',
+    detail: 'Distilling options into one or two clear, actionable experiments or decisions that fit your values and circumstances.',
   },
   {
     step: '05',
-    name: 'Follow through',
+    name: 'Follow Through',
     tagline: 'Where appropriate, we reconnect.',
-    description: 'What did you try? What happened? What did you discover? What should happen next? Because a meaningful conversation becomes more valuable when it leads to action.',
-    detail: 'Conversations gain true power when they translate into a tangible, practical next step and thoughtful review.',
+    description: 'What did you try? What happened? What did you discover? A conversation becomes truly valuable when it leads to action.',
+    detail: 'Reflecting on what worked, what didn’t, and calibrating your next move with steady encouragement and accountability.',
   },
 ];
 
@@ -120,16 +119,13 @@ export default function HowItWorks() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
-      <div className="page-x pt-28 md:pt-36">
-        <Breadcrumbs items={[{ name: 'How It Works', href: '/how-it-works' }]} />
-      </div>
-
       <PageHero
+        breadcrumbs={[{ name: 'How It Works', href: '/how-it-works' }]}
         meta={['The Approach', 'Methodology', '5 Stages']}
         title="One conversation can be a beginning."
         lede="Second Innings does not begin with a presentation, a questionnaire full of scores or a predetermined solution. It begins with you."
       >
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-6">
           <Button href="/book">Start a Conversation</Button>
           <Button href="#methodology" variant="link" arrow="down">See the 5 stages</Button>
         </div>
@@ -137,38 +133,38 @@ export default function HowItWorks() {
 
       {/* 5-Step Methodology */}
       <section id="methodology" className="scroll-mt-24 border-t border-line bg-paper-2">
-        <div className="page-x py-28 md:py-40">
+        <div className="page-x py-16 sm:py-24 md:py-36">
           <SectionHead
             meta="How it works"
             title="From confusion to practical action"
             lede="Understanding comes before suggestion. Exploration comes before decision."
           />
 
-          <div className="mt-16 md:mt-24 space-y-6">
+          <div className="mt-10 sm:mt-16 md:mt-24 space-y-4 sm:space-y-6">
             <RevealGroup>
               {HOW_IT_WORKS_STEPS.map((s) => (
                 <RevealItem
                   key={s.step}
-                  className="mb-6 rounded-[1.75rem] border border-line bg-paper p-8 md:p-12 transition-colors duration-500 ease-editorial"
+                  className="mb-4 sm:mb-6 rounded-[1.25rem] sm:rounded-[1.75rem] border border-line bg-paper p-6 sm:p-8 md:p-12 transition-colors duration-500 ease-editorial"
                 >
-                  <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-12">
-                    <div className="md:col-span-3 flex flex-col justify-between">
+                  <div className="grid grid-cols-1 gap-4 sm:gap-8 md:grid-cols-12 md:gap-12">
+                    <div className="md:col-span-3 flex sm:flex-col justify-between items-center sm:items-start">
                       <span className="meta">Step {s.step}</span>
-                      <p aria-hidden="true" className="text-outline font-serif text-[clamp(4.5rem,8vw,7rem)] leading-[0.8] mt-4">
+                      <p aria-hidden="true" className="text-outline font-serif text-[clamp(3.5rem,8vw,7rem)] leading-[0.8] mt-2 sm:mt-4">
                         {s.step}
                       </p>
                     </div>
                     <div className="md:col-span-9 flex flex-col justify-center">
-                      <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4">
-                        <h3 className="font-serif text-[clamp(1.75rem,3vw,2.5rem)] text-ink">
+                      <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4">
+                        <h3 className="font-serif text-[clamp(1.5rem,3vw,2.5rem)] text-ink">
                           {s.name}
                         </h3>
-                        <span className="font-serif italic text-muted text-lg">— {s.tagline}</span>
+                        <span className="font-serif italic text-muted text-base sm:text-lg">— {s.tagline}</span>
                       </div>
-                      <p className="mt-4 text-[1.125rem] text-ink font-medium leading-relaxed">
+                      <p className="mt-3 sm:mt-4 text-[1rem] sm:text-[1.125rem] text-ink font-medium leading-relaxed">
                         {s.description}
                       </p>
-                      <p className="mt-3 text-[0.9375rem] text-muted leading-relaxed">
+                      <p className="mt-2 sm:mt-3 text-[0.875rem] sm:text-[0.9375rem] text-muted leading-relaxed">
                         {s.detail}
                       </p>
                     </div>
@@ -179,9 +175,9 @@ export default function HowItWorks() {
           </div>
 
           {/* Benchmark Quote */}
-          <Reveal className="mt-16 rounded-[1.75rem] border border-line bg-paper p-8 md:p-12 text-center max-w-3xl mx-auto">
-            <p className="meta text-signal mb-4">The benchmark for every conversation</p>
-            <p className="font-serif italic text-[clamp(1.5rem,2.4vw,2.125rem)] text-ink leading-snug">
+          <Reveal className="mt-12 sm:mt-16 rounded-[1.25rem] sm:rounded-[1.75rem] border border-line bg-paper p-6 sm:p-8 md:p-12 text-center max-w-3xl mx-auto">
+            <p className="meta text-signal mb-3 sm:mb-4">The benchmark for every conversation</p>
+            <p className="font-serif italic text-[clamp(1.35rem,2.4vw,2.125rem)] text-ink leading-snug">
               &ldquo;After speaking with Mr. Deepak Sogani, I understand myself better and I know what I should do next.&rdquo;
             </p>
           </Reveal>
@@ -190,25 +186,25 @@ export default function HowItWorks() {
 
       {/* What It Is / What It Is Not: Swiss Table */}
       <section className="border-t border-line">
-        <div className="page-x py-28 md:py-40">
+        <div className="page-x py-16 sm:py-24 md:py-36">
           <SectionHead
             meta="Expectations and boundaries"
             title="What Second Innings is, and isn't"
             lede="Clear boundaries create trusted spaces."
           />
 
-          <div className="mt-16 border-t border-ink">
-            <div className="grid grid-cols-2 border-b border-line py-4">
-              <p className="meta text-ink">Second Innings is</p>
-              <p className="meta pl-4 md:pl-8">Second Innings is not</p>
+          <div className="mt-10 sm:mt-16 border-t border-ink">
+            <div className="grid grid-cols-2 border-b border-line py-3 sm:py-4">
+              <p className="meta text-ink text-[0.625rem] sm:text-[0.6875rem]">Second Innings is</p>
+              <p className="meta pl-3 sm:pl-4 md:pl-8 text-[0.625rem] sm:text-[0.6875rem]">Second Innings is not</p>
             </div>
             <RevealGroup>
               {COMPARISON_ITEMS.map((row) => (
                 <RevealItem key={row.is} className="grid grid-cols-2 border-b border-line">
-                  <p className="py-6 pr-4 font-serif text-[clamp(1.25rem,2.2vw,1.875rem)] leading-[1.15] text-ink md:py-8">
+                  <p className="py-4 sm:py-6 pr-2 sm:pr-4 font-serif text-[clamp(1.05rem,2.2vw,1.875rem)] leading-[1.15] text-ink md:py-8">
                     {row.is}
                   </p>
-                  <p className="border-l border-line py-6 pl-4 text-[0.9375rem] leading-[1.5] text-muted md:py-8 md:pl-8 md:text-[1.0625rem]">
+                  <p className="border-l border-line py-4 sm:py-6 pl-3 sm:pl-4 text-[0.8125rem] sm:text-[0.9375rem] leading-[1.5] text-muted md:py-8 md:pl-8 md:text-[1.0625rem]">
                     <span className="strike-signal">{row.isNot}</span>
                   </p>
                 </RevealItem>
@@ -216,10 +212,10 @@ export default function HowItWorks() {
             </RevealGroup>
           </div>
 
-          <Reveal className="mt-12 text-center">
+          <Reveal className="mt-8 sm:mt-12 text-center">
             <Link
               href="/privacy-boundaries"
-              className="meta text-muted hover:text-ink transition-colors underline decoration-ink/20 underline-offset-4"
+              className="meta text-muted hover:text-ink transition-colors underline decoration-ink/20 underline-offset-4 py-1 inline-block"
             >
               Read our full Privacy, Safety &amp; Professional Boundaries statement →
             </Link>
@@ -229,22 +225,22 @@ export default function HowItWorks() {
 
       {/* FAQ Accordion Section for SEO and Reader Clarity */}
       <section className="border-t border-line bg-paper-2">
-        <div className="page-x py-24 md:py-36">
+        <div className="page-x py-16 sm:py-24 md:py-36">
           <SectionHead
             meta="Frequently Asked Questions"
             title="Common Questions About Our Conversations"
             lede="Clear answers to help you understand how Second Innings works before reaching out."
           />
 
-          <div className="mt-16 max-w-4xl mx-auto space-y-6">
+          <div className="mt-10 sm:mt-16 max-w-4xl mx-auto space-y-4 sm:space-y-6">
             <RevealGroup>
               {FAQS.map((faq, idx) => (
                 <RevealItem
                   key={idx}
-                  className="rounded-2xl border border-line bg-paper p-6 md:p-8"
+                  className="rounded-2xl border border-line bg-paper p-5 sm:p-6 md:p-8"
                 >
-                  <h4 className="font-serif text-[1.25rem] text-ink mb-3">{faq.q}</h4>
-                  <p className="text-[0.9375rem] text-muted leading-relaxed">{faq.a}</p>
+                  <h4 className="font-serif text-[1.125rem] sm:text-[1.25rem] text-ink mb-2 sm:mb-3">{faq.q}</h4>
+                  <p className="text-[0.875rem] sm:text-[0.9375rem] text-muted leading-relaxed">{faq.a}</p>
                 </RevealItem>
               ))}
             </RevealGroup>
@@ -254,16 +250,16 @@ export default function HowItWorks() {
 
       {/* CTA */}
       <section className="border-t border-line bg-paper">
-        <div className="page-x py-32 md:py-44">
+        <div className="page-x py-16 sm:py-24 md:py-36">
           <RevealGroup className="max-w-[56rem]">
-            <RevealItem as="p" className="meta mb-6">Start here</RevealItem>
-            <RevealItem as="h2" className="font-serif text-[clamp(2.5rem,5.5vw,5rem)] leading-[0.95] text-ink">
+            <RevealItem as="p" className="meta mb-4 sm:mb-6">Start here</RevealItem>
+            <RevealItem as="h2" className="font-serif text-[clamp(2.25rem,5.5vw,5rem)] leading-[0.95] text-ink">
               Start with a single conversation.
             </RevealItem>
-            <RevealItem as="p" className="lede mt-6 text-[1.125rem]">
+            <RevealItem as="p" className="lede mt-5 sm:mt-6 text-[1rem] sm:text-[1.125rem]">
               No preparation needed. You don&apos;t need to arrive with an answer: you can begin with the question.
             </RevealItem>
-            <RevealItem className="mt-10">
+            <RevealItem className="mt-8 sm:mt-10">
               <Button href="/book">Start a Conversation</Button>
             </RevealItem>
           </RevealGroup>

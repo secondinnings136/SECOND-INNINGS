@@ -6,7 +6,6 @@ import PageHero from '../../components/ui/PageHero';
 import SectionHead from '../../components/ui/SectionHead';
 import ScalePortrait from '../../components/ui/ScalePortrait';
 import { Reveal, RevealGroup, RevealItem } from '../../components/ui/Reveal';
-import Breadcrumbs from '../../components/ui/Breadcrumbs';
 
 const STUDENT_REFLECTIONS = [
   {
@@ -84,16 +83,13 @@ const PRINCIPLES = [
 export default function AboutPage() {
   return (
     <div className="w-full">
-      <div className="page-x pt-28 md:pt-36">
-        <Breadcrumbs items={[{ name: 'About Deepak', href: '/about' }]} />
-      </div>
-
       <PageHero
+        breadcrumbs={[{ name: 'About Deepak', href: '/about' }]}
         meta={['About Deepak', 'Founder, Second Innings', '35+ Years of Experience']}
         title="35+ Years Across Corporate Life, Entrepreneurship & Higher Education."
         lede="More than three decades of experience, now dedicated to helping young people explore possibilities, gain perspective, and choose their own next step with confidence."
       >
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-6">
           <Button href="/book">Start a Conversation</Button>
           <Button href="#journey" variant="link" arrow="down">Read the journey</Button>
         </div>
@@ -101,7 +97,7 @@ export default function AboutPage() {
 
       {/* Portrait & Core Quote */}
       <section className="border-t border-line bg-paper-2">
-        <div className="page-x grid grid-cols-1 gap-12 py-28 md:grid-cols-12 md:gap-10 md:py-40">
+        <div className="page-x grid grid-cols-1 gap-8 sm:gap-12 py-16 sm:py-24 md:grid-cols-12 md:gap-10 md:py-36">
           <div className="md:col-span-5">
             <ScalePortrait
               src="/deepaksogani.jpeg"
@@ -115,13 +111,13 @@ export default function AboutPage() {
           </div>
           <div className="md:col-span-7 md:col-start-6 flex flex-col justify-center">
             <RevealGroup>
-              <RevealItem as="blockquote" className="border-l-2 border-signal pl-6 md:pl-8">
-                <p className="font-serif italic text-[clamp(1.75rem,2.8vw,2.5rem)] text-ink leading-snug">
+              <RevealItem as="blockquote" className="border-l-2 border-signal pl-4 sm:pl-6 md:pl-8">
+                <p className="font-serif italic text-[clamp(1.5rem,2.8vw,2.5rem)] text-ink leading-snug">
                   &ldquo;I am not here to decide a young person&apos;s future. I want to help them understand themselves, see possibilities and make choices they can own.&rdquo;
                 </p>
-                <footer className="meta mt-6 text-muted">Deepak Sogani</footer>
+                <footer className="meta mt-4 sm:mt-6 text-muted">Deepak Sogani</footer>
               </RevealItem>
-              <RevealItem className="mt-10">
+              <RevealItem className="mt-8 sm:mt-10">
                 <p className="lede">
                   His years in higher education reinforced something he values deeply: some of the most meaningful contributions happen through conversations that help a young person gain perspective, discover an opportunity, reconsider a choice or take a meaningful next step.
                 </p>
@@ -133,7 +129,7 @@ export default function AboutPage() {
 
       {/* S2: The Journey */}
       <section id="journey" className="scroll-mt-24 border-t border-line">
-        <div className="page-x grid grid-cols-1 gap-12 py-28 md:grid-cols-12 md:py-40">
+        <div className="page-x grid grid-cols-1 gap-8 sm:gap-12 py-16 sm:py-24 md:grid-cols-12 md:py-36">
           <div className="md:col-span-5">
             <div className="md:sticky md:top-32">
               <SectionHead
@@ -143,7 +139,7 @@ export default function AboutPage() {
             </div>
           </div>
           <div className="md:col-span-7 md:col-start-6">
-            <RevealGroup className="space-y-6">
+            <RevealGroup className="space-y-5 sm:space-y-6">
               <RevealItem as="p" className="lede">
                 Deepak Sogani brings over 35 years of experience across the corporate world, entrepreneurship and higher education, a journey that has given him the opportunity to work with people across different ages, backgrounds and stages of life.
               </RevealItem>
@@ -162,15 +158,15 @@ export default function AboutPage() {
             </RevealGroup>
 
             {/* Why "Second Innings"? Callout */}
-            <Reveal className="mt-16 rounded-[1.75rem] border border-ink bg-paper p-8 md:p-12">
-              <span className="meta text-signal mb-4 block">The origin</span>
-              <h3 className="font-serif text-[clamp(1.75rem,2.5vw,2.25rem)] text-ink mb-4">
+            <Reveal className="mt-12 sm:mt-16 rounded-[1.5rem] sm:rounded-[1.75rem] border border-ink bg-paper p-6 sm:p-8 md:p-12">
+              <span className="meta text-signal mb-3 sm:mb-4 block">The origin</span>
+              <h3 className="font-serif text-[clamp(1.5rem,2.5vw,2.25rem)] text-ink mb-3 sm:mb-4">
                 Why &ldquo;Second Innings&rdquo;?
               </h3>
-              <p className="text-[1.0625rem] text-ink-2 leading-relaxed mb-6">
+              <p className="text-[1rem] sm:text-[1.0625rem] text-ink-2 leading-relaxed mb-6">
                 After more than three decades across the corporate world, entrepreneurship and higher education, Deepak chose to dedicate the next phase of his professional life to working with young people.
               </p>
-              <blockquote className="border-l-2 border-signal pl-6 font-serif italic text-[1.25rem] text-ink leading-snug">
+              <blockquote className="border-l-2 border-signal pl-4 sm:pl-6 font-serif italic text-[1.125rem] sm:text-[1.25rem] text-ink leading-snug">
                 &ldquo;The first innings was about building his own journey. The Second Innings is about using that experience to contribute to the journeys of young people.&rdquo;
               </blockquote>
             </Reveal>
@@ -180,25 +176,25 @@ export default function AboutPage() {
 
       {/* S3: What I Bring to the Conversation */}
       <section className="border-t border-line bg-paper-2">
-        <div className="page-x py-28 md:py-40">
+        <div className="page-x py-16 sm:py-24 md:py-36">
           <SectionHead
             meta="Core capabilities"
             title="What I Bring to the Conversation"
             lede="Grounded perspective, student empathy, and wide exposure without a predetermined agenda."
           />
 
-          <RevealGroup className="hairline-grid mt-16 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <RevealGroup className="hairline-grid mt-10 sm:mt-16 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             {WHAT_I_BRING.map((item, idx) => (
               <RevealItem
                 key={idx}
-                className="group flex min-h-[16rem] flex-col justify-between p-8 transition-colors duration-500 ease-editorial hover:bg-paper"
+                className="group flex min-h-[14rem] sm:min-h-[16rem] flex-col justify-between p-6 sm:p-8 transition-colors duration-500 ease-editorial hover:bg-paper"
               >
                 <span className="meta">{String(idx + 1).padStart(2, '0')}</span>
                 <div>
-                  <h3 className="font-serif text-[1.5rem] text-ink mb-3 leading-snug">
+                  <h3 className="font-serif text-[1.375rem] sm:text-[1.5rem] text-ink mb-2 sm:mb-3 leading-snug">
                     {item.title}
                   </h3>
-                  <p className="text-[0.9375rem] text-muted leading-relaxed">
+                  <p className="text-[0.875rem] sm:text-[0.9375rem] text-muted leading-relaxed">
                     {item.desc}
                   </p>
                 </div>
@@ -210,25 +206,25 @@ export default function AboutPage() {
 
       {/* S4: Philosophy */}
       <section className="border-t border-line">
-        <div className="page-x py-28 md:py-40">
+        <div className="page-x py-16 sm:py-24 md:py-36">
           <SectionHead
             meta="The philosophy"
             title="What informs every conversation"
             lede="The core commitments guiding every interaction at Second Innings."
           />
 
-          <RevealGroup className="hairline-grid mt-16 grid-cols-1 md:grid-cols-3">
+          <RevealGroup className="hairline-grid mt-10 sm:mt-16 grid-cols-1 md:grid-cols-3">
             {PRINCIPLES.map((item, idx) => (
               <RevealItem
                 key={idx}
-                className="group flex min-h-[16rem] flex-col justify-between p-8 transition-colors duration-500 ease-editorial hover:bg-paper-2"
+                className="group flex min-h-[14rem] sm:min-h-[16rem] flex-col justify-between p-6 sm:p-8 transition-colors duration-500 ease-editorial hover:bg-paper-2"
               >
                 <span className="meta">{String(idx + 1).padStart(2, '0')}</span>
                 <div>
-                  <h3 className="font-serif text-[1.625rem] text-ink mb-3 leading-snug">
+                  <h3 className="font-serif text-[1.375rem] sm:text-[1.625rem] text-ink mb-2 sm:mb-3 leading-snug">
                     {item.title}
                   </h3>
-                  <p className="text-[0.9375rem] text-muted leading-relaxed">
+                  <p className="text-[0.875rem] sm:text-[0.9375rem] text-muted leading-relaxed">
                     {item.desc}
                   </p>
                 </div>
@@ -240,8 +236,8 @@ export default function AboutPage() {
 
       {/* S5: In Their Words – Student Reflections (All 6 Voices) */}
       <section className="border-t border-line bg-paper-2">
-        <div className="page-x py-28 md:py-40">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:items-end mb-16">
+        <div className="page-x py-16 sm:py-24 md:py-36">
+          <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-12 md:items-end mb-10 sm:mb-16">
             <SectionHead
               className="md:col-span-7"
               meta="In their words"
@@ -255,16 +251,16 @@ export default function AboutPage() {
             </Reveal>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
             {STUDENT_REFLECTIONS.map((item, idx) => (
-              <Reveal key={idx} delay={idx * 0.06} className="rounded-[1.5rem] border border-line bg-paper p-8 flex flex-col justify-between">
+              <Reveal key={idx} delay={idx * 0.06} className="rounded-[1.25rem] sm:rounded-[1.5rem] border border-line bg-paper p-6 sm:p-8 flex flex-col justify-between">
                 <div>
-                  <span className="meta text-signal mb-4 block">{item.category}</span>
-                  <p className="font-serif italic text-[1.25rem] text-ink leading-snug mb-6">
+                  <span className="meta text-signal mb-3 sm:mb-4 block">{item.category}</span>
+                  <p className="font-serif italic text-[1.125rem] sm:text-[1.25rem] text-ink leading-snug mb-5 sm:mb-6">
                     &ldquo;{item.quote}&rdquo;
                   </p>
                 </div>
-                <div className="pt-5 border-t border-line">
+                <div className="pt-4 sm:pt-5 border-t border-line">
                   <p className="font-medium text-ink text-[0.9375rem]">{item.name}</p>
                   <p className="text-xs text-muted mt-0.5">{item.role}</p>
                   <div className="flex items-center justify-between text-[0.75rem] text-muted mt-3">
@@ -273,7 +269,7 @@ export default function AboutPage() {
                       href="https://www.linkedin.com/in/deepak-sogani/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:text-ink transition-colors"
+                      className="hover:text-ink transition-colors py-1 inline-block"
                     >
                       Source: LinkedIn ↗
                     </a>
@@ -283,7 +279,7 @@ export default function AboutPage() {
             ))}
           </div>
 
-          <div className="mt-12 text-sm text-muted max-w-2xl">
+          <div className="mt-10 sm:mt-12 text-sm text-muted max-w-2xl">
             <p>
               These voices come from different experiences, but a common thread runs through them: perspective, confidence, ownership and readiness for life beyond the classroom.
             </p>
@@ -293,16 +289,16 @@ export default function AboutPage() {
 
       {/* S6: CTA */}
       <section className="border-t border-line">
-        <div className="page-x py-32 md:py-44">
+        <div className="page-x py-16 sm:py-24 md:py-36">
           <RevealGroup className="max-w-[56rem]">
-            <RevealItem as="p" className="meta mb-6">Connect with Deepak</RevealItem>
-            <RevealItem as="h2" className="font-serif text-[clamp(2.5rem,5.5vw,5rem)] leading-[0.95] text-ink">
+            <RevealItem as="p" className="meta mb-4 sm:mb-6">Connect with Deepak</RevealItem>
+            <RevealItem as="h2" className="font-serif text-[clamp(2.25rem,5.5vw,5rem)] leading-[0.95] text-ink">
               Ready to start a conversation?
             </RevealItem>
-            <RevealItem as="p" className="lede mt-6 text-[1.125rem]">
+            <RevealItem as="p" className="lede mt-5 sm:mt-6 text-[1rem] sm:text-[1.125rem]">
               No commitment, no pressure. Just perspective.
             </RevealItem>
-            <RevealItem className="mt-10">
+            <RevealItem className="mt-8 sm:mt-10">
               <Button href="/book">Start a Conversation</Button>
             </RevealItem>
           </RevealGroup>

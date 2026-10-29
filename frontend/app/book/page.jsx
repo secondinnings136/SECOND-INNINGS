@@ -596,7 +596,7 @@ export default function BookPage() {
   return (
     <div className="min-h-screen bg-paper">
       {/* S1: Hero */}
-      <section className="pt-32 pb-14 md:pt-40 md:pb-16 border-b border-line">
+      <section className="pt-24 sm:pt-32 md:pt-40 pb-10 sm:pb-14 md:pb-16 border-b border-line">
         <div className="container-editorial">
           <Reveal>
             <p className="eyebrow mb-4">Start a Conversation</p>
@@ -670,7 +670,7 @@ export default function BookPage() {
               </div>
 
               <div className="lg:col-span-6">
-                <div className="card-editorial bg-white p-7 md:p-9">
+                <div className="card-editorial bg-white p-5 sm:p-7 md:p-9">
                   <div className="flex items-center justify-between border-b border-line pb-4 mb-6">
                     <div>
                       <span className="font-mono text-[10px] uppercase tracking-widest text-signal block">
@@ -1017,7 +1017,7 @@ export default function BookPage() {
 
               {/* Right Column: Plan / Credit Picker + Topic & Slot */}
               <div className="lg:col-span-8">
-                <div className="card-editorial bg-white p-7 md:p-10">
+                <div className="card-editorial bg-white p-5 sm:p-7 md:p-10">
                   {status.success ? (
                     <div className="py-8 text-center max-w-lg mx-auto space-y-6">
                       <div className="w-16 h-16 rounded-full bg-sprout/15 text-sprout flex items-center justify-center mx-auto">

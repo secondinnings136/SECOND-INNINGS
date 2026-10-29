@@ -29,12 +29,12 @@ const TOC = [
 export default function PrivacyPolicyPage() {
   return (
     <div className="w-full">
-      <div className="page-x pt-28 md:pt-36 pb-28 md:pb-40">
+      <div className="page-x pt-20 sm:pt-28 md:pt-36 pb-16 sm:pb-24 md:pb-36">
         <Breadcrumbs items={[{ name: 'Privacy Policy', href: '/privacy-policy' }]} />
         {/* Header */}
-        <div className="border-b border-line pb-12 mb-16 mt-8">
-          <span className="meta text-signal mb-4 block">Data Protection Notice</span>
-          <h1 className="font-serif text-[clamp(2.5rem,5.5vw,5rem)] leading-[0.95] tracking-[-0.02em] text-ink mb-6">
+        <div className="border-b border-line pb-8 sm:pb-12 mb-10 sm:mb-16 mt-4 sm:mt-8">
+          <span className="meta text-signal mb-3 sm:mb-4 block">Data Protection Notice</span>
+          <h1 className="font-serif text-[clamp(2.1rem,5.5vw,5rem)] leading-[1] sm:leading-[0.95] tracking-[-0.02em] text-ink mb-4 sm:mb-6">
             Privacy Policy
           </h1>
           <p className="meta text-muted mb-6">

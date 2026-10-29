@@ -5,77 +5,81 @@ import Arrow from '../../components/ui/Arrow';
 import PageHero from '../../components/ui/PageHero';
 import SectionHead from '../../components/ui/SectionHead';
 import { Reveal, RevealGroup, RevealItem } from '../../components/ui/Reveal';
-import Breadcrumbs from '../../components/ui/Breadcrumbs';
 
 export const metadata = {
-  title: 'Guidance for Parents | Supporting Young Adults Without Pressure — Second Innings',
+  title: 'For Parents | Guidance, Perspective & Support for Your Child — Second Innings',
   description:
-    'Constructive guidance for parents supporting young adults through modern career choices and transitions. Complementing family trust with independent perspective.',
+    'Supporting your child through career uncertainty and life decisions. Thoughtful guidance that complements parenting while respecting young people’s independence.',
   keywords: [
-    'how to support child career choice',
-    'how to talk to teenager about future without arguing',
+    'career guidance for children parents',
+    'how to help confused teenager career',
+    'talking to children about career decisions',
+    'parenting young adults career India',
+    'career mentoring for my son daughter',
+    'independent mentor for teenager',
+    'parent child communication career',
     'guidance for parents of college students',
-    'parent child communication about career',
-    'mentor for my teenage son daughter',
-    'helping child choose career without pressure',
-    'new age careers advice for parents',
-    'understanding modern career options India',
-    'parenting young adults transition',
+    'Deepak Sogani parent guidance',
   ],
   alternates: {
     canonical: 'https://second-innings.in/for-parents',
   },
   openGraph: {
-    title: 'Guidance for Parents — Second Innings',
+    title: 'For Parents — Second Innings',
     description:
-      'You want the best for your child. So do we. Bridging the conversation between parent expectations and student aspirations.',
+      'Every parent wants their child to make thoughtful choices. We provide an additional space for exploration that complements family guidance.',
     url: 'https://second-innings.in/for-parents',
   },
 };
 
-const principles = [
-  { 
-    title: "Accept Before You Advise", 
-    text: "Children open up when they feel accepted without the immediate fear of judgment or comparison." 
-  },
-  { 
-    title: "Listen Before You Solve", 
-    text: "Young people usually seek understanding and validation before they are ready for solutions." 
-  },
-  { 
-    title: "Encourage Growth, Not Perfection", 
-    text: "Celebrate honest effort, resilience, and curiosity rather than just test scores." 
-  },
-  { 
-    title: "Build Character Before Career", 
-    text: "Integrity, empathy, discipline, and emotional balance are permanent lifelong assets." 
-  },
-  { 
-    title: "Become a Learning Parent", 
-    text: "The most effective parents learn alongside their children in an ever-evolving world." 
-  }
+const concerns = [
+  "My child seems confused about career choices, but doesn't open up to me.",
+  "They are overwhelmed by options and expectations.",
+  "I want to help, but every conversation turns into an argument.",
+  "They are capable, but lack confidence or direction.",
+  "They are preparing for a major transition (college, career) and need guidance.",
+  "I want them to explore beyond conventional paths, but don't know where to start.",
 ];
 
-const concerns = [
-  "My child doesn't open up to me about their future plans",
-  "I don't understand these new-age careers and AI roles",
-  "I want to guide and protect them without being controlling",
-  "How do I balance high expectations with their independence?",
-  "Is my child genuinely ready for university life or adulthood?"
+const principles = [
+  {
+    title: 'Complementing, not replacing',
+    text: 'Second Innings works alongside parents and educators, providing an additional, objective sounding board for young people.',
+  },
+  {
+    title: 'Encouraging ownership',
+    text: "The goal is to help your child develop the confidence and clarity to make decisions they understand and own, rather than simply complying with advice.",
+  },
+  {
+    title: 'Broadening horizons',
+    text: 'We help young people explore possibilities, career paths, and opportunities they may not have considered or encountered.',
+  },
+  {
+    title: 'Respecting boundaries',
+    text: 'Conversations with young people are private and confidential, creating a safe space for honest exploration. Parents are kept informed within appropriate safeguarding boundaries.',
+  },
+  {
+    title: 'Action-oriented',
+    text: 'Every conversation works towards concrete next steps: exploring an opportunity, trying an experience, or building a practical habit.',
+  },
 ];
 
 const PARENT_FAQS = [
   {
-    q: 'How does Second Innings support parents?',
-    a: 'Second Innings provides an independent, trusted space that helps bridge generational communication. We help young people explore their aspirations clearly while helping parents understand new-age opportunities with calm and confidence.'
+    q: 'Can parents participate in the conversations?',
+    a: 'While our primary engagement is directly with the young person to foster independence, an initial joint check-in or dedicated parent perspective call can be arranged where helpful.'
   },
   {
-    q: 'Does Second Innings replace parents, teachers, or professional counsellors?',
-    a: 'No. Second Innings seeks to complement, not replace, the role of parents, educators, educational institutions, or qualified medical/mental health professionals.'
+    q: 'What safeguarding measures are in place for students under 18?',
+    a: 'For minors (under 18), written parent or guardian consent is mandatory before the first session. In cases involving personal safety or serious harm, parent or guardian communication is initiated immediately.'
   },
   {
-    q: 'Can parents start a conversation about their child?',
-    a: 'Yes. Parents can reach out to discuss their child’s transitions, explore guiding principles, or arrange a private conversation for their child. For young people under 18, parental consent is always mandatory.'
+    q: 'Will Deepak Sir convince my child to follow a specific career?',
+    a: 'No. Second Innings is not a conduit for imposing choices. We help young people evaluate options objectively, understand trade-offs, and develop rational ownership over their education and life trajectory.'
+  },
+  {
+    q: 'How does this complement what the school or college provides?',
+    a: 'Schools focus on academics and bulk placements. Second Innings provides individualized, unhurried space for personal clarity, character building, and navigating intergenerational conversations.'
   }
 ];
 
@@ -100,16 +104,13 @@ export default function ForParentsPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
-      <div className="page-x pt-28 md:pt-36">
-        <Breadcrumbs items={[{ name: 'For Parents', href: '/for-parents' }]} />
-      </div>
-
       <PageHero
+        breadcrumbs={[{ name: 'For Parents', href: '/for-parents' }]}
         meta={['For Parents', 'Family & Perspective', 'Intergenerational Dialogue']}
         title="Every parent wants their child to make thoughtful choices and build a meaningful future."
         lede="Second Innings seeks to complement, not replace, the role of parents, teachers, educational institutions or qualified professionals."
       >
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-6">
           <Button href="/book">Start a Conversation About Your Child</Button>
           <Button href="#principles" variant="link" arrow="down">Explore Guiding Principles</Button>
         </div>
@@ -117,7 +118,7 @@ export default function ForParentsPage() {
 
       {/* The Core Role: Editorial Split */}
       <section className="border-t border-line bg-paper-2">
-        <div className="page-x grid grid-cols-1 gap-12 py-28 md:grid-cols-12 md:py-40">
+        <div className="page-x grid grid-cols-1 gap-8 sm:gap-12 py-16 sm:py-24 md:grid-cols-12 md:py-36">
           <div className="md:col-span-5">
             <div className="md:sticky md:top-32">
               <SectionHead
@@ -127,7 +128,7 @@ export default function ForParentsPage() {
             </div>
           </div>
           <div className="md:col-span-7 md:col-start-6">
-            <RevealGroup className="space-y-6">
+            <RevealGroup className="space-y-5 sm:space-y-6">
               <RevealItem as="p" className="lede">
                 As young people grow, they also need opportunities to question, explore and gradually take ownership of their decisions.
               </RevealItem>
@@ -137,7 +138,7 @@ export default function ForParentsPage() {
               <RevealItem as="p" className="lede">
                 It is to provide an additional space for thoughtful conversation, broader perspective and exploration: helping young people become more confident in making choices they understand and own.
               </RevealItem>
-              <RevealItem as="blockquote" className="mt-8 border-l-2 border-signal pl-6 font-serif italic text-[1.25rem] text-ink leading-relaxed">
+              <RevealItem as="blockquote" className="mt-6 sm:mt-8 border-l-2 border-signal pl-4 sm:pl-6 font-serif italic text-[1.125rem] sm:text-[1.25rem] text-ink leading-relaxed">
                 &ldquo;Where appropriate, parents may also become part of the broader conversation while respecting the young person&apos;s privacy and independence.&rdquo;
               </RevealItem>
             </RevealGroup>
@@ -147,37 +148,37 @@ export default function ForParentsPage() {
 
       {/* Principles: Hairline Grid */}
       <section id="principles" className="scroll-mt-24 border-t border-line">
-        <div className="page-x py-28 md:py-40">
+        <div className="page-x py-16 sm:py-24 md:py-36">
           <SectionHead
             meta="Guiding principles"
             title="How parents can support"
             lede="A few principles that can make parent-child conversations more constructive."
           />
 
-          <RevealGroup className="hairline-grid mt-16 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          <RevealGroup className="hairline-grid mt-10 sm:mt-16 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {principles.map((item, idx) => (
               <RevealItem
                 key={idx}
-                className="group flex min-h-[16rem] flex-col justify-between p-8 transition-colors duration-500 ease-editorial hover:bg-paper-2"
+                className="group flex min-h-[14rem] sm:min-h-[16rem] flex-col justify-between p-6 sm:p-8 transition-colors duration-500 ease-editorial hover:bg-paper-2"
               >
                 <span className="meta">{String(idx + 1).padStart(2, '0')}</span>
                 <div>
-                  <h3 className="font-serif text-[1.625rem] text-ink mb-3 leading-snug">
+                  <h3 className="font-serif text-[1.375rem] sm:text-[1.625rem] text-ink mb-2 sm:mb-3 leading-snug">
                     {item.title}
                   </h3>
-                  <p className="text-[0.9375rem] text-muted leading-relaxed">
+                  <p className="text-[0.875rem] sm:text-[0.9375rem] text-muted leading-relaxed">
                     {item.text}
                   </p>
                 </div>
               </RevealItem>
             ))}
-            <RevealItem className="!bg-ink text-paper flex flex-col justify-between p-8">
+            <RevealItem className="!bg-ink text-paper flex flex-col justify-between p-6 sm:p-8">
               <span className="meta text-paper/60">Perspective</span>
               <div>
-                <p className="font-serif italic text-[1.375rem] leading-snug text-paper">
+                <p className="font-serif italic text-[1.25rem] sm:text-[1.375rem] leading-snug text-paper">
                   Every generation navigates a world the previous one did not inhabit.
                 </p>
-                <p className="text-[0.875rem] text-paper/70 mt-3">
+                <p className="text-[0.8125rem] sm:text-[0.875rem] text-paper/70 mt-3">
                   Patience and listening anchor long-term trust.
                 </p>
               </div>
@@ -188,22 +189,22 @@ export default function ForParentsPage() {
 
       {/* Common Concerns: Editorial List */}
       <section className="border-t border-line bg-paper-2">
-        <div className="page-x py-28 md:py-40">
+        <div className="page-x py-16 sm:py-24 md:py-36">
           <SectionHead
             meta="Empathy and understanding"
             title="Does this sound familiar?"
             lede="Every parent encounters these moments of uncertainty."
           />
 
-          <div className="mt-16 border-t border-ink">
+          <div className="mt-10 sm:mt-16 border-t border-ink">
             <RevealGroup>
               {concerns.map((concern, idx) => (
                 <RevealItem
                   key={idx}
-                  className="grid grid-cols-12 border-b border-line py-7 md:py-8 items-baseline gap-4"
+                  className="grid grid-cols-12 border-b border-line py-5 sm:py-7 md:py-8 items-baseline gap-3 sm:gap-4"
                 >
                   <span className="meta col-span-2 md:col-span-1">{String(idx + 1).padStart(2, '0')}</span>
-                  <p className="col-span-10 md:col-span-11 font-serif italic text-[clamp(1.25rem,2.2vw,1.875rem)] text-ink">
+                  <p className="col-span-10 md:col-span-11 font-serif italic text-[clamp(1.125rem,2.2vw,1.875rem)] text-ink">
                     &ldquo;{concern}&rdquo;
                   </p>
                 </RevealItem>
@@ -215,22 +216,22 @@ export default function ForParentsPage() {
 
       {/* Parent FAQs Section */}
       <section className="border-t border-line">
-        <div className="page-x py-24 md:py-36">
+        <div className="page-x py-16 sm:py-24 md:py-36">
           <SectionHead
             meta="Parent inquiries"
             title="Questions Parents Frequently Ask"
             lede="Reassurance and clarity on how we collaborate with families."
           />
 
-          <div className="mt-16 max-w-4xl mx-auto space-y-6">
+          <div className="mt-10 sm:mt-16 max-w-4xl mx-auto space-y-4 sm:space-y-6">
             <RevealGroup>
               {PARENT_FAQS.map((faq, idx) => (
                 <RevealItem
                   key={idx}
-                  className="rounded-2xl border border-line bg-paper-2 p-6 md:p-8"
+                  className="rounded-2xl border border-line bg-paper-2 p-5 sm:p-6 md:p-8"
                 >
-                  <h4 className="font-serif text-[1.25rem] text-ink mb-3">{faq.q}</h4>
-                  <p className="text-[0.9375rem] text-muted leading-relaxed">{faq.a}</p>
+                  <h4 className="font-serif text-[1.125rem] sm:text-[1.25rem] text-ink mb-2 sm:mb-3">{faq.q}</h4>
+                  <p className="text-[0.875rem] sm:text-[0.9375rem] text-muted leading-relaxed">{faq.a}</p>
                 </RevealItem>
               ))}
             </RevealGroup>
@@ -240,15 +241,15 @@ export default function ForParentsPage() {
 
       {/* Confidentiality & Safeguarding */}
       <section className="border-t border-line bg-paper-2">
-        <div className="page-x py-20 md:py-24">
-          <Reveal className="rounded-[1.75rem] border border-line bg-paper p-8 md:p-12 max-w-4xl mx-auto">
-            <p className="meta text-signal mb-3">Safeguarding &amp; ethics</p>
-            <h4 className="font-serif text-[1.75rem] text-ink mb-4">Safety and Professional Boundaries</h4>
-            <p className="text-[1.0625rem] text-muted leading-relaxed">
+        <div className="page-x py-12 sm:py-16 md:py-24">
+          <Reveal className="rounded-[1.5rem] sm:rounded-[1.75rem] border border-line bg-paper p-6 sm:p-8 md:p-12 max-w-4xl mx-auto">
+            <p className="meta text-signal mb-2 sm:mb-3">Safeguarding &amp; ethics</p>
+            <h4 className="font-serif text-[1.375rem] sm:text-[1.75rem] text-ink mb-3 sm:mb-4">Safety and Professional Boundaries</h4>
+            <p className="text-[0.9375rem] sm:text-[1.0625rem] text-muted leading-relaxed">
               For participants below the age of 18, appropriate parental/guardian consent and safeguarding requirements always apply. Second Innings is committed to providing a responsible and transparent environment.
             </p>
-            <div className="mt-6">
-              <Link href="/privacy-boundaries" className="meta text-ink underline decoration-ink/25 underline-offset-4 hover:decoration-signal">
+            <div className="mt-5 sm:mt-6">
+              <Link href="/privacy-boundaries" className="meta text-ink underline decoration-ink/25 underline-offset-4 hover:decoration-signal py-1 inline-block">
                 Read our full Privacy &amp; Boundaries Policy →
               </Link>
             </div>
@@ -258,16 +259,16 @@ export default function ForParentsPage() {
 
       {/* CTA */}
       <section className="border-t border-line bg-paper">
-        <div className="page-x py-32 md:py-44">
+        <div className="page-x py-16 sm:py-24 md:py-36">
           <RevealGroup className="max-w-[56rem]">
-            <RevealItem as="p" className="meta mb-6">Partnering together</RevealItem>
-            <RevealItem as="h2" className="font-serif text-[clamp(2.5rem,5.5vw,5rem)] leading-[0.95] text-ink">
+            <RevealItem as="p" className="meta mb-4 sm:mb-6">Partnering together</RevealItem>
+            <RevealItem as="h2" className="font-serif text-[clamp(2.25rem,5.5vw,5rem)] leading-[0.95] text-ink">
               Start a conversation about your child.
             </RevealItem>
-            <RevealItem as="p" className="lede mt-6 text-[1.125rem]">
+            <RevealItem as="p" className="lede mt-5 sm:mt-6 text-[1rem] sm:text-[1.125rem]">
               We are here to listen, offer perspective, and partner in your child&apos;s growth.
             </RevealItem>
-            <RevealItem className="mt-10">
+            <RevealItem className="mt-8 sm:mt-10">
               <Button href="/book">Start a Conversation</Button>
             </RevealItem>
           </RevealGroup>

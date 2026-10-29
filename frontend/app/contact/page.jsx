@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Button from '../../components/ui/Button';
 import Arrow from '../../components/ui/Arrow';
 import PageHero from '../../components/ui/PageHero';
-import Breadcrumbs from '../../components/ui/Breadcrumbs';
 import { submitContact, submitInstitutionalEnquiry } from '../../lib/api';
 
 const INTEREST_OPTIONS = [
@@ -83,55 +82,52 @@ export default function Contact() {
 
   return (
     <div className="w-full">
-      <div className="page-x pt-28 md:pt-36">
-        <Breadcrumbs items={[{ name: 'Contact', href: '/contact' }]} />
-      </div>
-
       <PageHero
+        breadcrumbs={[{ name: 'Contact', href: '/contact' }]}
         meta={['Get in Touch', 'Direct Channels', 'Jaipur, India']}
         title="Direct, human perspective."
         lede="Whether you are a student exploring next steps, a parent looking to support your child, or an institution evaluating our student development layer, we are here to talk."
       />
 
       {/* S2: Contact Channels (Hairline Grid) */}
-      <section className="page-x py-12 md:py-20">
+      <section className="page-x py-8 sm:py-12 md:py-20">
         <div className="hairline-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="p-8 flex flex-col justify-between min-h-[14rem]">
+          <div className="p-6 sm:p-8 flex flex-col justify-between min-h-[12rem] sm:min-h-[14rem]">
             <span className="meta">Email</span>
             <div>
-              <a href="mailto:secondinnings136@gmail.com" className="font-serif text-[1.25rem] text-ink hover:text-signal transition-colors block leading-snug">
+              <a href="mailto:secondinnings136@gmail.com" className="font-serif text-[1.125rem] sm:text-[1.25rem] text-ink hover:text-signal transition-colors block leading-snug break-all py-1">
                 secondinnings136@gmail.com
               </a>
-              <Link href="/support" className="text-xs text-coral mt-2 block hover:underline font-mono">
+              <Link href="/support" className="text-xs text-coral mt-2 block hover:underline font-mono py-0.5">
                 Website Issues &amp; Support →
               </Link>
             </div>
           </div>
 
-          <div className="p-8 flex flex-col justify-between min-h-[14rem]">
+          <div className="p-6 sm:p-8 flex flex-col justify-between min-h-[12rem] sm:min-h-[14rem]">
             <span className="meta">WhatsApp</span>
             <div>
-              <a href="https://wa.me/917737220724" target="_blank" rel="noopener noreferrer" className="font-serif text-[1.25rem] text-ink hover:text-signal transition-colors block">
+              <a href="https://wa.me/917737220724" target="_blank" rel="noopener noreferrer" className="font-serif text-[1.125rem] sm:text-[1.25rem] text-ink hover:text-signal transition-colors block py-1">
                 +91 77372 20724 ↗
               </a>
               <p className="text-xs text-muted mt-2">Direct messaging</p>
             </div>
           </div>
 
-          <div className="p-8 flex flex-col justify-between min-h-[14rem]">
+          <div className="p-6 sm:p-8 flex flex-col justify-between min-h-[12rem] sm:min-h-[14rem]">
             <span className="meta">Phone</span>
             <div>
-              <a href="tel:+917737220724" className="font-serif text-[1.25rem] text-ink hover:text-signal transition-colors block font-mono text-base">
+              <a href="tel:+917737220724" className="font-serif text-[1.125rem] sm:text-[1.25rem] text-ink hover:text-signal transition-colors block font-mono text-base py-1">
                 +91 77372 20724
               </a>
               <p className="text-xs text-muted mt-2">Mon–Sat, 10 AM – 6 PM IST</p>
             </div>
           </div>
 
-          <div className="p-8 flex flex-col justify-between min-h-[14rem]">
+          <div className="p-6 sm:p-8 flex flex-col justify-between min-h-[12rem] sm:min-h-[14rem]">
             <span className="meta">LinkedIn</span>
             <div>
-              <a href="https://www.linkedin.com/in/deepak-sogani/" target="_blank" rel="noopener noreferrer" className="font-serif text-[1.25rem] text-ink hover:text-signal transition-colors block">
+              <a href="https://www.linkedin.com/in/deepak-sogani/" target="_blank" rel="noopener noreferrer" className="font-serif text-[1.125rem] sm:text-[1.25rem] text-ink hover:text-signal transition-colors block py-1">
                 Deepak Sogani ↗
               </a>
               <p className="text-xs text-muted mt-2">Professional reflections &amp; alumni voices</p>
@@ -142,13 +138,13 @@ export default function Contact() {
 
       {/* S3: Form Area */}
       <section className="border-t border-line bg-paper-2">
-        <div className="page-x py-24 md:py-36 max-w-4xl">
+        <div className="page-x py-14 sm:py-20 md:py-32 max-w-4xl">
           {/* Tab Switcher */}
-          <div className="flex items-center gap-2 mb-8">
+          <div className="flex flex-wrap items-center gap-2 mb-6 sm:mb-8">
             <button
               type="button"
               onClick={() => setActiveTab('general')}
-              className={`rounded-full px-5 py-2.5 text-xs font-mono uppercase tracking-wider transition-colors duration-300 ${
+              className={`rounded-full px-5 py-2.5 min-h-[44px] text-xs font-mono uppercase tracking-wider transition-colors duration-300 inline-flex items-center justify-center ${
                 activeTab === 'general'
                   ? 'bg-ink text-paper'
                   : 'border border-line bg-paper text-ink hover:border-ink'
@@ -159,7 +155,7 @@ export default function Contact() {
             <button
               type="button"
               onClick={() => setActiveTab('institutional')}
-              className={`rounded-full px-5 py-2.5 text-xs font-mono uppercase tracking-wider transition-colors duration-300 ${
+              className={`rounded-full px-5 py-2.5 min-h-[44px] text-xs font-mono uppercase tracking-wider transition-colors duration-300 inline-flex items-center justify-center ${
                 activeTab === 'institutional'
                   ? 'bg-ink text-paper'
                   : 'border border-line bg-paper text-ink hover:border-ink'
@@ -170,9 +166,9 @@ export default function Contact() {
           </div>
 
           {/* Form Card */}
-          <div className="rounded-[1.75rem] border border-line bg-paper p-8 md:p-14">
+          <div className="rounded-[1.5rem] sm:rounded-[1.75rem] border border-line bg-paper p-5 sm:p-8 md:p-14">
             {status.message && (
-              <div className={`mb-8 p-4 rounded-xl text-sm ${
+              <div className={`mb-6 sm:mb-8 p-4 rounded-xl text-sm ${
                 status.type === 'success' 
                   ? 'bg-paper-2 border border-line text-ink' 
                   : 'bg-signal-soft border border-signal/30 text-signal'
@@ -183,8 +179,8 @@ export default function Contact() {
 
             {/* General Form */}
             {activeTab === 'general' && (
-              <form onSubmit={handleGeneralSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <form onSubmit={handleGeneralSubmit} className="space-y-5 sm:space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
                   <div>
                     <label className="field-label">Name <span className="text-signal">*</span></label>
                     <input 
@@ -209,7 +205,7 @@ export default function Contact() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
                   <div>
                     <label className="field-label">Phone <span className="text-muted font-normal">(Optional)</span></label>
                     <input 
@@ -245,22 +241,22 @@ export default function Contact() {
                 </div>
 
                 <div className="pt-2">
-                  <Button type="submit" disabled={loading}>
+                  <button type="submit" disabled={loading} className="btn-editorial w-full sm:w-auto">
                     {loading ? 'Sending...' : 'Send Message'}
-                  </Button>
+                  </button>
                 </div>
               </form>
             )}
 
             {/* Institutional Form */}
             {activeTab === 'institutional' && (
-              <form onSubmit={handleInstitutionalSubmit} className="space-y-6">
-                <div className="mb-8 border-b border-line pb-6">
-                  <h2 className="font-serif text-[1.75rem] text-ink mb-2">Institutional Partnership Enquiry</h2>
-                  <p className="text-sm text-muted">For schools, colleges and universities interested in our 90-day pilot framework.</p>
+              <form onSubmit={handleInstitutionalSubmit} className="space-y-5 sm:space-y-6">
+                <div className="mb-6 sm:mb-8 border-b border-line pb-5 sm:pb-6">
+                  <h2 className="font-serif text-[1.5rem] sm:text-[1.75rem] text-ink mb-2">Institutional Partnership Enquiry</h2>
+                  <p className="text-xs sm:text-sm text-muted">For schools, colleges and universities interested in our 90-day pilot framework.</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
                   <div>
                     <label className="field-label">Institution Name <span className="text-signal">*</span></label>
                     <input 
@@ -287,7 +283,7 @@ export default function Contact() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
                   <div>
                     <label className="field-label">Contact Person <span className="text-signal">*</span></label>
                     <input 
@@ -311,7 +307,7 @@ export default function Contact() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
                   <div>
                     <label className="field-label">Email <span className="text-signal">*</span></label>
                     <input 
@@ -336,7 +332,7 @@ export default function Contact() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
                   <div>
                     <label className="field-label">City, State</label>
                     <input 
@@ -361,13 +357,13 @@ export default function Contact() {
 
                 <div>
                   <label className="field-label mb-3">Interested In (Select all that apply)</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                     {INTEREST_OPTIONS.map((item, i) => (
                       <label key={i} className="flex items-center gap-3 text-xs md:text-sm text-ink-2 bg-paper-2 p-3 rounded-xl border border-line cursor-pointer hover:border-ink">
                         <input 
                           type="checkbox" 
                           onChange={() => toggleInterest(item)}
-                          className="accent-[#5B4632]" 
+                          className="accent-[#5B4632] h-4 w-4" 
                         />
                         <span>{item}</span>
                       </label>
@@ -388,15 +384,15 @@ export default function Contact() {
                 </div>
 
                 <div className="pt-2">
-                  <Button type="submit" disabled={loading}>
+                  <button type="submit" disabled={loading} className="btn-editorial w-full sm:w-auto">
                     {loading ? 'Submitting...' : 'Submit Institutional Enquiry'}
-                  </Button>
+                  </button>
                 </div>
               </form>
             )}
           </div>
 
-          <div className="mt-16 text-center">
+          <div className="mt-12 sm:mt-16 text-center">
             <span className="meta">Jaipur, Rajasthan, India</span>
           </div>
         </div>

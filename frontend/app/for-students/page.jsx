@@ -6,7 +6,6 @@ import PageHero from '../../components/ui/PageHero';
 import SectionHead from '../../components/ui/SectionHead';
 import { Reveal, RevealGroup, RevealItem } from '../../components/ui/Reveal';
 import StudentOutcomesGrid from '../../components/home/StudentOutcomesGrid';
-import Breadcrumbs from '../../components/ui/Breadcrumbs';
 
 export const metadata = {
   title: 'For Students (Ages 16–25) | Perspective, Clarity & Next Steps — Second Innings',
@@ -100,16 +99,13 @@ export default function ForStudentsPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
-      <div className="page-x pt-28 md:pt-36">
-        <Breadcrumbs items={[{ name: 'For Students', href: '/for-students' }]} />
-      </div>
-
       <PageHero
+        breadcrumbs={[{ name: 'For Students', href: '/for-students' }]}
         meta={['For Young People', 'Ages 16 to 25', 'Perspective & Possibilities']}
         title="You have the information. What you need is perspective."
         lede="Career confusion, confidence issues, and 'what next' anxiety are natural parts of growing up. You do not have to figure it all out alone."
       >
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-6">
           <Button href="/book">Start a Conversation</Button>
           <Button href="/how-it-works" variant="link" arrow="down">See How It Works</Button>
         </div>
@@ -117,21 +113,21 @@ export default function ForStudentsPage() {
 
       {/* S2: Sound Familiar? (Hairline Grid) */}
       <section className="border-t border-line bg-paper-2">
-        <div className="page-x py-28 md:py-40">
+        <div className="page-x py-16 sm:py-24 md:py-36">
           <SectionHead
             meta="Common questions"
             title="Sound familiar?"
             lede="These are some of the most frequent starting points young people bring into our conversations."
           />
 
-          <RevealGroup className="hairline-grid mt-16 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <RevealGroup className="hairline-grid mt-10 sm:mt-16 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             {concerns.map((text, idx) => (
               <RevealItem
                 key={idx}
-                className="group flex min-h-[14rem] flex-col justify-between p-7 transition-colors duration-500 ease-editorial hover:bg-paper-3"
+                className="group flex min-h-[12rem] sm:min-h-[14rem] flex-col justify-between p-6 sm:p-7 transition-colors duration-500 ease-editorial hover:bg-paper-3"
               >
                 <span className="meta">{String(idx + 1).padStart(2, '0')}</span>
-                <p className="font-serif italic text-[1.375rem] leading-[1.2] text-ink">
+                <p className="font-serif italic text-[1.25rem] sm:text-[1.375rem] leading-[1.2] text-ink">
                   &ldquo;{text}&rdquo;
                 </p>
               </RevealItem>
@@ -142,21 +138,21 @@ export default function ForStudentsPage() {
 
       {/* S3: What Can We Talk About? */}
       <section className="border-t border-line">
-        <div className="page-x py-28 md:py-40">
+        <div className="page-x py-16 sm:py-24 md:py-36">
           <SectionHead
             meta="Exploration areas"
             title="What Can We Talk About?"
             lede="Conversations span questions around direction, confidence, choices, and readiness for life."
           />
 
-          <RevealGroup className="hairline-grid mt-16 grid-cols-1 md:grid-cols-3">
+          <RevealGroup className="hairline-grid mt-10 sm:mt-16 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
             {topics.map((area, idx) => (
               <RevealItem
                 key={idx}
-                className="p-8 transition-colors duration-500 ease-editorial hover:bg-paper-2"
+                className="p-6 sm:p-8 transition-colors duration-500 ease-editorial hover:bg-paper-2"
               >
                 <span className="meta">{String(idx + 1).padStart(2, '0')}</span>
-                <h3 className="font-serif text-[1.5rem] leading-snug text-ink mt-6">
+                <h3 className="font-serif text-[1.375rem] sm:text-[1.5rem] leading-snug text-ink mt-4 sm:mt-6">
                   {area}
                 </h3>
               </RevealItem>
@@ -164,9 +160,9 @@ export default function ForStudentsPage() {
           </RevealGroup>
 
           {/* S4: Ownership Disclaimer Callout */}
-          <Reveal className="mt-16 rounded-[1.75rem] border border-ink bg-paper p-8 md:p-12">
-            <p className="meta text-signal mb-4">Ownership principle</p>
-            <p className="font-serif text-[clamp(1.5rem,2.5vw,2.25rem)] text-ink leading-snug max-w-[45ch]">
+          <Reveal className="mt-12 sm:mt-16 rounded-[1.5rem] sm:rounded-[1.75rem] border border-ink bg-paper p-6 sm:p-8 md:p-12">
+            <p className="meta text-signal mb-3 sm:mb-4">Ownership principle</p>
+            <p className="font-serif text-[clamp(1.35rem,2.5vw,2.25rem)] text-ink leading-snug max-w-[45ch]">
               We won&apos;t tell you what career to choose or what decision to make. Your life, your choices. We help you think more clearly so you can decide with confidence.
             </p>
           </Reveal>
@@ -175,32 +171,32 @@ export default function ForStudentsPage() {
 
       {/* S5: What We Hope These Conversations Can Help You Build */}
       <section className="border-t border-line bg-paper-2">
-        <div className="page-x py-28 md:py-40">
+        <div className="page-x py-16 sm:py-24 md:py-36">
           <SectionHead
             meta="Observable growth"
             title="What We Hope These Conversations Can Help You Build"
             lede="Five areas we work towards through sustained, thoughtful conversations."
           />
 
-          <StudentOutcomesGrid className="mt-16" />
+          <StudentOutcomesGrid className="mt-10 sm:mt-16" />
         </div>
       </section>
 
       {/* S6: Simple Public Journey */}
       <section className="border-t border-line">
-        <div className="page-x py-24 md:py-32 text-center">
+        <div className="page-x py-16 sm:py-24 md:py-32 text-center">
           <RevealGroup className="max-w-3xl mx-auto">
-            <RevealItem as="p" className="meta mb-4">The journey</RevealItem>
-            <RevealItem as="h2" className="font-serif text-[clamp(2rem,3.5vw,3rem)] text-ink mb-10">
+            <RevealItem as="p" className="meta mb-3 sm:mb-4">The journey</RevealItem>
+            <RevealItem as="h2" className="font-serif text-[clamp(1.85rem,3.5vw,3rem)] text-ink mb-6 sm:mb-10">
               How a Conversation Unfolds
             </RevealItem>
-            <RevealItem className="flex flex-wrap justify-center items-center gap-2 md:gap-4 mb-8">
+            <RevealItem className="flex flex-wrap justify-center items-center gap-2 sm:gap-3 md:gap-4 mb-6 sm:mb-8">
               {['Talk', 'Understand', 'Explore', 'Choose Your Next Step', 'Follow Through'].map((step, idx, arr) => (
                 <React.Fragment key={step}>
-                  <span className="meta rounded-full border border-line bg-paper px-4 py-2 text-ink">
+                  <span className="meta rounded-full border border-line bg-paper px-3 sm:px-4 py-1.5 sm:py-2 text-[0.625rem] sm:text-xs text-ink">
                     {step}
                   </span>
-                  {idx < arr.length - 1 && <span className="text-muted text-xs">→</span>}
+                  {idx < arr.length - 1 && <span className="text-muted text-xs hidden sm:inline">→</span>}
                 </React.Fragment>
               ))}
             </RevealItem>
@@ -213,22 +209,22 @@ export default function ForStudentsPage() {
 
       {/* FAQ Section */}
       <section className="border-t border-line bg-paper-2">
-        <div className="page-x py-24 md:py-36">
+        <div className="page-x py-16 sm:py-24 md:py-36">
           <SectionHead
             meta="Questions from students"
             title="Things You Might Wonder"
             lede="Clear answers to help you feel comfortable before starting a conversation."
           />
 
-          <div className="mt-16 max-w-4xl mx-auto space-y-6">
+          <div className="mt-10 sm:mt-16 max-w-4xl mx-auto space-y-4 sm:space-y-6">
             <RevealGroup>
               {STUDENT_FAQS.map((faq, idx) => (
                 <RevealItem
                   key={idx}
-                  className="rounded-2xl border border-line bg-paper p-6 md:p-8"
+                  className="rounded-2xl border border-line bg-paper p-5 sm:p-6 md:p-8"
                 >
-                  <h4 className="font-serif text-[1.25rem] text-ink mb-3">{faq.q}</h4>
-                  <p className="text-[0.9375rem] text-muted leading-relaxed">{faq.a}</p>
+                  <h4 className="font-serif text-[1.125rem] sm:text-[1.25rem] text-ink mb-2 sm:mb-3">{faq.q}</h4>
+                  <p className="text-[0.875rem] sm:text-[0.9375rem] text-muted leading-relaxed">{faq.a}</p>
                 </RevealItem>
               ))}
             </RevealGroup>
@@ -238,16 +234,16 @@ export default function ForStudentsPage() {
 
       {/* S7: CTA */}
       <section className="border-t border-line bg-paper">
-        <div className="page-x py-32 md:py-44">
+        <div className="page-x py-16 sm:py-24 md:py-36">
           <RevealGroup className="max-w-[56rem]">
-            <RevealItem as="p" className="meta mb-6">Take the first step</RevealItem>
-            <RevealItem as="h2" className="font-serif text-[clamp(2.5rem,5.5vw,5rem)] leading-[0.95] text-ink">
+            <RevealItem as="p" className="meta mb-4 sm:mb-6">Take the first step</RevealItem>
+            <RevealItem as="h2" className="font-serif text-[clamp(2.25rem,5.5vw,5rem)] leading-[0.95] text-ink">
               Ready to start a conversation?
             </RevealItem>
-            <RevealItem as="p" className="lede mt-6 text-[1.125rem]">
+            <RevealItem as="p" className="lede mt-5 sm:mt-6 text-[1rem] sm:text-[1.125rem]">
               A private conversation can bring clarity to questions you have been carrying for months. Your first conversation is complimentary.
             </RevealItem>
-            <RevealItem className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-4">
+            <RevealItem className="mt-8 sm:mt-10">
               <Button href="/book">Start a Conversation</Button>
             </RevealItem>
           </RevealGroup>

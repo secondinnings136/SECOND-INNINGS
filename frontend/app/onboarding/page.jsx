@@ -145,7 +145,7 @@ function OnboardingContent() {
   }
 
   return (
-    <div className="min-h-screen bg-paper pt-36 pb-20 md:pt-44">
+    <div className="min-h-screen bg-paper pt-24 sm:pt-32 md:pt-44 pb-14 sm:pb-20">
       <div className="container-editorial max-w-3xl">
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sage/15 text-sage text-xs font-semibold mb-4">
@@ -161,7 +161,7 @@ function OnboardingContent() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="card-editorial bg-white p-7 md:p-10 space-y-6">
+        <form onSubmit={handleSubmit} className="card-editorial bg-white p-5 sm:p-7 md:p-10 space-y-6">
           {/* Role Selector */}
           <div>
             <label className="block text-xs font-mono uppercase tracking-wider text-charcoal mb-2.5">

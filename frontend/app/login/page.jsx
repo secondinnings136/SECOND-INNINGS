@@ -180,7 +180,7 @@ function LoginContent() {
   };
 
   return (
-    <div className="min-h-screen bg-paper pt-36 pb-20 md:pt-44">
+    <div className="min-h-screen bg-paper pt-24 sm:pt-32 md:pt-44 pb-14 sm:pb-20">
       <div className="container-editorial max-w-5xl">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           {/* Left Column: Why One-Time Account */}
@@ -229,7 +229,7 @@ function LoginContent() {
 
           {/* Right Column: Google Login + Email & Password + OTP / 2FA Verification Card */}
           <div className="lg:col-span-6">
-            <div className="card-editorial bg-white p-7 md:p-9">
+            <div className="card-editorial bg-white p-5 sm:p-7 md:p-9">
               <div className="flex items-center justify-between border-b border-line pb-4 mb-6">
                 <div>
                   <span className="font-mono text-[10px] uppercase tracking-widest text-signal block">

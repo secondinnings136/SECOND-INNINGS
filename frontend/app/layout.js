@@ -22,6 +22,13 @@ const mono = JetBrains_Mono({
   display: 'swap',
 });
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: '#FAF6EE',
+};
+
 export const metadata = {
   metadataBase: new URL('https://second-innings.in'),
   title: {

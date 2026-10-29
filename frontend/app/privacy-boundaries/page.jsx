@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import Button from '../../components/ui/Button';
 import PageHero from '../../components/ui/PageHero';
-import Breadcrumbs from '../../components/ui/Breadcrumbs';
 
 export const metadata = {
   title: 'Privacy, Safety & Professional Boundaries | Second Innings',
@@ -21,22 +20,19 @@ export const metadata = {
 export default function PrivacyBoundariesPage() {
   return (
     <div className="w-full">
-      <div className="page-x pt-28 md:pt-36">
-        <Breadcrumbs items={[{ name: 'Privacy & Boundaries', href: '/privacy-boundaries' }]} />
-      </div>
-
       <PageHero
+        breadcrumbs={[{ name: 'Privacy & Boundaries', href: '/privacy-boundaries' }]}
         meta={['Safeguarding & Boundaries', 'Duty of Care', 'Professional Scope']}
         title="Privacy, safety &amp; professional boundaries."
         lede="A respectful, responsible, and non-judgmental environment for young people aged 16 to 25."
       />
 
-      <div className="page-x py-16 md:py-24 max-w-[76rem]">
-        <div className="max-w-[68ch] space-y-16 text-[1.0625rem] leading-[1.75] text-ink-2">
+      <div className="page-x py-10 sm:py-16 md:py-24 max-w-[76rem]">
+        <div className="max-w-[68ch] space-y-10 sm:space-y-16 text-[1rem] sm:text-[1.0625rem] leading-[1.75] text-ink-2">
           {/* Section 1 */}
-          <section className="rounded-[1.75rem] border border-line bg-paper-2 p-8 md:p-12 space-y-3">
+          <section className="rounded-[1.25rem] sm:rounded-[1.75rem] border border-line bg-paper-2 p-6 sm:p-8 md:p-12 space-y-3">
             <span className="meta text-signal block">Ethical Anchor</span>
-            <h2 className="font-serif text-[1.75rem] text-ink leading-snug">
+            <h2 className="font-serif text-[1.5rem] sm:text-[1.75rem] text-ink leading-snug">
               Our Core Commitment
             </h2>
             <p className="text-muted leading-relaxed">
@@ -45,8 +41,8 @@ export default function PrivacyBoundariesPage() {
           </section>
 
           {/* Section 2 */}
-          <section className="space-y-4">
-            <h2 className="font-serif text-[2rem] text-ink leading-snug">
+          <section className="space-y-3 sm:space-y-4">
+            <h2 className="font-serif text-[1.625rem] sm:text-[2rem] text-ink leading-snug">
               Confidentiality and Safety
             </h2>
             <p>
@@ -58,8 +54,8 @@ export default function PrivacyBoundariesPage() {
           </section>
 
           {/* Section 3 */}
-          <section className="space-y-4">
-            <h2 className="font-serif text-[2rem] text-ink leading-snug">
+          <section className="space-y-3 sm:space-y-4">
+            <h2 className="font-serif text-[1.625rem] sm:text-[2rem] text-ink leading-snug">
               Professional Scope
             </h2>
             <p>
@@ -74,9 +70,9 @@ export default function PrivacyBoundariesPage() {
           </section>
 
           {/* Section 4 */}
-          <section className="rounded-[1.75rem] border border-signal/30 bg-signal-soft/40 p-8 space-y-3">
+          <section className="rounded-[1.25rem] sm:rounded-[1.75rem] border border-signal/30 bg-signal-soft/40 p-6 sm:p-8 space-y-3">
             <span className="meta text-signal block">Youth Safeguarding</span>
-            <h2 className="font-serif text-[1.75rem] text-ink leading-snug">
+            <h2 className="font-serif text-[1.5rem] sm:text-[1.75rem] text-ink leading-snug">
               Participants Below Age 18
             </h2>
             <p className="leading-relaxed text-ink-2">
@@ -85,8 +81,8 @@ export default function PrivacyBoundariesPage() {
           </section>
 
           {/* Section 5 */}
-          <section className="space-y-4">
-            <h2 className="font-serif text-[2rem] text-ink leading-snug">
+          <section className="space-y-3 sm:space-y-4">
+            <h2 className="font-serif text-[1.625rem] sm:text-[2rem] text-ink leading-snug">
               Why These Boundaries Exist
             </h2>
             <p className="text-muted leading-relaxed">
@@ -95,12 +91,12 @@ export default function PrivacyBoundariesPage() {
           </section>
 
           {/* Footer Navigation */}
-          <div className="border-t border-line pt-8 flex flex-wrap items-center justify-between gap-4">
-            <Link href="/" className="meta text-muted hover:text-ink">
+          <div className="border-t border-line pt-6 sm:pt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+            <Link href="/" className="meta text-muted hover:text-ink py-1">
               ← Return to Home
             </Link>
-            <div className="flex items-center gap-6">
-              <Link href="/privacy-policy" className="meta text-muted hover:text-ink">
+            <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+              <Link href="/privacy-policy" className="meta text-muted hover:text-ink py-1">
                 Privacy Policy →
               </Link>
               <Button href="/book">Start a Conversation</Button>

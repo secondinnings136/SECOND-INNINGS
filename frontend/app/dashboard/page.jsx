@@ -170,10 +170,10 @@ export default function MenteeDashboardPage() {
   const latestActionSession = sessions.find((s) => s.actionAgreed && s.status !== 'cancelled');
 
   return (
-    <div className="min-h-screen bg-paper pt-36 pb-24 md:pt-44">
+    <div className="min-h-screen bg-paper pt-24 sm:pt-32 md:pt-44 pb-16 sm:pb-24">
       <div className="container-editorial">
         {/* Top Profile & Subscription Banner */}
-        <div className="card-editorial bg-white p-6 md:p-9 mb-8">
+        <div className="card-editorial bg-white p-5 sm:p-6 md:p-9 mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-stone/40">
             <div className="flex items-start gap-4">
               <div className="w-14 h-14 rounded-2xl bg-terracotta/15 border border-terracotta/30 text-terracotta flex items-center justify-center font-serif text-2xl shrink-0">
